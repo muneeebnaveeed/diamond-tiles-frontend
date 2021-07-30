@@ -57,7 +57,7 @@ export default class Example extends PureComponent {
       return (
          <ResponsiveContainer width="100%" aspect={4.0 / 2.0}>
             <BarChart data={data} barSize={30}>
-               <Bar dataKey="pv" fill={this.props.color ? this.props.color : '#6CC51D'} />
+               <Bar dataKey="pv" fill={this.props.color ? this.props.color : '#5e72e4'} />
             </BarChart>
          </ResponsiveContainer>
       );

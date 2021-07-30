@@ -12,9 +12,10 @@ const NavHader = () => {
    return (
       <div className="nav-header">
          <Link to="/" className="brand-logo">
-            <img className="logo-abbr" src={logo} alt="" />
-            <img className="logo-compact" src={logoText} alt="" />
-            <img className="brand-title" src={logoText} alt="" />
+            {/* <img className="logo-abbr" src={logo} alt="" />
+            <img className="logo-compact" src={logoText} alt="" /> */}
+            {/* <img className="brand-title" src={logoText} alt="" /> */}
+            <h1 className="brand-title">Diamond Tiles</h1>
          </Link>
 
          <div className="nav-control" role="button" tabIndex="0" onClick={() => setToggle(!toggle)}>

@@ -12,6 +12,50 @@ import MetisMenu from 'metismenujs';
 ///
 import drump from '../../../images/card/drump.png';
 
+/// Path
+const path = window.location.pathname;
+
+/// Active menu
+const dashboard = ['', 'workout-statistic', 'workout-plan', 'distance-map', 'diet-food-menu', 'personal-record'];
+const app = [
+   'app-profile',
+   'app-calender',
+   'email-compose',
+   'email-inbox',
+   'email-read',
+   'ecom-product-grid',
+   'ecom-product-list',
+   'ecom-product-list',
+   'ecom-product-order',
+   'ecom-checkout',
+   'ecom-invoice',
+   'ecom-customers',
+];
+const charts = ['chart-flot', 'chart-morris', 'chart-chartjs', 'chart-chartist', 'chart-sparkline', 'chart-peity'];
+const bootstrap = [
+   'ui-accordion',
+   'ui-badge',
+   'ui-alert',
+   'ui-button',
+   'ui-modal',
+   'ui-button-group',
+   'ui-list-group',
+   'ui-media-object',
+   'ui-card',
+   'ui-carousel',
+   'ui-dropdown',
+   'ui-popover',
+   'ui-progressbar',
+   'ui-tab',
+   'ui-typography',
+   'ui-pagination',
+   'ui-grid',
+];
+const plugins = ['uc-select2', 'uc-nestable', 'uc-sweetalert', 'uc-toastr', 'uc-jqvmap', 'uc-noui-slider'];
+const widget = ['widget'];
+const forms = ['form-element', 'form-wizard', 'form-editor-summernote', 'form-pickers', 'form-validation-jquery'];
+const table = ['table-bootstrap-basic', 'table-datatable-basic'];
+
 class MM extends Component {
    componentDidMount() {
       this.$el = this.el;
@@ -48,62 +92,11 @@ class SideBar extends Component {
    }
 
    render() {
-      /// Path
-      const path = window.location.pathname;
-
-      /// Active menu
-      const deshBoard = ['', 'workout-statistic', 'workout-plan', 'distance-map', 'diet-food-menu', 'personal-record'];
-      const app = [
-         'app-profile',
-         'app-calender',
-         'email-compose',
-         'email-inbox',
-         'email-read',
-         'ecom-product-grid',
-         'ecom-product-list',
-         'ecom-product-list',
-         'ecom-product-order',
-         'ecom-checkout',
-         'ecom-invoice',
-         'ecom-customers',
-      ];
-      const charts = [
-         'chart-flot',
-         'chart-morris',
-         'chart-chartjs',
-         'chart-chartist',
-         'chart-sparkline',
-         'chart-peity',
-      ];
-      const bootstrap = [
-         'ui-accordion',
-         'ui-badge',
-         'ui-alert',
-         'ui-button',
-         'ui-modal',
-         'ui-button-group',
-         'ui-list-group',
-         'ui-media-object',
-         'ui-card',
-         'ui-carousel',
-         'ui-dropdown',
-         'ui-popover',
-         'ui-progressbar',
-         'ui-tab',
-         'ui-typography',
-         'ui-pagination',
-         'ui-grid',
-      ];
-      const plugins = ['uc-select2', 'uc-nestable', 'uc-sweetalert', 'uc-toastr', 'uc-jqvmap', 'uc-noui-slider'];
-      const widget = ['widget'];
-      const forms = ['form-element', 'form-wizard', 'form-editor-summernote', 'form-pickers', 'form-validation-jquery'];
-      const table = ['table-bootstrap-basic', 'table-datatable-basic'];
-
       return (
          <div className="deznav">
             <PerfectScrollbar className="deznav-scroll">
                <MM className="metismenu" id="menu">
-                  <li className={`${deshBoard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
+                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
                      <Link className="has-arrow ai-icon" to="#" aria-expanded="false">
                         <i className="flaticon-381-networking" />
                         <span className="nav-text">Dashboard</span>
@@ -378,30 +371,6 @@ class SideBar extends Component {
                      </ul>
                   </li>
                </MM>
-               <div className="drum-box mt-5">
-                  <img src={drump} alt="" />
-                  <p className="fs-18 font-w500 mb-4">Start Plan Your Workout</p>
-                  <Link className to="./personal-record">
-                     Check schedule
-                     <svg
-                        className="ml-3"
-                        width={6}
-                        height={12}
-                        viewBox="0 0 6 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                     >
-                        <path d="M0 12L6 6L0 0" fill="#BCD7FF" />
-                     </svg>
-                  </Link>
-               </div>
-
-               <div className="copyright">
-                  <p>
-                     <strong>Fito Dashboard</strong> ©All Rights Reserved
-                  </p>
-                  <p>by DexignZone</p>
-               </div>
             </PerfectScrollbar>
          </div>
       );
