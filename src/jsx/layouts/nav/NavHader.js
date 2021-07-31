@@ -15,7 +15,7 @@ const NavHader = () => {
             {/* <img className="logo-abbr" src={logo} alt="" />
             <img className="logo-compact" src={logoText} alt="" /> */}
             {/* <img className="brand-title" src={logoText} alt="" /> */}
-            <h1 className="brand-title">Diamond Tiles</h1>
+            <h1 className="brand-title tw-text-2xl tw-text-black tw-font-bold">Diamond Tiles</h1>
          </Link>
 
          <div className="nav-control" role="button" tabIndex="0" onClick={() => setToggle(!toggle)}>

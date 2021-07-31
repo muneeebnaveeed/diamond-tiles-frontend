@@ -144,7 +144,7 @@ a:focus {
 
 .dd .nestable-item-name {
    color: #fff;
-   background: #5e72e4;
+   background: #44bdec;
    display: block;
    height: 30px;
    margin: 5px 0;
@@ -166,7 +166,7 @@ a:focus {
 .slick-prev:before {
    line-height: 1;
    opacity: 0.75;
-   color: #5e72e4;
+   color: #44bdec;
    position: absolute;
    top: 50%;
    width: 20px;
@@ -179,7 +179,7 @@ a:focus {
 .slick-prev::after {
    line-height: 1;
    opacity: 0.75;
-   color: #5e72e4;
+   color: #44bdec;
    position: absolute;
    top: 50%;
    width: 20px;
@@ -251,7 +251,7 @@ button.react-calendar__navigation__arrow.react-calendar__navigation__next-button
 button.react-calendar__tile.react-calendar__month-view__days__day:hover {
    box-shadow: none;
    border: 0;
-   background: #5e72e4 !important;
+   background: #44bdec !important;
    color: #fff !important;
 }
 
@@ -290,7 +290,7 @@ button.react-calendar__tile.react-calendar__tile--now.react-calendar__month-view
    right: -5px;
    height: 17px;
    width: 17px;
-   background: #5e72e4;
+   background: #44bdec;
    border-radius: 12px;
 }
 

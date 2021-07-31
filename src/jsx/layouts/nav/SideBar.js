@@ -55,6 +55,7 @@ const plugins = ['uc-select2', 'uc-nestable', 'uc-sweetalert', 'uc-toastr', 'uc-
 const widget = ['widget'];
 const forms = ['form-element', 'form-wizard', 'form-editor-summernote', 'form-pickers', 'form-validation-jquery'];
 const table = ['table-bootstrap-basic', 'table-datatable-basic'];
+const manage = ['employees'];
 
 class MM extends Component {
    componentDidMount() {
@@ -63,7 +64,7 @@ class MM extends Component {
    }
 
    componentWillUnmount() {
-      this.mm('dispose');
+      this.mm.dispose();
    }
 
    render() {
@@ -367,6 +368,17 @@ class SideBar extends Component {
                         </li>
                         <li>
                            <Link to="/page-lock-screen">Lock Screen</Link>
+                        </li>
+                     </ul>
+                  </li>
+                  <li className={`${manage.includes(path.slice(1)) ? 'mm-active' : ''}`}>
+                     <Link className="has-arrow ai-icon" to="#" aria-expanded="false">
+                        <i className="flaticon-381-networking" />
+                        <span className="nav-text">Manage</span>
+                     </Link>
+                     <ul aria-expanded="false">
+                        <li>
+                           <Link to="/employees">Employees</Link>
                         </li>
                      </ul>
                   </li>

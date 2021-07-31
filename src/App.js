@@ -1,12 +1,16 @@
 import React from 'react';
 import { withResizeDetector } from 'react-resize-detector';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 /// Components
 import Markup from './jsx';
 
 /// Style
 import './vendor/bootstrap-select/dist/css/bootstrap-select.min.css';
+import './css/tailwind.build.css';
 import './css/style.css';
+
+const queryClient = new QueryClient();
 
 const App = ({ width }) => {
    const body = document.querySelector('body');
@@ -16,9 +20,9 @@ const App = ({ width }) => {
    else body.setAttribute('data-sidebar-style', 'overlay');
 
    return (
-      <>
+      <QueryClientProvider client={queryClient}>
          <Markup />
-      </>
+      </QueryClientProvider>
    );
 };
 

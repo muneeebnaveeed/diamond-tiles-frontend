@@ -11,4 +11,5 @@
         "source.fixAll": true
     },
     "javascript.updateImportsOnFileMove.enabled": "always",
+    "typescript.suggest.paths": false
 }

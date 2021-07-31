@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
 /// React router dom
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 
 /// Css
 import './index.css';
@@ -95,10 +95,99 @@ import MainSweetAlert from './components/PluginsMenu/Sweet Alert/SweetAlert';
 import Toastr from './components/PluginsMenu/Toastr/Toastr';
 import JqvMap from './components/PluginsMenu/Jqv Map/JqvMap';
 import RechartJs from './components/charts/rechart';
+import Layout from './layouts';
+import Employees from './pages/employees';
+
+/// Pages
+// const Registration = React.lazy(() => import('./pages/Registration'));
+// const Login = React.lazy(() => import('./pages/Login'));
+// const ForgotPassword = React.lazy(() => import('./pages/ForgotPassword'));
+// const LockScreen = React.lazy(() => import('./pages/LockScreen'));
+// const Error400 = React.lazy(() => import('./pages/Error400'));
+// const Error403 = React.lazy(() => import('./pages/Error403'));
+// const Error404 = React.lazy(() => import('./pages/Error404'));
+// const Error500 = React.lazy(() => import('./pages/Error500'));
+// const Error503 = React.lazy(() => import('./pages/Error503'));
+// /// Widget
+// const Widget = React.lazy(() => import('./pages/Widget'));
+
+// /// Deshboard
+// const Home = React.lazy(() => import('./components/Dashboard/Home'));
+// const WorkoutStatistic = React.lazy(() => import('./components/Dashboard/WorkoutStatistic'));
+// const WorkoutPlan = React.lazy(() => import('./components/Dashboard/WorkoutPlan'));
+// const DistanceMap = React.lazy(() => import('./components/Dashboard/DistanceMap'));
+// const DietFoodMenu = React.lazy(() => import('./components/Dashboard/DietFoodMenu'));
+// const PersonalRecord = React.lazy(() => import('./components/Dashboard/PersonalRecord'));
+
+// /// Bo
+// const UiAlert = React.lazy(() => import('./components/bootstrap/Alert'));
+// const UiAccordion = React.lazy(() => import('./components/bootstrap/Accordion'));
+// const UiBadge = React.lazy(() => import('./components/bootstrap/Badge'));
+// const UiButton = React.lazy(() => import('./components/bootstrap/Button'));
+// const UiModal = React.lazy(() => import('./components/bootstrap/Modal'));
+// const UiButtonGroup = React.lazy(() => import('./components/bootstrap/ButtonGroup'));
+// const UiListGroup = React.lazy(() => import('./components/bootstrap/ListGroup'));
+// const UiMediaObject = React.lazy(() => import('./components/bootstrap/MediaObject'));
+// const UiCards = React.lazy(() => import('./components/bootstrap/Cards'));
+// const UiCarousel = React.lazy(() => import('./components/bootstrap/Carousel'));
+// const UiDropDown = React.lazy(() => import('./components/bootstrap/DropDown'));
+// const UiPopOver = React.lazy(() => import('./components/bootstrap/PopOver'));
+// const UiProgressBar = React.lazy(() => import('./components/bootstrap/ProgressBar'));
+// const UiTab = React.lazy(() => import('./components/bootstrap/Tab'));
+// const UiPagination = React.lazy(() => import('./components/bootstrap/Pagination'));
+// const UiGrid = React.lazy(() => import('./components/bootstrap/Grid'));
+// const UiTypography = React.lazy(() => import('./components/bootstrap/Typography'));
+
+// /// App
+// const AppProfile = React.lazy(() => import('./components/AppsMenu/AppProfile/AppProfile'));
+// const Compose = React.lazy(() => import('./components/AppsMenu/Email/Compose/Compose'));
+// const Inbox = React.lazy(() => import('./components/AppsMenu/Email/Inbox/Inbox'));
+// const Read = React.lazy(() => import('./components/AppsMenu/Email/Read/Read'));
+// const Calendar = React.lazy(() => import('./components/AppsMenu/Calendar/Calendar'));
+// const PostDetails = React.lazy(() => import('./components/AppsMenu/AppProfile/PostDetails'));
+
+// /// Product List
+// const ProductGrid = React.lazy(() => import('./components/AppsMenu/Shop/ProductGrid/ProductGrid'));
+// const ProductList = React.lazy(() => import('./components/AppsMenu/Shop/ProductList/ProductList'));
+// const ProductDetail = React.lazy(() => import('./components/AppsMenu/Shop/ProductGrid/ProductDetail'));
+// const Checkout = React.lazy(() => import('./components/AppsMenu/Shop/Checkout/Checkout'));
+// const Invoice = React.lazy(() => import('./components/AppsMenu/Shop/Invoice/Invoice'));
+// const ProductOrder = React.lazy(() => import('./components/AppsMenu/Shop/ProductOrder'));
+// const Customers = React.lazy(() => import('./components/AppsMenu/Shop/Customers/Customers'));
+
+// /// Chirt
+// const SparklineChart = React.lazy(() => import('./components/charts/Sparkline'));
+// const ChartJs = React.lazy(() => import('./components/charts/Chartjs'));
+// const Chartist = React.lazy(() => import('./components/charts/chartist'));
+
+// const BtcChart = React.lazy(() => import('./components/charts/apexcharts/ApexChart'));
+
+// /// Table
+// const DataTable = React.lazy(() => import('./components/table/DataTable'));
+// const BootstrapTable = React.lazy(() => import('./components/table/BootstrapTable'));
+// const ApexChart = React.lazy(() => import('./components/charts/apexcharts'));
+
+// /// Form
+// const Element = React.lazy(() => import('./components/Forms/Element/Element'));
+// const Wizard = React.lazy(() => import('./components/Forms/Wizard/Wizard'));
+// const SummerNote = React.lazy(() => import('./components/Forms/Summernote/SummerNote'));
+// const Pickers = React.lazy(() => import('./components/Forms/Pickers/Pickers'));
+// const jQueryValidation = React.lazy(() => import('./components/Forms/jQueryValidation/jQueryValidation'));
+
+// /// Pulgin
+// const Select2 = React.lazy(() => import('./components/PluginsMenu/Select2/Select2'));
+// const Nestable = React.lazy(() => import('./components/PluginsMenu/Nestable/Nestable'));
+// const MainNouiSlider = React.lazy(() => import('./components/PluginsMenu/Noui Slider/MainNouiSlider'));
+// const MainSweetAlert = React.lazy(() => import('./components/PluginsMenu/Sweet Alert/SweetAlert'));
+// const Toastr = React.lazy(() => import('./components/PluginsMenu/Toastr/Toastr'));
+// const JqvMap = React.lazy(() => import('./components/PluginsMenu/Jqv Map/JqvMap'));
+// const RechartJs = React.lazy(() => import('./components/charts/rechart'));
+// const Layout = React.lazy(() => import('./layouts'));
 
 const routes = [
    /// Deshborad
-   { url: '', component: Home },
+   { url: '', component: () => <Redirect to="/dashboard" /> },
+   { url: 'dashboard', component: Home },
    { url: 'workout-statistic', component: WorkoutStatistic },
    { url: 'workout-plan', component: WorkoutPlan },
    { url: 'distance-map', component: DistanceMap },
@@ -171,35 +260,47 @@ const routes = [
    /// pages
    { url: 'widget-basic', component: Widget },
 
-   { url: 'page-register', component: Registration },
-   { url: 'page-lock-screen', component: LockScreen },
-   { url: 'page-login', component: Login },
-   { url: 'page-forgot-password', component: ForgotPassword },
-   { url: 'page-error-400', component: Error400 },
-   { url: 'page-error-403', component: Error403 },
-   { url: 'page-error-404', component: Error404 },
-   { url: 'page-error-500', component: Error500 },
-   { url: 'page-error-503', component: Error503 },
+   { url: 'page-register', component: Registration, isPublic: true },
+   { url: 'page-lock-screen', component: LockScreen, isPublic: true },
+   { url: 'page-login', component: Login, isPublic: true },
+   { url: 'page-forgot-password', component: ForgotPassword, isPublic: true },
+   { url: 'page-error-400', component: Error400, isPublic: true },
+   { url: 'page-error-403', component: Error403, isPublic: true },
+   { url: 'page-error-404', component: Error404, isPublic: true },
+   { url: 'page-error-500', component: Error500, isPublic: true },
+   { url: 'page-error-503', component: Error503, isPublic: true },
+
+   { url: 'employees', component: Employees },
 ];
 
 const Markup = () => (
-   <Router basename="/react">
-      <div id="main-wrapper" className="show">
-         <Nav />
+   <Suspense fallback={<p>Loading</p>}>
+      <Router>
+         {/* <div id="main-wrapper" className="show">
+         <Nav /> */}
 
-         <div className="content-body">
-            <div className="container-fluid">
-               <Switch>
-                  {routes.map((data, i) => (
-                     <Route key={i} exact path={`/${data.url}`} component={data.component} />
-                  ))}
-               </Switch>
-            </div>
+         {/* <div className="content-body">
+            <div className="container-fluid"> */}
+         <Switch>
+            {routes.map((data, i) => {
+               const getComponent = () => {};
+               return (
+                  <Route key={i} exact path={`/${data.url}`}>
+                     <Layout isPublic={data.isPublic}>
+                        <data.component />
+                     </Layout>
+                  </Route>
+               );
+            })}
+            <Route component={Error404} />
+         </Switch>
+         {/* </div>
          </div>
 
          <Footer />
-      </div>
-   </Router>
+      </div> */}
+      </Router>
+   </Suspense>
 );
 
 export default Markup;
