@@ -124,6 +124,53 @@ class SideBar extends Component {
                      </ul>
                   </li>
                   <li className={`${app.includes(path.slice(1)) ? 'mm-active' : ''}`}>
+                     <Link className="has-arrow ai-icon color" to="#" aria-expanded="false">
+                        <i className="flaticon-381-notepad" />
+                        <span className="nav-text">Manage</span>
+                     </Link>
+                     <ul aria-expanded="false">
+                        <li>
+                           <Link to="/Products">Products</Link>
+                        </li>
+                        <li>
+                           <Link to="/suppliers">Suppliers</Link>
+                        </li>
+                        <li>
+                           <Link to="/customers">Customers</Link>
+                        </li>
+                        <li>
+                           <Link to="/app-calender">Users</Link>
+                        </li>
+                        <li>
+                           <Link to="/employees">Employees</Link>
+                        </li>
+                     </ul>
+                  </li>
+                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
+                     <Link className="" to="/" aria-expanded="false">
+                        <i className="flaticon-381-more" />
+                        <span className="nav-text">Purchase</span>
+                     </Link>
+                  </li>
+                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
+                     <Link className="" to="/" aria-expanded="false">
+                        <i className="flaticon-381-calendar" />
+                        <span className="nav-text">Sale</span>
+                     </Link>
+                  </li>
+                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
+                     <Link className="" to="/" aria-expanded="false">
+                        <i className="flaticon-381-book" />
+                        <span className="nav-text">Khaata</span>
+                     </Link>
+                  </li>
+                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
+                     <Link className="" to="/" aria-expanded="false">
+                        <i className="flaticon-381-briefcase" />
+                        <span className="nav-text">Expenses</span>
+                     </Link>
+                  </li>
+                  <li className={`${app.includes(path.slice(1)) ? 'mm-active' : ''}`}>
                      <Link className="has-arrow ai-icon" to="#" aria-expanded="false">
                         <i className="flaticon-381-television" />
                         <span className="nav-text">Apps</span>
@@ -368,17 +415,6 @@ class SideBar extends Component {
                         </li>
                         <li>
                            <Link to="/page-lock-screen">Lock Screen</Link>
-                        </li>
-                     </ul>
-                  </li>
-                  <li className={`${manage.includes(path.slice(1)) ? 'mm-active' : ''}`}>
-                     <Link className="has-arrow ai-icon" to="#" aria-expanded="false">
-                        <i className="flaticon-381-networking" />
-                        <span className="nav-text">Manage</span>
-                     </Link>
-                     <ul aria-expanded="false">
-                        <li>
-                           <Link to="/employees">Employees</Link>
                         </li>
                      </ul>
                   </li>

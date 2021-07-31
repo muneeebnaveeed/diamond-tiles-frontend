@@ -66,7 +66,7 @@ import ProductDetail from './components/AppsMenu/Shop/ProductGrid/ProductDetail'
 import Checkout from './components/AppsMenu/Shop/Checkout/Checkout';
 import Invoice from './components/AppsMenu/Shop/Invoice/Invoice';
 import ProductOrder from './components/AppsMenu/Shop/ProductOrder';
-import Customers from './components/AppsMenu/Shop/Customers/Customers';
+import Customers_ from './components/AppsMenu/Shop/Customers/Customers';
 
 /// Chirt
 import SparklineChart from './components/charts/Sparkline';
@@ -97,6 +97,9 @@ import JqvMap from './components/PluginsMenu/Jqv Map/JqvMap';
 import RechartJs from './components/charts/rechart';
 import Layout from './layouts';
 import Employees from './pages/employees';
+import Customers from './pages/customers';
+import Suppliers from './pages/suppliers';
+import Products from './pages/products';
 
 /// Pages
 // const Registration = React.lazy(() => import('./pages/Registration'));
@@ -226,7 +229,7 @@ const routes = [
    { url: 'ecom-checkout', component: Checkout },
    { url: 'ecom-invoice', component: Invoice },
    { url: 'ecom-product-detail', component: ProductDetail },
-   { url: 'ecom-customers', component: Customers },
+   { url: 'ecom-customers', component: Customers_ },
 
    /// Chart
    { url: 'chart-sparkline', component: SparklineChart },
@@ -271,6 +274,9 @@ const routes = [
    { url: 'page-error-503', component: Error503, isPublic: true },
 
    { url: 'employees', component: Employees },
+   { url: 'customers', component: Customers },
+   { url: 'suppliers', component: Suppliers },
+   { url: 'products', component: Products },
 ];
 
 const Markup = () => (

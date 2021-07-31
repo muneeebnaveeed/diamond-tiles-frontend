@@ -19,7 +19,7 @@ const JobieNav = ({ title }) => {
             title={title}
             onBox={() => onClick('box')}
          />
-         <ChatBox onClick={() => onClick('chatbox')} toggle={toggle} />
+         {/* <ChatBox onClick={() => onClick('chatbox')} toggle={toggle} /> */}
       </>
    );
 };
