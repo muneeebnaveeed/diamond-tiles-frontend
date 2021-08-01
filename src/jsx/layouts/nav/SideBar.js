@@ -55,12 +55,16 @@ const plugins = ['uc-select2', 'uc-nestable', 'uc-sweetalert', 'uc-toastr', 'uc-
 const widget = ['widget'];
 const forms = ['form-element', 'form-wizard', 'form-editor-summernote', 'form-pickers', 'form-validation-jquery'];
 const table = ['table-bootstrap-basic', 'table-datatable-basic'];
-const manage = ['employees'];
+const manage = ['employees', 'customers', 'products'];
 
 class MM extends Component {
    componentDidMount() {
       this.$el = this.el;
       this.mm = new MetisMenu(this.$el);
+   }
+
+   componentDidUpdate(prevProps) {
+      console.log(prevProps);
    }
 
    componentWillUnmount() {
@@ -123,7 +127,7 @@ class SideBar extends Component {
                         </li>
                      </ul>
                   </li>
-                  <li className={`${app.includes(path.slice(1)) ? 'mm-active' : ''}`}>
+                  <li className={`${manage.includes(path.slice(1)) ? 'mm-active' : ''}`}>
                      <Link className="has-arrow ai-icon color" to="#" aria-expanded="false">
                         <i className="flaticon-381-notepad" />
                         <span className="nav-text">Manage</span>

@@ -1,7 +1,9 @@
+import React, { memo } from 'react';
 import Nav from './nav';
 import Footer from './Footer';
 
 const Layout = ({ children: Children, isPublic }) => {
+   const MemoizedNav = memo(Nav);
    if (isPublic)
       return (
          <>
@@ -17,7 +19,7 @@ const Layout = ({ children: Children, isPublic }) => {
    return (
       <>
          <div id="main-wrapper" className="show">
-            <Nav />
+            <MemoizedNav />
             <div className="content-body">
                <div className="container-fluid">
                   {/* <Children /> */}

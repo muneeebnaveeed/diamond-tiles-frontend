@@ -100,6 +100,7 @@ import Employees from './pages/employees';
 import Customers from './pages/customers';
 import Suppliers from './pages/suppliers';
 import Products from './pages/products';
+import CustomerActions from './pages/customers/CustomerActions';
 
 /// Pages
 // const Registration = React.lazy(() => import('./pages/Registration'));
@@ -275,6 +276,7 @@ const routes = [
 
    { url: 'employees', component: Employees },
    { url: 'customers', component: Customers },
+   { url: 'customers/:id', component: CustomerActions },
    { url: 'suppliers', component: Suppliers },
    { url: 'products', component: Products },
 ];

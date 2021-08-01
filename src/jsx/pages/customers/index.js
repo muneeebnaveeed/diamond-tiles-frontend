@@ -1,75 +1,51 @@
-/* eslint-disable no-nested-ternary */
-import React, { useState, useEffect } from 'react';
 import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
-import { get, post, patch, del, useQuery, useMutation } from 'jsx/helpers';
+import { del, get, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
+import React, { useEffect, useState } from 'react';
 import { ButtonGroup, Card, Col, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle } from 'react-icons/ai';
 import { When } from 'react-if';
-import ModalWrapper from 'jsx/components/ModalWrapper';
-import CustomerForm from 'jsx/components/Customer/AddForm';
+import { useHistory } from 'react-router-dom';
+import swal from 'sweetalert';
 
 const Customers = () => {
+   const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
-   const [showAddCustomer, setShowAddCustomer] = useState(false);
-   const [showEditCustomer, setShowEditCustomer] = useState(false);
-   const [showDeleteCustomer, setShowDeleteCustomer] = useState(false);
-
-   const [docId, setDocId] = useState('null');
-   const [name, setName] = useState('');
-   const [phone, setPhone] = useState('');
-
-   const [isDeleting, setIsDeleting] = useState(null);
 
    const query = useQuery(['customers', page, limit], () => get('/customers', page, limit));
-   const patchMutation = useMutation((payload) => patch(`/customers/id/${payload.docId}`, payload.data));
-   const postMutation = useMutation((payload) => post('/customers', payload));
    const deleteMutation = useMutation((id) => del(`/customers/id/${id}`));
 
-   const clearFormData = () => {
-      setPhone('');
-      setName('');
-      setDocId('');
-      postMutation.reset();
-      patchMutation.reset();
-   };
-
    const handleOnClickEdit = (obj) => {
-      setName(obj.name);
-      setPhone(obj.phone);
-      setDocId(obj._id);
-      setShowEditCustomer(true);
+      history.push({ pathname: `/customers/${obj._id}`, search: `?name=${obj.name}&phone=${obj.phone}` });
    };
+   const handleOnClickAdd = () => {
+      history.push('/customers/add');
+   };
+
    const handleOnClickDelete = (id) => {
-      setDocId(id);
-      setShowDeleteCustomer(true);
+      swal({
+         title: 'Are you sure?',
+         text: 'Once deleted, you will not be able to recover it!',
+         icon: 'warning',
+         buttons: true,
+         dangerMode: true,
+      }).then((willDelete) => {
+         if (willDelete) {
+            deleteMutation.mutate(id);
+         }
+      });
    };
-
-   useEffect(() => {
-      //   console.log(patchMutation.isLoading, patchMutation.data);
-      if (patchMutation.data && patchMutation.data?.status === 'ok') {
-         query.refetch();
-         setShowEditCustomer(false);
-         clearFormData();
-      }
-   }, [patchMutation]);
-
-   useEffect(() => {
-      if (postMutation.data && postMutation.data?.status === 'ok') {
-         query.refetch();
-         setShowAddCustomer(false);
-         clearFormData();
-      }
-   }, [postMutation.data]);
 
    useEffect(() => {
       if (deleteMutation.data && deleteMutation.data?.status === 'ok') {
          query.refetch();
-         setShowDeleteCustomer(false);
+         swal('Record deleted!', {
+            icon: 'success',
+         });
       }
    }, [deleteMutation.data]);
 
@@ -78,7 +54,7 @@ const Customers = () => {
          <PageTItle activeMenu="Customers" motherMenu="Manage" />
          <div className="row tw-mb-8">
             <div className="col-xl-6">
-               <Button variant="primary" icon={AiFillPlusCircle} onClick={() => setShowAddCustomer(true)}>
+               <Button variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
                   Add New Customer
                </Button>
             </div>
@@ -99,7 +75,7 @@ const Customers = () => {
          <div className="row">
             <Col lg={12}>
                <Card>
-                  <When condition={query.isLoading || postMutation.isLoading}>
+                  <When condition={query.isLoading}>
                      <SpinnerOverlay />
                   </When>
                   <Card.Header>
@@ -122,7 +98,7 @@ const Customers = () => {
                         </thead>
                         <tbody>
                            {query.data?.docs.map((e, index) => (
-                              <tr key={`employee-${index}`}>
+                              <tr key={`${e._id}`}>
                                  <td>
                                     <strong>{index + 1}</strong>
                                  </td>
@@ -162,57 +138,6 @@ const Customers = () => {
          <When condition={query.data?.totalPages > 1}>
             <Pagination page={page} onPageChange={setPage} onLimitChange={setLimit} {..._.omit(query.data, ['docs'])} />
          </When>
-
-         {/* Add / Edit Customer Modal */}
-         <ModalWrapper
-            show={showAddCustomer || showEditCustomer}
-            onHide={() => {
-               setShowAddCustomer(false);
-               setShowEditCustomer(false);
-               clearFormData();
-            }}
-            title={showAddCustomer ? 'Add New Customer' : 'Edit Customer'}
-            isLoading={query.isLoading || postMutation.isLoading || patchMutation.isLoading}
-            size="lg"
-            onSubmit={() =>
-               showAddCustomer
-                  ? postMutation.mutate({ name, phone })
-                  : patchMutation.mutate({ docId, data: { name, phone } })
-            }
-         >
-            <CustomerForm
-               name={name}
-               phone={phone}
-               setName={setName}
-               setPhone={setPhone}
-               onSubmit={(payload) =>
-                  showAddCustomer ? postMutation.mutate(payload) : patchMutation.mutate({ docId, data: payload })
-               }
-               error={
-                  postMutation.data && postMutation.data?.status === 'fail'
-                     ? postMutation.data?.data
-                     : patchMutation.data && patchMutation.data?.status === 'fail'
-                     ? patchMutation.data?.data
-                     : null
-               }
-               resetReponse={showAddCustomer ? postMutation.reset : patchMutation.reset}
-            />
-         </ModalWrapper>
-
-         {/* Delete Customer Modal */}
-         <ModalWrapper
-            show={showDeleteCustomer}
-            onHide={() => {
-               setShowDeleteCustomer(false);
-            }}
-            title="Delete Customer"
-            isLoading={query.isLoading || deleteMutation.isLoading}
-            size="md"
-            onSubmit={() => deleteMutation.mutate(docId)}
-            submitButtonText="Confirm"
-         >
-            <stron>Are You sure to delete?</stron>
-         </ModalWrapper>
       </>
    );
 };

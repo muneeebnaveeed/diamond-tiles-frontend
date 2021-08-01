@@ -39,7 +39,14 @@ const AddCustomerForm = (props) => {
                   />
                </div>
             </div>
-            <button type="submit" className="tw-invisible" />
+            <div className="form-group row float-lg-right">
+               <div className="col-sm-12">
+                  <button type="submit" className="btn btn-primary">
+                     Sign in
+                  </button>
+               </div>
+            </div>
+            {/* <button type="submit" className="tw-invisible" /> */}
          </form>
          <When condition={error}>
             <span className="tw-text-red-500" dangerouslySetInnerHTML={{ __html: error ? error.join('<br />') : '' }} />

@@ -3,6 +3,7 @@
    "version": "0.1.0",
    "private": true,
    "dependencies": {
+      "@ahooksjs/use-url-state": "^2.5.8",
       "@date-io/date-fns": "^1.3.13",
       "@fullcalendar/core": "^5.4.0",
       "@fullcalendar/daygrid": "^5.4.0",
