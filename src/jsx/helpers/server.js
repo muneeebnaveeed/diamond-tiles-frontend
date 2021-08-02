@@ -13,8 +13,7 @@ export const get = (path, page, limit) => api.get(path, { params: { page, limit 
 export const post = (path, payload) =>
    api
       .post(path, payload)
-      .then((res) => (res.status === 200 || res.status === 201 ? { ...res.data, status: 'ok' } : res.data))
-      .catch((err) => err.response.data);
+      .then((res) => (res.status === 200 || res.status === 201 ? { ...res.data, status: 'ok' } : res.data));
 
 /**
  * Send a PATCH request
@@ -23,10 +22,7 @@ export const post = (path, payload) =>
  * @returns
  */
 export const patch = (path, payload) =>
-   api
-      .patch(path, payload)
-      .then((res) => (res.status === 200 ? { ...res.data, status: 'ok' } : res.data))
-      .catch((err) => err.response.data);
+   api.patch(path, payload).then((res) => (res.status === 200 ? { ...res.data, status: 'ok' } : res.data));
 
 /**
  * Send a DELETE request
@@ -38,3 +34,5 @@ export const del = (path) =>
       .delete(path)
       .then((res) => (res.status === 200 ? { ...res.data, status: 'ok' } : res.data))
       .catch((err) => err.response.data);
+
+export const getError = (err) => err.response?.data?.data ?? err.message;

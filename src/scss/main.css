@@ -4245,7 +4245,6 @@ input[type="button"].btn-block {
     color: inherit; }
 
 .alert-primary {
-  color: #38660f;
   background-color: #e2f3d2;
   border-color: #d6efc0; }
   .alert-primary hr {
@@ -16268,8 +16267,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
   background-color: #143b64; }
 [data-primary="color_2"] .alert-primary {
   background: #297ace;
-  border-color: #297ace;
-  color: #143b64; }
+  border-color: #297ace; }
 [data-primary="color_2"] .alert-alt.alert-primary {
   border-left: 4px solid #143b64; }
 [data-primary="color_2"] .alert-alt.alert-primary.solid {
@@ -16583,7 +16581,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_3"] .alert-primary {
   background: #24a1ce;
   border-color: #24a1ce;
-  color: #44bdec; }
+ }
 [data-primary="color_3"] .alert-alt.alert-primary {
   border-left: 4px solid #44bdec; }
 [data-primary="color_3"] .alert-alt.alert-primary.solid {
@@ -16897,7 +16895,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_4"] .alert-primary {
   background: #876bdb;
   border-color: #876bdb;
-  color: #4527a0; }
+ }
 [data-primary="color_4"] .alert-alt.alert-primary {
   border-left: 4px solid #4527a0; }
 [data-primary="color_4"] .alert-alt.alert-primary.solid {
@@ -17211,7 +17209,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_5"] .alert-primary {
   background: #e78787;
   border-color: #e78787;
-  color: #c62828; }
+ }
 [data-primary="color_5"] .alert-alt.alert-primary {
   border-left: 4px solid #c62828; }
 [data-primary="color_5"] .alert-alt.alert-primary.solid {
@@ -17525,7 +17523,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_6"] .alert-primary {
   background: #6573d5;
   border-color: #6573d5;
-  color: #283593; }
+ }
 [data-primary="color_6"] .alert-alt.alert-primary {
   border-left: 4px solid #283593; }
 [data-primary="color_6"] .alert-alt.alert-primary.solid {
@@ -17839,7 +17837,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_7"] .alert-primary {
   background: #d5ccfb;
   border-color: #d5ccfb;
-  color: #7356f1; }
+ }
 [data-primary="color_7"] .alert-alt.alert-primary {
   border-left: 4px solid #7356f1; }
 [data-primary="color_7"] .alert-alt.alert-primary.solid {
@@ -18153,7 +18151,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_8"] .alert-primary {
   background: #aad2f7;
   border-color: #aad2f7;
-  color: #3695eb; }
+ }
 [data-primary="color_8"] .alert-alt.alert-primary {
   border-left: 4px solid #3695eb; }
 [data-primary="color_8"] .alert-alt.alert-primary.solid {
@@ -18467,7 +18465,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_9"] .alert-primary {
   background: #10ebff;
   border-color: #10ebff;
-  color: #00838f; }
+ }
 [data-primary="color_9"] .alert-alt.alert-primary {
   border-left: 4px solid #00838f; }
 [data-primary="color_9"] .alert-alt.alert-primary.solid {
@@ -18781,7 +18779,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_10"] .alert-primary {
   background: #ffcc96;
   border-color: #ffcc96;
-  color: #ff8f16; }
+ }
 [data-primary="color_10"] .alert-alt.alert-primary {
   border-left: 4px solid #ff8f16; }
 [data-primary="color_10"] .alert-alt.alert-primary.solid {
@@ -19095,7 +19093,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_11"] .alert-primary {
   background: #e4e6ff;
   border-color: #e4e6ff;
-  color: #6673fd; }
+ }
 [data-primary="color_11"] .alert-alt.alert-primary {
   border-left: 4px solid #6673fd; }
 [data-primary="color_11"] .alert-alt.alert-primary.solid {
@@ -19409,7 +19407,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_12"] .alert-primary {
   background: #94cd6c;
   border-color: #94cd6c;
-  color: #558b2f; }
+ }
 [data-primary="color_12"] .alert-alt.alert-primary {
   border-left: 4px solid #558b2f; }
 [data-primary="color_12"] .alert-alt.alert-primary.solid {
@@ -19723,7 +19721,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_13"] .alert-primary {
   background: #6a6a6a;
   border-color: #6a6a6a;
-  color: #2a2a2a; }
+ }
 [data-primary="color_13"] .alert-alt.alert-primary {
   border-left: 4px solid #2a2a2a; }
 [data-primary="color_13"] .alert-alt.alert-primary.solid {
@@ -20037,7 +20035,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_14"] .alert-primary {
   background: #6aa8f1;
   border-color: #6aa8f1;
-  color: #1367c8; }
+ }
 [data-primary="color_14"] .alert-alt.alert-primary {
   border-left: 4px solid #1367c8; }
 [data-primary="color_14"] .alert-alt.alert-primary.solid {
@@ -20351,7 +20349,7 @@ Fixing Order => Base + Typography >> General Layout + Grid >> Page Layout + Comp
 [data-primary="color_15"] .alert-primary {
   background: #f97ea2;
   border-color: #f97ea2;
-  color: #ed0b4c; }
+ }
 [data-primary="color_15"] .alert-alt.alert-primary {
   border-left: 4px solid #ed0b4c; }
 [data-primary="color_15"] .alert-alt.alert-primary.solid {

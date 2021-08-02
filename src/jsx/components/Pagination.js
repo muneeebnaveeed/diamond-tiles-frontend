@@ -1,10 +1,10 @@
 import cls from 'classnames';
-import { ChromePicker } from 'react-color';
+import { useState } from 'react';
 import { AiOutlineDoubleLeft, AiOutlineDoubleRight, AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
 import Select from './Select';
 
 const getOption = (v) => ({ value: v, label: v });
-const options = [getOption(1), getOption(2), getOption(3), getOption(4)];
+const options = [getOption(5), getOption(10), getOption(25)];
 
 const PaginationItem = ({
    children,
@@ -63,19 +63,50 @@ const LastPage = (props) => (
 
 const Page = ({ children, ...props }) => <PaginationItem {...props}>{children}</PaginationItem>;
 
-const Pagination = ({ page, onPageChange, onLimitChange, totalPages, hasNextPage, hasPrevPage, totalDocs }) => {
+const Pagination = ({
+   isLimitDisabled,
+   page,
+   onPageChange,
+   onLimitChange,
+   totalPages,
+   hasNextPage,
+   hasPrevPage,
+   totalDocs,
+}) => {
+   const [option, setOption] = useState(getOption(5));
+
    const renderPagination = () => {
       const pages = [];
 
-      pages.push(<FirstPage disabled={page === 1} onClick={() => onPageChange('first')} />);
-      pages.push(<PrevPage disabled={page === 1} onClick={() => onPageChange('prev')} />);
+      const handleFirstPage = () => {
+         if (page > 1) onPageChange(1);
+      };
+
+      const handlePrevPage = () => {
+         if (page > 1) onPageChange((prev) => prev - 1);
+      };
+
+      const handleNextPage = () => {
+         if (page < totalPages) onPageChange((prev) => prev + 1);
+      };
+
+      const handleLastPage = () => {
+         if (page < totalPages) onPageChange(totalPages);
+      };
+
+      pages.push(<FirstPage disabled={page === 1} onClick={handleFirstPage} />);
+      pages.push(<PrevPage disabled={page === 1} onClick={handlePrevPage} />);
 
       for (let currPage = 0; currPage < totalPages; currPage++) {
-         pages.push(<Page>{currPage + 1}</Page>);
+         pages.push(
+            <Page active={page === currPage + 1} onClick={() => onPageChange(currPage + 1)}>
+               {currPage + 1}
+            </Page>
+         );
       }
 
-      pages.push(<NextPage disabled={!hasNextPage} onClick={() => onPageChange('next')} />);
-      pages.push(<LastPage disabled={page >= totalPages} />);
+      pages.push(<NextPage disabled={!hasNextPage} onClick={handleNextPage} />);
+      pages.push(<LastPage disabled={!hasNextPage} onClick={handleLastPage} />);
 
       return pages;
    };
@@ -84,7 +115,17 @@ const Pagination = ({ page, onPageChange, onLimitChange, totalPages, hasNextPage
       <div className="tw-flex tw-flex-col tw-items-center tw-gap-3 tw-overflow-visible">
          <p className="tw-m-0">{`Showing ${5} of ${totalDocs}`}</p>
          <ul className="tw-flex ">{renderPagination()}</ul>
-         <Select className="tw-mb-6" options={options} placeholder="Select Page Size" defaultValue={getOption(1)} />
+         <Select
+            isDisabled={isLimitDisabled}
+            className="tw-mb-6"
+            options={options}
+            placeholder="Select Page Size"
+            value={option}
+            onChange={(opt) => {
+               setOption(opt);
+               onLimitChange(opt.value);
+            }}
+         />
       </div>
    );
 };

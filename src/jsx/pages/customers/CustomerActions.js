@@ -1,124 +1,106 @@
 import Button from 'jsx/components/Button';
-import { patch, post, useMutation } from 'jsx/helpers';
+import { patch, post, useMutation, useAlert, getError } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
-import React, { useEffect, useState } from 'react';
-import { Alert, Card } from 'react-bootstrap';
+import React, { useMemo, useState } from 'react';
+import { ButtonGroup, Card } from 'react-bootstrap';
 import { When } from 'react-if';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import useUrlState from '@ahooksjs/use-url-state';
+import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
+import { useFormik } from 'formik';
 
 const CustomerActions = () => {
    const history = useHistory();
-   const location = useLocation();
    const params = useParams();
 
    const [urlState, setUrlState] = useUrlState({});
 
-   const [name, setName] = useState('');
-   const [phone, setPhone] = useState('');
-   const [error, setError] = useState(null);
-   const [success, setSuccess] = useState(false);
+   const alert = useAlert();
 
-   const patchMutation = useMutation((payload) => patch(`/customers/id/${params.id}`, payload));
-   const postMutation = useMutation((payload) => post('/customers', payload));
+   const patchMutation = useMutation((payload) => patch(`/customers/id/${params.id}`, payload), {
+      onSuccess: () => {
+         history.push('/customers');
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to edit customer', err });
+      },
+   });
+   const postMutation = useMutation((payload) => post('/customers', payload), {
+      onSuccess: () => {
+         history.push('/customers');
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to add customer', err });
+      },
+   });
 
-   useEffect(() => {
-      setName(urlState.name);
-      setPhone(urlState.phone);
-   }, [location, params]);
+   const isEditing = useMemo(() => params.id !== 'add', [params.id]);
+   const mutation = useMemo(() => (isEditing ? patchMutation : postMutation), [isEditing, patchMutation, postMutation]);
 
-   useEffect(() => {
-      if (patchMutation.data && patchMutation.data?.status === 'fail') {
-         setError(patchMutation.data?.data);
-      }
-      if (postMutation.data && postMutation.data?.status === 'fail') {
-         setError(postMutation.data?.data);
-      }
-      if (patchMutation.data && patchMutation.data?.status === 'ok') {
-         setSuccess(true);
-         setUrlState({ name, phone });
-         setTimeout(() => {
-            setSuccess(false);
-         }, 3 * 1000);
-      }
-      if (postMutation.data && postMutation.data?.status === 'ok') {
-         history.replace('/customers');
-      }
-   }, [patchMutation.data, postMutation.data]);
+   const formik = useFormik({
+      initialValues: { name: isEditing ? urlState.name : '', phone: isEditing ? urlState.phone : '' },
+      validateOnChange: false,
+      validateOnBlur: false,
+      onSubmit: (values) => {
+         mutation.mutate(values);
+      },
+   });
 
    return (
       <>
          <PageTItle activeMenu="Customers" motherMenu="Manage" />
+         {alert.getAlert()}
          <Card>
-            <Card.Header>
-               <Card.Title>{params.id === 'add' ? 'Add new Customer' : 'Edit Customer'}</Card.Title>
-               <When condition={success}>
-                  <Alert variant="success" className="alert-dismissible fade show">
-                     <strong>Success!</strong> Profile updated.
-                  </Alert>
-               </When>
-            </Card.Header>
-            <Card.Body>
-               <form
-                  onSubmit={(e) => {
-                     e.preventDefault();
-                     if (params.id === 'add') {
-                        postMutation.mutate({ name, phone });
-                     } else {
-                        patchMutation.mutate({ name, phone });
-                     }
-                  }}
-               >
-                  <div className="form-group row">
-                     <label className="col-sm-3 col-form-label">Name</label>
-                     <div className="col-sm-9">
+            <form onSubmit={formik.handleSubmit}>
+               <Card.Header>
+                  <Card.Title>{isEditing ? 'Edit Customer' : 'Add New Customer'}</Card.Title>
+               </Card.Header>
+               <Card.Body>
+                  <div className="row">
+                     <div className="form-group col-xl-6">
+                        <label className="col-form-label">Name</label>
                         <input
-                           type="text"
                            className="form-control"
-                           placeholder="Customer Name"
-                           value={name}
-                           onChange={(e) => setName(e.target.value)}
+                           onChange={formik.handleChange}
+                           type="text"
+                           name="name"
+                           value={formik.values.name}
                         />
                      </div>
                   </div>
-                  <div className="form-group row">
-                     <label className="col-sm-3 col-form-label">Phone</label>
-                     <div className="col-sm-9">
+                  <div className="row">
+                     <div className="form-group col-xl-6">
+                        <label className="col-form-label">Phone</label>
                         <input
-                           type="text"
                            className="form-control"
-                           placeholder="Customer Phone Number"
-                           value={phone}
-                           onChange={(e) => setPhone(e.target.value)}
+                           onChange={formik.handleChange}
+                           type="text"
+                           name="phone"
+                           value={formik.values.phone}
                         />
                      </div>
                   </div>
-
-                  <div className="form-group row float-lg-right">
-                     <div className="d-flex flex-row justify-content-end">
-                        <Button variant="warning light mr-2" onClick={() => history.replace('/customers')}>
-                           Back to manage
-                        </Button>
-                        <Button
-                           variant="primary"
-                           type="submit"
-                           disabled={postMutation.isLoading || patchMutation.isLoading}
-                           loading={postMutation.isLoading || patchMutation.isLoading}
-                        >
-                           <span className="ml-1">Save changes</span>
-                        </Button>
+               </Card.Body>
+               <Card.Footer>
+                  <div className="row">
+                     <div className="col-xl-12 tw-justify-center">
+                        <ButtonGroup>
+                           <Button
+                              icon={AiFillCaretLeft}
+                              variant="warning light"
+                              onClick={() => history.replace('/customers')}
+                              loading={mutation.isLoading}
+                           >
+                              Back
+                           </Button>
+                           <Button icon={AiFillSave} variant="primary" type="submit" loading={mutation.isLoading}>
+                              Save
+                           </Button>
+                        </ButtonGroup>
                      </div>
                   </div>
-               </form>
-               <When condition={error}>
-                  <span
-                     className="tw-text-red-500"
-                     dangerouslySetInnerHTML={{
-                        __html: error && Array.isArray(error) ? error.join('<br />') : (error && error) ?? '',
-                     }}
-                  />
-               </When>
-            </Card.Body>
+               </Card.Footer>
+            </form>
          </Card>
       </>
    );
