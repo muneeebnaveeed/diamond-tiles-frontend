@@ -14,7 +14,7 @@ import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 
-const Employees = () => {
+const Units = () => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -23,29 +23,29 @@ const Employees = () => {
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['employees', page, limit], () => get('/employees', page, limit));
-   const deleteMutation = useMutation((id) => del(`/employees/id/${id}`), {
+   const query = useQuery(['units', page, limit], () => get('/units', page, limit));
+   const deleteMutation = useMutation((id) => del(`/units/id/${id}`), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('employees');
+         await queryClient.invalidateQueries('units');
          alert.setAlert({
-            message: 'Employee deleted successfully',
+            message: 'Unit deleted successfully',
             variant: 'success',
          });
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to delete employee', err });
+         alert.setErrorAlert({ message: 'Unable to delete Unit', err });
       },
    });
 
    const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/employees/${obj._id}`, search: `?type=edit` });
+      history.push({ pathname: `/units/${obj._id}`, search: `?type=edit` });
    };
 
    const handleOnClickView = (obj) => {
-      history.push({ pathname: `/employees/${obj._id}`, search: `?type=view` });
+      history.push({ pathname: `/units/${obj._id}`, search: `?type=view` });
    };
    const handleOnClickAdd = () => {
-      history.push('/employees/add');
+      history.push('/units/add');
    };
 
    const handleOnClickDelete = (id) => {
@@ -66,11 +66,11 @@ const Employees = () => {
 
    return (
       <>
-         <PageTItle activeMenu="employees" motherMenu="Manage" />
+         <PageTItle activeMenu="units" motherMenu="Manage" />
          <div className="row tw-mb-8">
             <div className="col-xl-6">
                <Button variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
-                  Add New employee
+                  Add New Unit
                </Button>
             </div>
 
@@ -79,7 +79,7 @@ const Employees = () => {
                   <input
                      type="text"
                      className="input-rounded tw-rounded-r-none tw-pl-6"
-                     placeholder="Search Employees..."
+                     placeholder="Search units..."
                      disabled={deleteMutation.isLoading}
                   />
                   <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={deleteMutation.isLoading}>
@@ -100,7 +100,7 @@ const Employees = () => {
                      <SpinnerOverlay />
                   </When>
                   <Card.Header>
-                     <Card.Title>Manage Employees</Card.Title>
+                     <Card.Title>Manage units</Card.Title>
                   </Card.Header>
                   <Card.Body>
                      <If condition={query.data?.totalDocs > 0}>
@@ -112,19 +112,13 @@ const Employees = () => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong>NAME</strong>
+                                       <strong>TITLE</strong>
                                     </th>
                                     <th>
-                                       <strong>PHONE#</strong>
+                                       <strong>VALUE</strong>
                                     </th>
                                     <th>
-                                       <strong>CNIC</strong>
-                                    </th>
-                                    <th>
-                                       <strong>ADDRESS</strong>
-                                    </th>
-                                    <th>
-                                       <strong>SALARY</strong>
+                                       <strong>TYPE</strong>
                                     </th>
                                  </tr>
                               </thead>
@@ -134,11 +128,9 @@ const Employees = () => {
                                        <td>
                                           <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                        </td>
-                                       <td>{e.name}</td>
-                                       <td>{e.phone}</td>
-                                       <td>{e.cnic}</td>
-                                       <td>{e.address}</td>
-                                       <td>{e.salary}</td>
+                                       <td>{e.title}</td>
+                                       <td>{e.value}</td>
+                                       <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
                                        <td>
                                           <OverlayTrigger
                                              trigger="hover"
@@ -190,7 +182,7 @@ const Employees = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <p className="tw-m-0">No employees created</p>
+                           <p className="tw-m-0">No units created</p>
                         </Else>
                      </If>
                   </Card.Body>
@@ -210,4 +202,4 @@ const Employees = () => {
    );
 };
 
-export default Employees;
+export default Units;

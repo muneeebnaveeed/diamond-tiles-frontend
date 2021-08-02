@@ -5,14 +5,17 @@ import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { ButtonGroup, Card, Col, Row, Table } from 'react-bootstrap';
-import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle } from 'react-icons/ai';
+import { ButtonGroup, Card, Col, Row, Table, Popover, OverlayTrigger } from 'react-bootstrap';
+import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import swal from 'sweetalert';
 
 const Customers = () => {
+   dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
@@ -35,7 +38,11 @@ const Customers = () => {
    });
 
    const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/customers/${obj._id}`, search: `?name=${obj.name}&phone=${obj.phone}` });
+      history.push({ pathname: `/customers/${obj._id}`, search: `?type=edit` });
+   };
+
+   const handleOnClickView = (obj) => {
+      history.push({ pathname: `/customers/${obj._id}`, search: `?type=view` });
    };
    const handleOnClickAdd = () => {
       history.push('/customers/add');
@@ -72,7 +79,7 @@ const Customers = () => {
                   <input
                      type="text"
                      className="input-rounded tw-rounded-r-none tw-pl-6"
-                     placeholder="Search Employees..."
+                     placeholder="Search Customers..."
                      disabled={deleteMutation.isLoading}
                   />
                   <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={deleteMutation.isLoading}>
@@ -121,8 +128,30 @@ const Customers = () => {
                                        <td>{e.name}</td>
                                        <td>{e.phone}</td>
                                        <td>
+                                          <OverlayTrigger
+                                             trigger="hover"
+                                             placement="top"
+                                             overlay={
+                                                <Popover>
+                                                   <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
+                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 1
+                                                         ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
+                                                         : dayjs(e.createdAt).fromNow()
+                                                   }.`}</Popover.Content>
+                                                </Popover>
+                                             }
+                                          >
+                                             <AiOutlineQuestionCircle />
+                                          </OverlayTrigger>
+                                       </td>
+                                       <td>
                                           <ButtonGroup>
-                                             <Button variant="dark" size="sm" icon={AiFillEye}>
+                                             <Button
+                                                variant="dark"
+                                                size="sm"
+                                                icon={AiFillEye}
+                                                onClick={() => handleOnClickView(e)}
+                                             >
                                                 View
                                              </Button>
                                              <Button

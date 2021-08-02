@@ -101,6 +101,13 @@ import Customers from './pages/customers';
 import Suppliers from './pages/suppliers';
 import Products from './pages/products';
 import CustomerActions from './pages/customers/CustomerActions';
+import SupplierActions from './pages/suppliers/SupplierActions';
+import EmployeeActions from './pages/employees/EmployeeActions';
+import ProductActions from './pages/products/ProductActions';
+import Types from './pages/types';
+import TypesActions from './pages/types/TyperActions';
+import Units from './pages/units';
+import UnitActions from './pages/units/UnitActions';
 
 /// Pages
 // const Registration = React.lazy(() => import('./pages/Registration'));
@@ -275,10 +282,17 @@ const routes = [
    { url: 'page-error-503', component: Error503, isPublic: true },
 
    { url: 'employees', component: Employees },
+   { url: 'employees/:id', component: EmployeeActions },
    { url: 'customers', component: Customers },
    { url: 'customers/:id', component: CustomerActions },
    { url: 'suppliers', component: Suppliers },
+   { url: 'suppliers/:id', component: SupplierActions },
    { url: 'products', component: Products },
+   { url: 'products/:id', component: ProductActions },
+   { url: 'types', component: Types },
+   { url: 'types/:id', component: TypesActions },
+   { url: 'units', component: Units },
+   { url: 'units/:id', component: UnitActions },
 ];
 
 const Markup = () => (

@@ -2,6 +2,8 @@ import axios from 'axios';
 
 export const api = axios.create({ baseURL: 'https://diamond-tiles-backend.herokuapp.com' });
 
+export const getError = (err) => err.response?.data?.data ?? err.message;
+
 export const get = (path, page, limit) => api.get(path, { params: { page, limit } }).then((res) => res.data);
 
 /**
@@ -34,5 +36,3 @@ export const del = (path) =>
       .delete(path)
       .then((res) => (res.status === 200 ? { ...res.data, status: 'ok' } : res.data))
       .catch((err) => err.response.data);
-
-export const getError = (err) => err.response?.data?.data ?? err.message;

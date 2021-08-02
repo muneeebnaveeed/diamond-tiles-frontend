@@ -1,52 +1,58 @@
 import useUrlState from '@ahooksjs/use-url-state';
 import { useFormik } from 'formik';
 import Button from 'jsx/components/Button';
-import { get, patch, post, useAlert, useMutation } from 'jsx/helpers';
+import { get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ButtonGroup, Card } from 'react-bootstrap';
+import { ButtonGroup, Card, select } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { Else, If, Then } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
 
-const CustomerActions = () => {
+const UnitActions = () => {
    const history = useHistory();
    const params = useParams();
-   const [customer, setCustomer] = useState(null);
+   const [unit, setUnit] = useState(null);
    const [isError, setIsError] = useState(false);
 
    const [urlState, setUrlState] = useUrlState({});
 
    const alert = useAlert();
-   const patchMutation = useMutation((payload) => patch(`/customers/id/${params.id}`, payload), {
+   const getTypes = useQuery('types', () => get('/types'));
+
+   const patchMutation = useMutation((payload) => patch(`/units/id/${params.id}`, payload), {
       onError: (err) => {
          alert.setErrorAlert({
-            message: 'Unable to edit customer.',
+            message: 'Unable to edit unit.',
             err,
          });
       },
    });
 
-   const postMutation = useMutation((payload) => post('/customers', payload), {
+   const postMutation = useMutation((payload) => post('/units', payload), {
       onSuccess: () => {
-         history.push('/customers');
+         history.push('/units');
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to add customer', err });
+         alert.setErrorAlert({ message: 'Unable to add unit', err });
       },
    });
 
    const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
-   const isViewCustomer = useMemo(() => urlState?.type === 'view', [urlState.type]);
-   const isAddCustomer = useMemo(() => params?.id === 'add', [params.id]);
+   const isViewUnit = useMemo(() => urlState?.type === 'view', [urlState.type]);
+   const isAddUnit = useMemo(() => params?.id === 'add', [params.id]);
    const mutation = useMemo(() => (isEditing ? patchMutation : postMutation), [isEditing, patchMutation, postMutation]);
 
-   if (!isEditing && !isViewCustomer && !isAddCustomer) {
-      history.push('/customers');
+   if (!isEditing && !isViewUnit && !isAddUnit) {
+      history.push('/units');
    }
 
    const formik = useFormik({
-      initialValues: { name: isEditing ? customer?.name : '', phone: isEditing ? customer?.phone : '' },
+      initialValues: {
+         title: isEditing ? unit?.title : '',
+         value: isEditing ? unit?.value : '',
+         type: isEditing ? unit?.type?._id : '',
+      },
       validateOnChange: false,
       validateOnBlur: false,
       onSubmit: (values) => {
@@ -54,64 +60,88 @@ const CustomerActions = () => {
       },
    });
 
-   const fetchCustomerData = async () => {
+   const fetchunitData = async () => {
       let response;
       try {
-         response = await get(`/customers/${params.id}`);
-         setCustomer(response.data);
+         response = await get(`/units/${params.id}`);
+         setUnit(response.data);
       } catch (err) {
          setIsError(true);
          alert.setErrorAlert({
             message: 'Invalid URL!',
-            err: { message: ['The page will redirect to manage customers.'] },
-            callback: () => history.push('/customers'),
+            err: { message: ['The page will redirect to manage units.'] },
+            callback: () => history.push('/units'),
             duration: 3000,
          });
       }
    };
 
    useEffect(() => {
-      if (!isAddCustomer) {
-         fetchCustomerData();
+      if (!isAddUnit) {
+         fetchunitData();
       }
    }, []);
 
+   useEffect(() => {
+      if (getTypes.data?.length > 0 && formik.values.type === '') {
+         formik.setFieldValue('type', getTypes.data[0]._id);
+      }
+   }, [getTypes.data]);
+
    return (
       <>
-         <PageTItle activeMenu="Customers" motherMenu="Manage" />
+         <PageTItle activeMenu="units" motherMenu="Manage" />
          {alert.getAlert()}
          <Card>
-            <If condition={isAddCustomer || isEditing}>
+            <If condition={isAddUnit || isEditing}>
                <Then>
                   <form onSubmit={formik.handleSubmit}>
                      <Card.Header>
-                        <Card.Title>{isEditing ? 'Edit Customer' : 'Add New Customer'}</Card.Title>
+                        <Card.Title>{isEditing ? 'Edit unit' : 'Add New unit'}</Card.Title>
                      </Card.Header>
                      <Card.Body>
                         <div className="row">
                            <div className="form-group col-xl-6">
-                              <label className="col-form-label">Name</label>
+                              <label className="col-form-label">Title</label>
                               <input
                                  className="form-control"
                                  onChange={formik.handleChange}
                                  type="text"
-                                 name="name"
+                                 name="title"
                                  disabled={isError}
-                                 value={formik.values.name}
+                                 value={formik.values.title}
                               />
                            </div>
                         </div>
                         <div className="row">
                            <div className="form-group col-xl-6">
-                              <label className="col-form-label">Phone</label>
+                              <label className="col-form-label">Value</label>
                               <input
                                  className="form-control"
                                  onChange={formik.handleChange}
                                  type="text"
-                                 name="phone"
+                                 name="value"
                                  disabled={isError}
-                                 value={formik.values.phone}
+                                 value={formik.values.value}
                               />
+                           </div>
+                        </div>
+                        <div className="row">
+                           <div className="form-group col-xl-6">
+                              <label className="col-form-label">Type</label>
+                              <select
+                                 className="form-control form-control-lg"
+                                 id="inlineFormCustomSelect"
+                                 onChange={formik.handleChange}
+                                 value={formik.values.type}
+                                 name="type"
+                              >
+                                 {getTypes.data?.map((e) => (
+                                    <option key={e._id} selected={e._id === unit?.type?._id} value={e._id}>
+                                       {e.title}
+                                    </option>
+                                 ))}
+                              </select>
                            </div>
                         </div>
                      </Card.Body>
@@ -122,7 +152,7 @@ const CustomerActions = () => {
                                  <Button
                                     icon={AiFillCaretLeft}
                                     variant="warning light"
-                                    onClick={() => history.replace('/customers')}
+                                    onClick={() => history.replace('/units')}
                                     loading={mutation.isLoading}
                                  >
                                     Back
@@ -144,19 +174,25 @@ const CustomerActions = () => {
                </Then>
                <Else>
                   <Card.Header>
-                     <Card.Title>View Customer</Card.Title>
+                     <Card.Title>View unit</Card.Title>
                   </Card.Header>
                   <Card.Body>
                      <div className="row">
                         <div className="form-group col-xl-6">
-                           <label className="col-form-label">Name</label>
-                           <h4>{customer?.name}</h4>
+                           <label className="col-form-label">Title</label>
+                           <h4>{unit?.title ?? 'N/A'}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
-                           <label className="col-form-label">Phone</label>
-                           <h4>{customer?.phone}</h4>
+                           <label className="col-form-label">Value</label>
+                           <h4>{unit?.value ?? 'N/A'}</h4>
+                        </div>
+                     </div>
+                     <div className="row">
+                        <div className="form-group col-xl-6">
+                           <label className="col-form-label">Type</label>
+                           <h4>{unit?.type?.title ?? 'N/A'}</h4>
                         </div>
                      </div>
                   </Card.Body>
@@ -166,7 +202,7 @@ const CustomerActions = () => {
                            <Button
                               icon={AiFillCaretLeft}
                               variant="warning light"
-                              onClick={() => history.replace('/customers')}
+                              onClick={() => history.replace('/units')}
                               loading={mutation.isLoading}
                            >
                               Back
@@ -181,4 +217,4 @@ const CustomerActions = () => {
    );
 };
 
-export default CustomerActions;
+export default UnitActions;

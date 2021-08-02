@@ -9,44 +9,48 @@ import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { Else, If, Then } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
 
-const CustomerActions = () => {
+const SupplierActions = () => {
    const history = useHistory();
    const params = useParams();
-   const [customer, setCustomer] = useState(null);
+   const [supplier, setSupplier] = useState(null);
    const [isError, setIsError] = useState(false);
 
    const [urlState, setUrlState] = useUrlState({});
 
    const alert = useAlert();
-   const patchMutation = useMutation((payload) => patch(`/customers/id/${params.id}`, payload), {
+   const patchMutation = useMutation((payload) => patch(`/suppliers/id/${params.id}`, payload), {
       onError: (err) => {
          alert.setErrorAlert({
-            message: 'Unable to edit customer.',
+            message: 'Unable to edit supplier.',
             err,
          });
       },
    });
 
-   const postMutation = useMutation((payload) => post('/customers', payload), {
+   const postMutation = useMutation((payload) => post('/suppliers', payload), {
       onSuccess: () => {
-         history.push('/customers');
+         history.push('/suppliers');
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to add customer', err });
+         alert.setErrorAlert({ message: 'Unable to add supplier', err });
       },
    });
 
    const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
-   const isViewCustomer = useMemo(() => urlState?.type === 'view', [urlState.type]);
-   const isAddCustomer = useMemo(() => params?.id === 'add', [params.id]);
+   const isViewSupplier = useMemo(() => urlState?.type === 'view', [urlState.type]);
+   const isAddSupplier = useMemo(() => params?.id === 'add', [params.id]);
    const mutation = useMemo(() => (isEditing ? patchMutation : postMutation), [isEditing, patchMutation, postMutation]);
 
-   if (!isEditing && !isViewCustomer && !isAddCustomer) {
-      history.push('/customers');
+   if (!isEditing && !isViewSupplier && !isAddSupplier) {
+      history.push('/suppliers');
    }
 
    const formik = useFormik({
-      initialValues: { name: isEditing ? customer?.name : '', phone: isEditing ? customer?.phone : '' },
+      initialValues: {
+         name: isEditing ? supplier?.name : '',
+         phone: isEditing ? supplier?.phone : '',
+         company: isEditing ? supplier?.company : '',
+      },
       validateOnChange: false,
       validateOnBlur: false,
       onSubmit: (values) => {
@@ -54,38 +58,38 @@ const CustomerActions = () => {
       },
    });
 
-   const fetchCustomerData = async () => {
+   const fetchSupplierData = async () => {
       let response;
       try {
-         response = await get(`/customers/${params.id}`);
-         setCustomer(response.data);
+         response = await get(`/suppliers/${params.id}`);
+         setSupplier(response.data);
       } catch (err) {
          setIsError(true);
          alert.setErrorAlert({
             message: 'Invalid URL!',
-            err: { message: ['The page will redirect to manage customers.'] },
-            callback: () => history.push('/customers'),
+            err: { message: ['The page will redirect to manage suppliers.'] },
+            callback: () => history.push('/suppliers'),
             duration: 3000,
          });
       }
    };
 
    useEffect(() => {
-      if (!isAddCustomer) {
-         fetchCustomerData();
+      if (!isAddSupplier) {
+         fetchSupplierData();
       }
    }, []);
 
    return (
       <>
-         <PageTItle activeMenu="Customers" motherMenu="Manage" />
+         <PageTItle activeMenu="Suppliers" motherMenu="Manage" />
          {alert.getAlert()}
          <Card>
-            <If condition={isAddCustomer || isEditing}>
+            <If condition={isAddSupplier || isEditing}>
                <Then>
                   <form onSubmit={formik.handleSubmit}>
                      <Card.Header>
-                        <Card.Title>{isEditing ? 'Edit Customer' : 'Add New Customer'}</Card.Title>
+                        <Card.Title>{isEditing ? 'Edit Supplier' : 'Add New Supplier'}</Card.Title>
                      </Card.Header>
                      <Card.Body>
                         <div className="row">
@@ -114,6 +118,19 @@ const CustomerActions = () => {
                               />
                            </div>
                         </div>
+                        <div className="row">
+                           <div className="form-group col-xl-6">
+                              <label className="col-form-label">Company</label>
+                              <input
+                                 className="form-control"
+                                 onChange={formik.handleChange}
+                                 type="text"
+                                 name="company"
+                                 disabled={isError}
+                                 value={formik.values.company}
+                              />
+                           </div>
+                        </div>
                      </Card.Body>
                      <Card.Footer>
                         <div className="row">
@@ -122,7 +139,7 @@ const CustomerActions = () => {
                                  <Button
                                     icon={AiFillCaretLeft}
                                     variant="warning light"
-                                    onClick={() => history.replace('/customers')}
+                                    onClick={() => history.replace('/suppliers')}
                                     loading={mutation.isLoading}
                                  >
                                     Back
@@ -144,19 +161,25 @@ const CustomerActions = () => {
                </Then>
                <Else>
                   <Card.Header>
-                     <Card.Title>View Customer</Card.Title>
+                     <Card.Title>View Supplier</Card.Title>
                   </Card.Header>
                   <Card.Body>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Name</label>
-                           <h4>{customer?.name}</h4>
+                           <h4>{supplier?.name}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Phone</label>
-                           <h4>{customer?.phone}</h4>
+                           <h4>{supplier?.phone}</h4>
+                        </div>
+                     </div>
+                     <div className="row">
+                        <div className="form-group col-xl-6">
+                           <label className="col-form-label">Company</label>
+                           <h4>{supplier?.company}</h4>
                         </div>
                      </div>
                   </Card.Body>
@@ -166,7 +189,7 @@ const CustomerActions = () => {
                            <Button
                               icon={AiFillCaretLeft}
                               variant="warning light"
-                              onClick={() => history.replace('/customers')}
+                              onClick={() => history.replace('/suppliers')}
                               loading={mutation.isLoading}
                            >
                               Back
@@ -181,4 +204,4 @@ const CustomerActions = () => {
    );
 };
 
-export default CustomerActions;
+export default SupplierActions;

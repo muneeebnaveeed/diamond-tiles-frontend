@@ -55,7 +55,7 @@ const plugins = ['uc-select2', 'uc-nestable', 'uc-sweetalert', 'uc-toastr', 'uc-
 const widget = ['widget'];
 const forms = ['form-element', 'form-wizard', 'form-editor-summernote', 'form-pickers', 'form-validation-jquery'];
 const table = ['table-bootstrap-basic', 'table-datatable-basic'];
-const manage = ['employees', 'customers', 'products'];
+const manage = ['employees', 'customers', 'products', 'users', 'types', 'units'];
 
 class MM extends Component {
    componentDidMount() {
@@ -147,6 +147,12 @@ class SideBar extends Component {
                         </li>
                         <li>
                            <Link to="/employees">Employees</Link>
+                        </li>
+                        <li>
+                           <Link to="/types">Types</Link>
+                        </li>
+                        <li>
+                           <Link to="/units">Units</Link>
                         </li>
                      </ul>
                   </li>

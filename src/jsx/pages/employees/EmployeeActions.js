@@ -9,44 +9,50 @@ import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { Else, If, Then } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
 
-const CustomerActions = () => {
+const EmployeeActions = () => {
    const history = useHistory();
    const params = useParams();
-   const [customer, setCustomer] = useState(null);
+   const [employee, setEmployee] = useState(null);
    const [isError, setIsError] = useState(false);
 
    const [urlState, setUrlState] = useUrlState({});
 
    const alert = useAlert();
-   const patchMutation = useMutation((payload) => patch(`/customers/id/${params.id}`, payload), {
+   const patchMutation = useMutation((payload) => patch(`/employees/id/${params.id}`, payload), {
       onError: (err) => {
          alert.setErrorAlert({
-            message: 'Unable to edit customer.',
+            message: 'Unable to edit employee.',
             err,
          });
       },
    });
 
-   const postMutation = useMutation((payload) => post('/customers', payload), {
+   const postMutation = useMutation((payload) => post('/employees', payload), {
       onSuccess: () => {
-         history.push('/customers');
+         history.push('/employees');
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to add customer', err });
+         alert.setErrorAlert({ message: 'Unable to add employee', err });
       },
    });
 
    const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
-   const isViewCustomer = useMemo(() => urlState?.type === 'view', [urlState.type]);
-   const isAddCustomer = useMemo(() => params?.id === 'add', [params.id]);
+   const isViewEmployee = useMemo(() => urlState?.type === 'view', [urlState.type]);
+   const isAddEmployee = useMemo(() => params?.id === 'add', [params.id]);
    const mutation = useMemo(() => (isEditing ? patchMutation : postMutation), [isEditing, patchMutation, postMutation]);
 
-   if (!isEditing && !isViewCustomer && !isAddCustomer) {
-      history.push('/customers');
+   if (!isEditing && !isViewEmployee && !isAddEmployee) {
+      history.push('/employees');
    }
 
    const formik = useFormik({
-      initialValues: { name: isEditing ? customer?.name : '', phone: isEditing ? customer?.phone : '' },
+      initialValues: {
+         name: isEditing ? employee?.name : '',
+         phone: isEditing ? employee?.phone : '',
+         cnic: isEditing ? employee?.cnic : '',
+         address: isEditing ? employee?.address : '',
+         salary: isEditing ? employee?.salary : '',
+      },
       validateOnChange: false,
       validateOnBlur: false,
       onSubmit: (values) => {
@@ -54,38 +60,38 @@ const CustomerActions = () => {
       },
    });
 
-   const fetchCustomerData = async () => {
+   const fetchemployeeData = async () => {
       let response;
       try {
-         response = await get(`/customers/${params.id}`);
-         setCustomer(response.data);
+         response = await get(`/employees/${params.id}`);
+         setEmployee(response.data);
       } catch (err) {
          setIsError(true);
          alert.setErrorAlert({
             message: 'Invalid URL!',
-            err: { message: ['The page will redirect to manage customers.'] },
-            callback: () => history.push('/customers'),
+            err: { message: ['The page will redirect to manage employees.'] },
+            callback: () => history.push('/employees'),
             duration: 3000,
          });
       }
    };
 
    useEffect(() => {
-      if (!isAddCustomer) {
-         fetchCustomerData();
+      if (!isAddEmployee) {
+         fetchemployeeData();
       }
    }, []);
 
    return (
       <>
-         <PageTItle activeMenu="Customers" motherMenu="Manage" />
+         <PageTItle activeMenu="employees" motherMenu="Manage" />
          {alert.getAlert()}
          <Card>
-            <If condition={isAddCustomer || isEditing}>
+            <If condition={isAddEmployee || isEditing}>
                <Then>
                   <form onSubmit={formik.handleSubmit}>
                      <Card.Header>
-                        <Card.Title>{isEditing ? 'Edit Customer' : 'Add New Customer'}</Card.Title>
+                        <Card.Title>{isEditing ? 'Edit Employee' : 'Add New Employee'}</Card.Title>
                      </Card.Header>
                      <Card.Body>
                         <div className="row">
@@ -114,6 +120,45 @@ const CustomerActions = () => {
                               />
                            </div>
                         </div>
+                        <div className="row">
+                           <div className="form-group col-xl-6">
+                              <label className="col-form-label">CNIC</label>
+                              <input
+                                 className="form-control"
+                                 onChange={formik.handleChange}
+                                 type="text"
+                                 name="cnic"
+                                 disabled={isError}
+                                 value={formik.values.cnic}
+                              />
+                           </div>
+                        </div>
+                        <div className="row">
+                           <div className="form-group col-xl-6">
+                              <label className="col-form-label">Address</label>
+                              <input
+                                 className="form-control"
+                                 onChange={formik.handleChange}
+                                 type="text"
+                                 name="address"
+                                 disabled={isError}
+                                 value={formik.values.address}
+                              />
+                           </div>
+                        </div>
+                        <div className="row">
+                           <div className="form-group col-xl-6">
+                              <label className="col-form-label">Salary</label>
+                              <input
+                                 className="form-control"
+                                 onChange={formik.handleChange}
+                                 type="text"
+                                 name="salary"
+                                 disabled={isError}
+                                 value={formik.values.salary}
+                              />
+                           </div>
+                        </div>
                      </Card.Body>
                      <Card.Footer>
                         <div className="row">
@@ -122,7 +167,7 @@ const CustomerActions = () => {
                                  <Button
                                     icon={AiFillCaretLeft}
                                     variant="warning light"
-                                    onClick={() => history.replace('/customers')}
+                                    onClick={() => history.replace('/employees')}
                                     loading={mutation.isLoading}
                                  >
                                     Back
@@ -144,19 +189,37 @@ const CustomerActions = () => {
                </Then>
                <Else>
                   <Card.Header>
-                     <Card.Title>View Customer</Card.Title>
+                     <Card.Title>View Employee</Card.Title>
                   </Card.Header>
                   <Card.Body>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Name</label>
-                           <h4>{customer?.name}</h4>
+                           <h4>{employee?.name}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Phone</label>
-                           <h4>{customer?.phone}</h4>
+                           <h4>{employee?.phone}</h4>
+                        </div>
+                     </div>
+                     <div className="row">
+                        <div className="form-group col-xl-6">
+                           <label className="col-form-label">CNIC</label>
+                           <h4>{employee?.cnic}</h4>
+                        </div>
+                     </div>
+                     <div className="row">
+                        <div className="form-group col-xl-6">
+                           <label className="col-form-label">Address</label>
+                           <h4>{employee?.address}</h4>
+                        </div>
+                     </div>
+                     <div className="row">
+                        <div className="form-group col-xl-6">
+                           <label className="col-form-label">Salary</label>
+                           <h4>{employee?.salary}</h4>
                         </div>
                      </div>
                   </Card.Body>
@@ -166,7 +229,7 @@ const CustomerActions = () => {
                            <Button
                               icon={AiFillCaretLeft}
                               variant="warning light"
-                              onClick={() => history.replace('/customers')}
+                              onClick={() => history.replace('/employees')}
                               loading={mutation.isLoading}
                            >
                               Back
@@ -181,4 +244,4 @@ const CustomerActions = () => {
    );
 };
 
-export default CustomerActions;
+export default EmployeeActions;

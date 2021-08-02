@@ -14,7 +14,7 @@ import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 
-const Employees = () => {
+const Types = () => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -23,29 +23,25 @@ const Employees = () => {
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['employees', page, limit], () => get('/employees', page, limit));
-   const deleteMutation = useMutation((id) => del(`/employees/id/${id}`), {
+   const query = useQuery(['types', page, limit], () => get('/types', page, limit));
+   const deleteMutation = useMutation((id) => del(`/types/id/${id}`), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('employees');
+         await queryClient.invalidateQueries('types');
          alert.setAlert({
-            message: 'Employee deleted successfully',
+            message: 'Type deleted successfully',
             variant: 'success',
          });
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to delete employee', err });
+         alert.setErrorAlert({ message: 'Unable to delete Type', err });
       },
    });
 
-   const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/employees/${obj._id}`, search: `?type=edit` });
-   };
-
    const handleOnClickView = (obj) => {
-      history.push({ pathname: `/employees/${obj._id}`, search: `?type=view` });
+      history.push({ pathname: `/types/${obj._id}`, search: `?type=view` });
    };
    const handleOnClickAdd = () => {
-      history.push('/employees/add');
+      history.push('/types/add');
    };
 
    const handleOnClickDelete = (id) => {
@@ -66,11 +62,11 @@ const Employees = () => {
 
    return (
       <>
-         <PageTItle activeMenu="employees" motherMenu="Manage" />
+         <PageTItle activeMenu="types" motherMenu="Manage" />
          <div className="row tw-mb-8">
             <div className="col-xl-6">
                <Button variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
-                  Add New employee
+                  Add New Type
                </Button>
             </div>
 
@@ -79,7 +75,7 @@ const Employees = () => {
                   <input
                      type="text"
                      className="input-rounded tw-rounded-r-none tw-pl-6"
-                     placeholder="Search Employees..."
+                     placeholder="Search types..."
                      disabled={deleteMutation.isLoading}
                   />
                   <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={deleteMutation.isLoading}>
@@ -100,10 +96,10 @@ const Employees = () => {
                      <SpinnerOverlay />
                   </When>
                   <Card.Header>
-                     <Card.Title>Manage Employees</Card.Title>
+                     <Card.Title>Manage types</Card.Title>
                   </Card.Header>
                   <Card.Body>
-                     <If condition={query.data?.totalDocs > 0}>
+                     <If condition={query.data.length > 0}>
                         <Then>
                            <Table className="tw-relative" responsive>
                               <thead>
@@ -112,33 +108,17 @@ const Employees = () => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong>NAME</strong>
-                                    </th>
-                                    <th>
-                                       <strong>PHONE#</strong>
-                                    </th>
-                                    <th>
-                                       <strong>CNIC</strong>
-                                    </th>
-                                    <th>
-                                       <strong>ADDRESS</strong>
-                                    </th>
-                                    <th>
-                                       <strong>SALARY</strong>
+                                       <strong>TITLE</strong>
                                     </th>
                                  </tr>
                               </thead>
                               <tbody>
-                                 {query.data?.docs.map((e, index) => (
+                                 {query.data?.map((e, index) => (
                                     <tr key={`${e._id}`}>
                                        <td>
-                                          <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                          <strong>{index + 1}</strong>
                                        </td>
-                                       <td>{e.name}</td>
-                                       <td>{e.phone}</td>
-                                       <td>{e.cnic}</td>
-                                       <td>{e.address}</td>
-                                       <td>{e.salary}</td>
+                                       <td>{e.title}</td>
                                        <td>
                                           <OverlayTrigger
                                              trigger="hover"
@@ -167,14 +147,6 @@ const Employees = () => {
                                                 View
                                              </Button>
                                              <Button
-                                                variant="warning"
-                                                size="sm"
-                                                icon={AiFillEdit}
-                                                onClick={() => handleOnClickEdit(e)}
-                                             >
-                                                Edit
-                                             </Button>
-                                             <Button
                                                 variant="danger"
                                                 size="sm"
                                                 icon={AiFillDelete}
@@ -190,24 +162,24 @@ const Employees = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <p className="tw-m-0">No employees created</p>
+                           <p className="tw-m-0">No types created</p>
                         </Else>
                      </If>
                   </Card.Body>
                </Card>
             </Col>
          </div>
-         <When condition={limit > 5 ? true : query.data?.totalPages > 1}>
+         {/* <When condition={limit > 5 ? true : query.data?.totalPages > 1}>
             <Pagination
                page={page}
                onPageChange={setPage}
                onLimitChange={setLimit}
-               {..._.omit(query.data, ['docs'])}
+               {..._.omit(query.data)}
                isLimitDisabled={query.isLoading || deleteMutation.isLoading}
             />
-         </When>
+         </When> */}
       </>
    );
 };
 
-export default Employees;
+export default Types;
