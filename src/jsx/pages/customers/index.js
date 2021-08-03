@@ -13,17 +13,23 @@ import { useHistory } from 'react-router-dom';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import swal from 'sweetalert';
+import { FaSortUp, FaSortDown } from 'react-icons/fa';
 
 const Customers = () => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
+   const [sort, setSort] = useState({ field: null, order: 1 });
+   const [search, setSearch] = useState('');
+   const [searchValue, setSearchValue] = useState('');
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['customers', page, limit], () => get('/customers', page, limit));
+   const query = useQuery(['customers', page, limit, sort.field, sort.order, search], () =>
+      get('/customers', page, limit, sort.field, sort.order, search)
+   );
    const deleteMutation = useMutation((id) => del(`/customers/id/${id}`), {
       onSuccess: async () => {
          await queryClient.invalidateQueries('customers');
@@ -64,6 +70,20 @@ const Customers = () => {
 
    const alertMarkup = alert.getAlert();
 
+   const handleSort = (key) => {
+      setSort((prev) => ({ field: key, order: prev.order * -1 }));
+   };
+
+   const handleSearch = () => {
+      setSearch(searchValue);
+   };
+
+   useEffect(() => {
+      if (searchValue === '') {
+         setSearch('');
+      }
+   }, [searchValue]);
+
    return (
       <>
          <PageTItle activeMenu="Customers" motherMenu="Manage" />
@@ -81,8 +101,14 @@ const Customers = () => {
                      className="input-rounded tw-rounded-r-none tw-pl-6"
                      placeholder="Search Customers..."
                      disabled={deleteMutation.isLoading}
+                     onChange={(e) => setSearchValue(e.target.value)}
                   />
-                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={deleteMutation.isLoading}>
+                  <Button
+                     variant="secondary"
+                     className="btn btn-secondary tw-pl-6"
+                     onClick={handleSearch}
+                     loading={deleteMutation.isLoading}
+                  >
                      Search
                   </Button>
                </ButtonGroup>
@@ -112,10 +138,38 @@ const Customers = () => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong>NAME</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('name')}>
+                                          NAME
+                                          <If condition={sort.order === 1 && sort.field === 'name'}>
+                                             <Then>
+                                                <span>
+                                                   <FaSortDown className="d-inline mx-1" />
+                                                </span>
+                                             </Then>
+                                             <Else>
+                                                <span>
+                                                   <FaSortUp className="d-inline mx-1" />
+                                                </span>
+                                             </Else>
+                                          </If>
+                                       </strong>
                                     </th>
                                     <th>
-                                       <strong>PHONE</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('phone')}>
+                                          Phone
+                                          <If condition={sort.order === 1 && sort.field === 'phone'}>
+                                             <Then>
+                                                <span>
+                                                   <FaSortDown className="d-inline mx-1" />
+                                                </span>
+                                             </Then>
+                                             <Else>
+                                                <span>
+                                                   <FaSortUp className="d-inline mx-1" />
+                                                </span>
+                                             </Else>
+                                          </If>
+                                       </strong>
                                     </th>
                                  </tr>
                               </thead>

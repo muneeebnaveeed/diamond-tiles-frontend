@@ -6,24 +6,30 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
+import { FaSortUp, FaSortDown } from 'react-icons/fa';
 
 const Suppliers = () => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
+   const [sort, setSort] = useState({ field: null, order: -1 });
+   const [search, setSearch] = useState('');
+   const [searchValue, setSearchValue] = useState('');
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['suppliers', page, limit], () => get('/suppliers', page, limit));
+   const query = useQuery(['suppliers', page, limit, sort.field, sort.order, search], () =>
+      get('/suppliers', page, limit, sort.field, sort.order, search)
+   );
    const deleteMutation = useMutation((id) => del(`/suppliers/id/${id}`), {
       onSuccess: async () => {
          await queryClient.invalidateQueries('suppliers');
@@ -63,7 +69,18 @@ const Suppliers = () => {
    };
 
    const alertMarkup = alert.getAlert();
+   const handleSort = (key) => {
+      setSort((prev) => ({ field: key, order: prev.order * -1 }));
+   };
+   const handleSearch = () => {
+      setSearch(searchValue);
+   };
 
+   useEffect(() => {
+      if (searchValue === '') {
+         setSearch('');
+      }
+   }, [searchValue]);
    return (
       <>
          <PageTItle activeMenu="Suppliers" motherMenu="Manage" />
@@ -81,8 +98,14 @@ const Suppliers = () => {
                      className="input-rounded tw-rounded-r-none tw-pl-6"
                      placeholder="Search Suppliers..."
                      disabled={deleteMutation.isLoading}
+                     onChange={(e) => setSearchValue(e.target.value)}
                   />
-                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={deleteMutation.isLoading}>
+                  <Button
+                     variant="secondary"
+                     className="btn btn-secondary tw-pl-6"
+                     onClick={handleSearch}
+                     loading={deleteMutation.isLoading}
+                  >
                      Search
                   </Button>
                </ButtonGroup>
@@ -112,13 +135,55 @@ const Suppliers = () => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong>NAME</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('name')}>
+                                          NAME
+                                          <If condition={sort.order === 1 && sort.field === 'name'}>
+                                             <Then>
+                                                <span>
+                                                   <FaSortDown className="d-inline mx-1" />
+                                                </span>
+                                             </Then>
+                                             <Else>
+                                                <span>
+                                                   <FaSortUp className="d-inline mx-1" />
+                                                </span>
+                                             </Else>
+                                          </If>
+                                       </strong>
                                     </th>
                                     <th>
-                                       <strong>PHONE</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('phone')}>
+                                          PHONE
+                                          <If condition={sort.order === 1 && sort.field === 'phone'}>
+                                             <Then>
+                                                <span>
+                                                   <FaSortDown className="d-inline mx-1" />
+                                                </span>
+                                             </Then>
+                                             <Else>
+                                                <span>
+                                                   <FaSortUp className="d-inline mx-1" />
+                                                </span>
+                                             </Else>
+                                          </If>
+                                       </strong>
                                     </th>
                                     <th>
-                                       <strong>COMPANY</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('company')}>
+                                          COMPANY
+                                          <If condition={sort.order === 1 && sort.field === 'company'}>
+                                             <Then>
+                                                <span>
+                                                   <FaSortDown className="d-inline mx-1" />
+                                                </span>
+                                             </Then>
+                                             <Else>
+                                                <span>
+                                                   <FaSortUp className="d-inline mx-1" />
+                                                </span>
+                                             </Else>
+                                          </If>
+                                       </strong>
                                     </th>
                                  </tr>
                               </thead>

@@ -6,7 +6,7 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { Else, If, Then, When } from 'react-if';
@@ -19,11 +19,13 @@ const Types = () => {
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
+   const [search, setSearch] = useState('');
+   const [searchValue, setSearchValue] = useState('');
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['types', page, limit], () => get('/types', page, limit));
+   const query = useQuery(['types', page, limit, search], () => get('/types', page, limit, '', '', search));
    const deleteMutation = useMutation((id) => del(`/types/id/${id}`), {
       onSuccess: async () => {
          await queryClient.invalidateQueries('types');
@@ -59,7 +61,15 @@ const Types = () => {
    };
 
    const alertMarkup = alert.getAlert();
+   const handleSearch = () => {
+      setSearch(searchValue);
+   };
 
+   useEffect(() => {
+      if (searchValue === '') {
+         setSearch('');
+      }
+   }, [searchValue]);
    return (
       <>
          <PageTItle activeMenu="types" motherMenu="Manage" />
@@ -77,8 +87,14 @@ const Types = () => {
                      className="input-rounded tw-rounded-r-none tw-pl-6"
                      placeholder="Search types..."
                      disabled={deleteMutation.isLoading}
+                     onChange={(e) => setSearchValue(e.target.value)}
                   />
-                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={deleteMutation.isLoading}>
+                  <Button
+                     variant="secondary"
+                     className="btn btn-secondary tw-pl-6"
+                     onClick={handleSearch}
+                     loading={deleteMutation.isLoading}
+                  >
                      Search
                   </Button>
                </ButtonGroup>
@@ -99,7 +115,7 @@ const Types = () => {
                      <Card.Title>Manage types</Card.Title>
                   </Card.Header>
                   <Card.Body>
-                     <If condition={query.data.length > 0}>
+                     <If condition={query.data?.length > 0}>
                         <Then>
                            <Table className="tw-relative" responsive>
                               <thead>

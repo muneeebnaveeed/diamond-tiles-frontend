@@ -13,17 +13,23 @@ import { useHistory } from 'react-router-dom';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import swal from 'sweetalert';
+import { FaSortUp, FaSortDown } from 'react-icons/fa';
 
 const Products = () => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
+   const [sort, setSort] = useState({ field: null, order: -1 });
+   const [search, setSearch] = useState('');
+   const [searchValue, setSearchValue] = useState('');
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['products', page, limit], () => get('/products', page, limit));
+   const query = useQuery(['products', page, limit, sort.field, sort.order, search], () =>
+      get('/products', page, limit, sort.field, sort.order, search)
+   );
    const deleteMutation = useMutation((id) => del(`/products/id/${id}`), {
       onSuccess: async () => {
          await queryClient.invalidateQueries('products');
@@ -64,6 +70,18 @@ const Products = () => {
 
    const alertMarkup = alert.getAlert();
 
+   const handleSort = (key) => {
+      setSort((prev) => ({ field: key, order: prev.order * -1 }));
+   };
+   const handleSearch = () => {
+      setSearch(searchValue);
+   };
+
+   useEffect(() => {
+      if (searchValue === '') {
+         setSearch('');
+      }
+   }, [searchValue]);
    return (
       <>
          <PageTItle activeMenu="products" motherMenu="Manage" />
@@ -81,8 +99,14 @@ const Products = () => {
                      className="input-rounded tw-rounded-r-none tw-pl-6"
                      placeholder="Search products..."
                      disabled={deleteMutation.isLoading}
+                     onChange={(e) => setSearchValue(e.target.value)}
                   />
-                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={deleteMutation.isLoading}>
+                  <Button
+                     variant="secondary"
+                     className="btn btn-secondary tw-pl-6"
+                     onClick={handleSearch}
+                     loading={deleteMutation.isLoading}
+                  >
                      Search
                   </Button>
                </ButtonGroup>
@@ -112,13 +136,55 @@ const Products = () => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong>TITLE</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('title')}>
+                                          TITLE
+                                          <If condition={sort.order === 1 && sort.field === 'title'}>
+                                             <Then>
+                                                <span>
+                                                   <FaSortDown className="d-inline mx-1" />
+                                                </span>
+                                             </Then>
+                                             <Else>
+                                                <span>
+                                                   <FaSortUp className="d-inline mx-1" />
+                                                </span>
+                                             </Else>
+                                          </If>
+                                       </strong>
                                     </th>
                                     <th>
-                                       <strong>MODEL#</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('model')}>
+                                          MODEL#
+                                          <If condition={sort.order === 1 && sort.field === 'model'}>
+                                             <Then>
+                                                <span>
+                                                   <FaSortDown className="d-inline mx-1" />
+                                                </span>
+                                             </Then>
+                                             <Else>
+                                                <span>
+                                                   <FaSortUp className="d-inline mx-1" />
+                                                </span>
+                                             </Else>
+                                          </If>
+                                       </strong>
                                     </th>
                                     <th>
-                                       <strong>TYPE</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('type')}>
+                                          TYPE
+                                          <If condition={sort.order === 1 && sort.field === 'type'}>
+                                             <Then>
+                                                <span>
+                                                   <FaSortDown className="d-inline mx-1" />
+                                                </span>
+                                             </Then>
+                                             <Else>
+                                                <span>
+                                                   <FaSortUp className="d-inline mx-1" />
+                                                </span>
+                                             </Else>
+                                          </If>
+                                       </strong>
                                     </th>
                                  </tr>
                               </thead>

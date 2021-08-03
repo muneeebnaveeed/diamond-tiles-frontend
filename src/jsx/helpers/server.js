@@ -4,7 +4,8 @@ export const api = axios.create({ baseURL: 'https://diamond-tiles-backend.heroku
 
 export const getError = (err) => err.response?.data?.data ?? err.message;
 
-export const get = (path, page, limit) => api.get(path, { params: { page, limit } }).then((res) => res.data);
+export const get = (path, page, limit, field, order, search = '') =>
+   api.get(path, { params: { page, limit, [`sort[${field}]`]: order, search } }).then((res) => res.data);
 
 /**
  * Send a POST request
