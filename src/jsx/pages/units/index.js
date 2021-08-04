@@ -4,41 +4,34 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import Button from 'jsx/components/Button';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
-import { del, get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { del, get, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
-import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
-import { FaSortDown, FaSortUp } from 'react-icons/fa';
+import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
-import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
+import CreatableSelect from 'react-select/creatable';
+import { useHistory } from 'react-router-dom';
+import { useFormik } from 'formik';
 
 const Units = () => {
-   dayjs.extend(relativeTime);
    const history = useHistory();
+   dayjs.extend(relativeTime);
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
-   const [sort, setSort] = useState({ field: null, order: -1 });
    const [urlState, setUrlState] = useUrlState({});
    const [search, setSearch] = useState('');
-   const [searchValue, setSearchValue] = useState('');
 
    const [showModal, setShowModal] = useState(false);
    const [selectedRow, setSelectedRow] = useState(null);
-
-   const [title, setTitle] = useState('');
-   const [value, setValue] = useState('');
-   const [type, setType] = useState('');
 
    const alert = useAlert();
 
    const queryClient = useQueryClient();
 
-   const query = useQuery(['units', page, limit, sort.field, sort.order, search], () =>
-      get('/units', page, limit, sort.field, sort.order, search)
-   );
+   const query = useQuery(['units', page, limit, search], () => get('/units', page, limit, '', '', search));
    const getTypes = useQuery('types', () => get('/types'));
    const deleteMutation = useMutation((id) => del(`/units/id/${id}`), {
       onSuccess: async () => {
@@ -50,19 +43,6 @@ const Units = () => {
       },
       onError: (err) => {
          alert.setErrorAlert({ message: 'Unable to delete Unit', err });
-      },
-   });
-   const patchMutation = useMutation((payload) => patch(`/units/id/${selectedRow._id}`, payload), {
-      onSuccess: () => {
-         setShowModal(false);
-         setUrlState({});
-         query.refetch();
-      },
-      onError: (err) => {
-         alert.setErrorAlert({
-            message: 'Unable to edit unit.',
-            err,
-         });
       },
    });
 
@@ -77,23 +57,9 @@ const Units = () => {
       },
    });
 
-   const isEditing = useMemo(() => urlState?.action === 'edit', [urlState.action]);
    const isAdd = useMemo(() => urlState?.action === 'add', [urlState.action]);
-   const mutation = useMemo(() => (isEditing ? patchMutation : postMutation), [isEditing, patchMutation, postMutation]);
+   const mutation = useMemo(() => postMutation, [postMutation]);
 
-   const handleOnClickEdit = (obj) => {
-      setSelectedRow(obj);
-      setShowModal(true);
-      setUrlState({ action: 'edit' });
-      setTitle(obj.title);
-      setValue(obj.value);
-      setType(obj.type?._id ?? getTypes.data[0]._id);
-      console.log(obj.type?._id ?? getTypes.data[0]._id);
-   };
-
-   const handleOnClickView = (obj) => {
-      history.push({ pathname: `/units/${obj._id}`, search: `?type=view` });
-   };
    const handleOnClickAdd = () => {
       setShowModal(true);
       setUrlState({ action: 'add' });
@@ -113,37 +79,30 @@ const Units = () => {
       });
    };
 
+   const formik = useFormik({
+      initialValues: {
+         title: '',
+         value: '',
+         type: '',
+      },
+      validateOnChange: false,
+      validateOnBlur: false,
+      onSubmit: (values) => {
+         mutation.mutate(values);
+      },
+   });
+   const handleCreateType = (title) => {
+      history.push({ pathname: '/types', search: `?action=add&title=${title}&redirect=/units?action=add` });
+   };
+
    const alertMarkup = alert.getAlert();
-   const handleSort = (key) => {
-      setSort((prev) => ({ field: key, order: prev.order * -1 }));
-   };
-
-   const handleSubmit = () => {
-      mutation.mutate({ title, value, type });
-   };
-
-   const handleSearch = () => {
-      setSearch(searchValue);
-   };
-
-   useEffect(() => {
-      if (searchValue === '') {
-         setSearch('');
-      }
-   }, [searchValue]);
-
-   useEffect(() => {
-      if (getTypes.data?.length > 0) {
-         setType(getTypes.data[0]._id);
-      }
-   }, [getTypes.data]);
 
    useEffect(() => {
       if (isAdd) {
          setShowModal(true);
-         setTitle('');
-         setValue('');
-         // setType('');
+         formik.setFieldValue('title', '');
+         formik.setFieldValue('value', '');
+         formik.setFieldValue('type', '');
       }
    }, [isAdd]);
 
@@ -157,25 +116,20 @@ const Units = () => {
                </Button>
             </div>
 
-            <div className="col-xl-6">
+            {/* <div className="col-xl-6">
                <ButtonGroup className="tw-float-right">
                   <input
                      type="text"
                      className="input-rounded tw-rounded-r-none tw-pl-6"
                      placeholder="Search units..."
                      disabled={deleteMutation.isLoading}
-                     onChange={(e) => setSearchValue(e.target.value)}
+                     onChange={(e) => setSearch(e.target.value)}
                   />
-                  <Button
-                     variant="secondary"
-                     className="btn btn-secondary tw-pl-6"
-                     onClick={handleSearch}
-                     loading={deleteMutation.isLoading}
-                  >
+                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={query.isLoading}>
                      Search
                   </Button>
                </ButtonGroup>
-            </div>
+            </div> */}
          </div>
          {alertMarkup ? (
             <Row>
@@ -201,55 +155,13 @@ const Units = () => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('title')}>
-                                          TITLE
-                                          <If condition={sort.order === 1 && sort.field === 'title'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
-                                       </strong>
+                                       <strong className="tw-cursor-pointer">TITLE</strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('value')}>
-                                          VALUE
-                                          <If condition={sort.order === 1 && sort.field === 'value'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
-                                       </strong>
+                                       <strong className="tw-cursor-pointer">VALUE</strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('type')}>
-                                          TYPE
-                                          <If condition={sort.order === 1 && sort.field === 'type'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
-                                       </strong>
+                                       <strong className="tw-cursor-pointer">TYPE</strong>
                                     </th>
                                  </tr>
                               </thead>
@@ -264,47 +176,29 @@ const Units = () => {
                                        <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
                                        <td>
                                           <OverlayTrigger
-                                             trigger="hover"
+                                             trigger={['hover', 'hover']}
                                              placement="top"
                                              overlay={
-                                                <Popover>
+                                                <Popover className="tw-border-gray-500">
                                                    <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 1
+                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
                                                          ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
                                                          : dayjs(e.createdAt).fromNow()
                                                    }.`}</Popover.Content>
                                                 </Popover>
                                              }
                                           >
-                                             <AiOutlineQuestionCircle />
+                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                           </OverlayTrigger>
                                        </td>
                                        <td>
                                           <ButtonGroup>
                                              <Button
-                                                variant="dark"
-                                                size="sm"
-                                                icon={AiFillEye}
-                                                onClick={() => handleOnClickView(e)}
-                                             >
-                                                View
-                                             </Button>
-                                             <Button
-                                                variant="warning"
-                                                size="sm"
-                                                icon={AiFillEdit}
-                                                onClick={() => handleOnClickEdit(e)}
-                                             >
-                                                Edit
-                                             </Button>
-                                             <Button
                                                 variant="danger"
                                                 size="sm"
                                                 icon={AiFillDelete}
                                                 onClick={() => handleOnClickDelete(e._id)}
-                                             >
-                                                Delete
-                                             </Button>
+                                             />
                                           </ButtonGroup>
                                        </td>
                                     </tr>
@@ -313,45 +207,42 @@ const Units = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <p className="tw-m-0">No units created</p>
+                           <When condition={!query.isLoading}>
+                              <p className="tw-m-0">No units created</p>
+                           </When>
                         </Else>
                      </If>
                   </Card.Body>
                </Card>
             </Col>
          </div>
-         {/* <When condition={limit > 5 ? true : query.data?.totalPages > 1}>
-            <Pagination
-               page={page}
-               onPageChange={setPage}
-               onLimitChange={setLimit}
-               {..._.omit(query.data, ['docs'])}
-               isLimitDisabled={query.isLoading || deleteMutation.isLoading}
-            />
-         </When> */}
-         {/* ADD EDIT */}
+
+         {/* ADD Modal */}
          <ModalWrapper
             show={showModal}
             onHide={() => {
                setShowModal(false);
                setUrlState({});
             }}
-            title={isEditing ? 'Edit Unit' : 'Add New Unit'}
-            isLoading={query.isLoading || postMutation.isLoading || patchMutation.isLoading}
+            title="Add New Unit"
+            isLoading={query.isLoading || postMutation.isLoading}
             size="md"
-            onSubmit={handleSubmit}
+            onSubmit={formik.handleSubmit}
             submitButtonText="Confirm"
          >
-            <form onSubmit={handleSubmit}>
+            <When condition={getTypes.isLoading}>
+               <SpinnerOverlay />
+            </When>
+            <form onSubmit={formik.handleSubmit}>
                <div className="row">
                   <div className="form-group col-xl-6">
                      <label className="col-form-label">Title</label>
                      <input
                         className="form-control"
-                        onChange={(e) => setTitle(e.target.value)}
+                        onChange={formik.handleChange}
                         type="text"
                         name="title"
-                        value={title}
+                        value={formik.values.title}
                      />
                   </div>
                </div>
@@ -360,30 +251,27 @@ const Units = () => {
                      <label className="col-form-label">Value</label>
                      <input
                         className="form-control"
-                        onChange={(e) => setValue(e.target.value)}
+                        onChange={formik.handleChange}
                         type="text"
                         name="value"
-                        value={value}
+                        value={formik.values.value}
                      />
                   </div>
+                  <button type="submit" className="tw-invisible" />
                </div>
             </form>
             <div className="row">
                <div className="form-group col-xl-6">
                   <label className="col-form-label">Type</label>
-                  <select
-                     className="form-control form-control-lg"
-                     id="inlineFormCustomSelect"
-                     onChange={(e) => setType(e.target.value)}
-                     value={type}
-                     name="type"
-                  >
-                     {getTypes.data?.map((e) => (
-                        <option key={e._id} selected={e._id === selectedRow?.type} value={e._id}>
-                           {e.title}
-                        </option>
-                     ))}
-                  </select>
+                  <CreatableSelect
+                     isClearable
+                     onChange={(e) => formik.setFieldValue('type', e?._id)}
+                     options={
+                        getTypes.data?.length > 0 &&
+                        getTypes.data.map((e) => ({ ...e, label: e.title, value: e.title }))
+                     }
+                     onCreateOption={handleCreateType}
+                  />
                </div>
             </div>
          </ModalWrapper>

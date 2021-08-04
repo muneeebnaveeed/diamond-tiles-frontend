@@ -13,7 +13,8 @@ import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
-import { FaSortUp, FaSortDown } from 'react-icons/fa';
+import { FaSort } from 'react-icons/fa';
+import { useDebounce } from 'ahooks';
 
 const Employees = () => {
    dayjs.extend(relativeTime);
@@ -22,13 +23,13 @@ const Employees = () => {
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
    const [search, setSearch] = useState('');
-   const [searchValue, setSearchValue] = useState('');
+   const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['employees', page, limit, sort.field, sort.order, search], () =>
-      get('/employees', page, limit, sort.field, sort.order, search)
+   const query = useQuery(['employees', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
+      get('/employees', page, limit, sort.field, sort.order, debouncedSearchValue)
    );
    const deleteMutation = useMutation((id) => del(`/employees/id/${id}`), {
       onSuccess: async () => {
@@ -74,15 +75,6 @@ const Employees = () => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
 
-   const handleSearch = () => {
-      setSearch(searchValue);
-   };
-
-   useEffect(() => {
-      if (searchValue === '') {
-         setSearch('');
-      }
-   }, [searchValue]);
    return (
       <>
          <PageTItle activeMenu="employees" motherMenu="Manage" />
@@ -100,14 +92,9 @@ const Employees = () => {
                      className="input-rounded tw-rounded-r-none tw-pl-6"
                      placeholder="Search Employees..."
                      disabled={deleteMutation.isLoading}
-                     onChange={(e) => setSearchValue(e.target.value)}
+                     onChange={(e) => setSearch(e.target.value)}
                   />
-                  <Button
-                     variant="secondary"
-                     className="btn btn-secondary tw-pl-6"
-                     onClick={handleSearch}
-                     loading={deleteMutation.isLoading}
-                  >
+                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={query.isLoading}>
                      Search
                   </Button>
                </ButtonGroup>
@@ -139,86 +126,41 @@ const Employees = () => {
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('name')}>
                                           NAME
-                                          <If condition={sort.order === 1 && sort.field === 'name'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('phone')}>
                                           PHONE#
-                                          <If condition={sort.order === 1 && sort.field === 'phone'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('cnic')}>
                                           CNIC
-                                          <If condition={sort.order === 1 && sort.field === 'cnic'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('address')}>
                                           ADDRESS
-                                          <If condition={sort.order === 1 && sort.field === 'address'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('salary')}>
                                           SALARY
-                                          <If condition={sort.order === 1 && sort.field === 'salary'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                  </tr>
@@ -236,19 +178,19 @@ const Employees = () => {
                                        <td>{e.salary}</td>
                                        <td>
                                           <OverlayTrigger
-                                             trigger="hover"
+                                             trigger={['hover', 'hover']}
                                              placement="top"
                                              overlay={
-                                                <Popover>
+                                                <Popover className="tw-border-gray-500">
                                                    <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 1
+                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
                                                          ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
                                                          : dayjs(e.createdAt).fromNow()
                                                    }.`}</Popover.Content>
                                                 </Popover>
                                              }
                                           >
-                                             <AiOutlineQuestionCircle />
+                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                           </OverlayTrigger>
                                        </td>
                                        <td>
@@ -285,7 +227,9 @@ const Employees = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <p className="tw-m-0">No employees created</p>
+                           <When condition={!query.isLoading}>
+                              <p className="tw-m-0">No employees created</p>
+                           </When>
                         </Else>
                      </If>
                   </Card.Body>

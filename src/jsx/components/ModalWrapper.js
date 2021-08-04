@@ -1,11 +1,11 @@
 import React from 'react';
-import { Button, Modal, Container, Spinner } from 'react-bootstrap';
+import { Button, Modal, Container, Spinner, ButtonGroup } from 'react-bootstrap';
 import { When } from 'react-if';
 
 const ModalWrapper = (props) => {
    const { show, onHide, isLoading, title, onSubmit, submitButtonText, children, ...rest } = props;
    return (
-      <Modal className="fade" show={show} {...rest}>
+      <Modal className="fade" show={show} onHide={onHide} {...rest}>
          <Modal.Header>
             <Modal.Title>{title}</Modal.Title>
             <Button variant="" className="close" onClick={onHide}>
@@ -16,15 +16,17 @@ const ModalWrapper = (props) => {
             <Container>{children}</Container>
          </Modal.Body>
          <Modal.Footer>
-            <Button variant="danger light" onClick={onHide}>
-               Close
-            </Button>
-            <Button variant="primary" disabled={isLoading} onClick={onSubmit}>
-               <When condition={isLoading}>
-                  <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true" />
-               </When>
-               <span className="ml-1">{submitButtonText ?? 'Save changes'}</span>
-            </Button>
+            <ButtonGroup>
+               <Button variant="warning light" onClick={onHide}>
+                  Close
+               </Button>
+               <Button variant="primary" disabled={isLoading} onClick={onSubmit}>
+                  <When condition={isLoading}>
+                     <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true" />
+                  </When>
+                  <span className="ml-1">{submitButtonText ?? 'Save changes'}</span>
+               </Button>
+            </ButtonGroup>
          </Modal.Footer>
       </Modal>
    );

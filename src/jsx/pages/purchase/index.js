@@ -1,65 +1,58 @@
-import useUrlState from '@ahooksjs/use-url-state';
+import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Button from 'jsx/components/Button';
+import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
-import { del, get, useAlert, useMutation, useQuery, post } from 'jsx/helpers';
+import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
-import React, { useState, useMemo, useEffect } from 'react';
+import _ from 'lodash';
+import React, { useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
-import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { FaSort } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
-import swal from 'sweetalert';
-import ModalWrapper from 'jsx/components/ModalWrapper';
 import { useHistory } from 'react-router-dom';
+import swal from 'sweetalert';
 
-const Types = () => {
-   const history = useHistory();
+const Purchase = () => {
    dayjs.extend(relativeTime);
-   const [urlState, setUrlState] = useUrlState({});
-
+   const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
+   const [sort, setSort] = useState({ field: null, order: -1 });
    const [search, setSearch] = useState('');
-   const [showModal, setShowModal] = useState(false);
-   const [title, setTitle] = useState('');
+   const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['types', page, limit, search], () => get('/types', page, limit, '', '', search));
-   const postMutation = useMutation((payload) => post('/types', payload), {
-      onSuccess: () => {
-         if (urlState.redirect) {
-            history.replace(urlState.redirect);
-         }
-         setShowModal(false);
-         query.refetch();
-      },
-      onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to add unit', err });
-      },
-   });
-   const deleteMutation = useMutation((id) => del(`/types/id/${id}`), {
+   const query = useQuery(['inventories', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
+      get('/inventories', page, limit, sort.field, sort.order, debouncedSearchValue)
+   );
+   const deleteMutation = useMutation((id) => del(`/inventories/id/${id}`), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('types');
+         await queryClient.invalidateQueries('inventories');
          alert.setAlert({
-            message: 'Type deleted successfully',
+            message: 'Inventory deleted successfully',
             variant: 'success',
          });
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to delete Type', err });
+         alert.setErrorAlert({ message: 'Unable to delete employee', err });
       },
    });
 
-   const isAdd = useMemo(() => urlState?.action === 'add', [urlState.action]);
-   const mutation = useMemo(() => postMutation, [postMutation]);
+   const handleOnClickEdit = (obj) => {
+      history.push({ pathname: `/inventories/${obj._id}`, search: `?type=edit` });
+   };
 
+   const handleOnClickView = (obj) => {
+      history.push({ pathname: `/inventories/${obj._id}`, search: `?type=view` });
+   };
    const handleOnClickAdd = () => {
-      setShowModal(true);
-      setUrlState({ action: 'add' });
+      history.push('/inventories/add');
    };
 
    const handleOnClickDelete = (id) => {
@@ -76,33 +69,28 @@ const Types = () => {
       });
    };
 
-   const handleSubmit = (e) => {
-      e.preventDefault();
-      mutation.mutate({ title });
-   };
    const alertMarkup = alert.getAlert();
-   useEffect(() => {
-      if (isAdd) {
-         setShowModal(true);
-         setTitle(urlState.title ?? '');
-      }
-   }, [isAdd]);
+
+   const handleSort = (key) => {
+      setSort((prev) => ({ field: key, order: prev.order * -1 }));
+   };
+
    return (
       <>
-         <PageTItle activeMenu="types" motherMenu="Manage" />
+         <PageTItle activeMenu="purchase" motherMenu="Diamond Tiles" />
          <div className="row tw-mb-8">
             <div className="col-xl-6">
                <Button variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
-                  Add New Type
+                  Add New Purchase
                </Button>
             </div>
 
-            {/* <div className="col-xl-6">
+            <div className="col-xl-6">
                <ButtonGroup className="tw-float-right">
                   <input
                      type="text"
                      className="input-rounded tw-rounded-r-none tw-pl-6"
-                     placeholder="Search types..."
+                     placeholder="Search Purchase..."
                      disabled={deleteMutation.isLoading}
                      onChange={(e) => setSearch(e.target.value)}
                   />
@@ -110,7 +98,7 @@ const Types = () => {
                      Search
                   </Button>
                </ButtonGroup>
-            </div> */}
+            </div>
          </div>
          {alertMarkup ? (
             <Row>
@@ -124,10 +112,10 @@ const Types = () => {
                      <SpinnerOverlay />
                   </When>
                   <Card.Header>
-                     <Card.Title>Manage types</Card.Title>
+                     <Card.Title>Manage Purchase</Card.Title>
                   </Card.Header>
                   <Card.Body>
-                     <If condition={query.data?.length > 0}>
+                     <If condition={query.data?.totalDocs > 0}>
                         <Then>
                            <Table className="tw-relative" responsive>
                               <thead>
@@ -136,17 +124,49 @@ const Types = () => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong>TITLE</strong>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('supplier')}>
+                                          SUPPLIER
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
+                                       </strong>
+                                    </th>
+                                    <th>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('product')}>
+                                          PRODUCT
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
+                                       </strong>
+                                    </th>
+                                    <th>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('sourcePrice')}>
+                                          PRICE
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
+                                       </strong>
+                                    </th>
+                                    <th>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('paid')}>
+                                          PAID
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
+                                       </strong>
                                     </th>
                                  </tr>
                               </thead>
                               <tbody>
-                                 {query.data?.map((e, index) => (
+                                 {query.data?.docs.map((e, index) => (
                                     <tr key={`${e._id}`}>
                                        <td>
-                                          <strong>{index + 1}</strong>
+                                          <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                        </td>
-                                       <td>{e.title}</td>
+                                       <td>{e?.supplier?.name ?? 'N/A'}</td>
+                                       <td>{e?.product?.title ?? 'N/A'}</td>
+                                       <td>{e?.sourcePrice ?? 'N/a'}</td>
+                                       <td>{e?.paid ?? 'N/A'}</td>
                                        <td>
                                           <OverlayTrigger
                                              trigger={['hover', 'hover']}
@@ -167,11 +187,29 @@ const Types = () => {
                                        <td>
                                           <ButtonGroup>
                                              <Button
+                                                variant="dark"
+                                                size="sm"
+                                                icon={AiFillEye}
+                                                onClick={() => handleOnClickView(e)}
+                                             >
+                                                View
+                                             </Button>
+                                             <Button
+                                                variant="warning"
+                                                size="sm"
+                                                icon={AiFillEdit}
+                                                onClick={() => handleOnClickEdit(e)}
+                                             >
+                                                Edit
+                                             </Button>
+                                             <Button
                                                 variant="danger"
                                                 size="sm"
                                                 icon={AiFillDelete}
                                                 onClick={() => handleOnClickDelete(e._id)}
-                                             />
+                                             >
+                                                Delete
+                                             </Button>
                                           </ButtonGroup>
                                        </td>
                                     </tr>
@@ -181,7 +219,7 @@ const Types = () => {
                         </Then>
                         <Else>
                            <When condition={!query.isLoading}>
-                              <p className="tw-m-0">No types created</p>
+                              <p className="tw-m-0">No employees created</p>
                            </When>
                         </Else>
                      </If>
@@ -189,45 +227,17 @@ const Types = () => {
                </Card>
             </Col>
          </div>
-         {/* <When condition={limit > 5 ? true : query.data?.totalPages > 1}>
+         <When condition={limit > 5 ? true : query.data?.totalPages > 1}>
             <Pagination
                page={page}
                onPageChange={setPage}
                onLimitChange={setLimit}
-               {..._.omit(query.data)}
+               {..._.omit(query.data, ['docs'])}
                isLimitDisabled={query.isLoading || deleteMutation.isLoading}
             />
-         </When> */}
-         <ModalWrapper
-            show={showModal}
-            onHide={() => {
-               setShowModal(false);
-               setUrlState({});
-            }}
-            title="Add New Unit"
-            isLoading={query.isLoading || postMutation.isLoading}
-            size="md"
-            onSubmit={handleSubmit}
-            submitButtonText="Confirm"
-         >
-            <form onSubmit={handleSubmit}>
-               <div className="row">
-                  <div className="form-group col-xl-6">
-                     <label className="col-form-label">Title</label>
-                     <input
-                        className="form-control"
-                        onChange={(e) => setTitle(e.target.value)}
-                        type="text"
-                        name="title"
-                        value={title}
-                     />
-                     <button type="submit" className="tw-invisible" />
-                  </div>
-               </div>
-            </form>
-         </ModalWrapper>
+         </When>
       </>
    );
 };
 
-export default Types;
+export default Purchase;

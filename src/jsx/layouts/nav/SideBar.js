@@ -156,8 +156,8 @@ class SideBar extends Component {
                         </li>
                      </ul>
                   </li>
-                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
-                     <Link className="" to="/" aria-expanded="false">
+                  <li className={`${path.slice(1).includes('purchase') ? 'mm-active' : ''}`}>
+                     <Link className="" to="/purchase" aria-expanded="false">
                         <i className="flaticon-381-more" />
                         <span className="nav-text">Purchase</span>
                      </Link>

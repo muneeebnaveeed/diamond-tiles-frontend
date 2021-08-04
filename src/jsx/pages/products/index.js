@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
@@ -5,15 +7,14 @@ import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { ButtonGroup, Card, Col, Row, Table, Popover, OverlayTrigger } from 'react-bootstrap';
+import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { FaSort } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import swal from 'sweetalert';
-import { FaSortUp, FaSortDown } from 'react-icons/fa';
+import { useDebounce } from 'ahooks';
 
 const Products = () => {
    dayjs.extend(relativeTime);
@@ -22,13 +23,13 @@ const Products = () => {
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
    const [search, setSearch] = useState('');
-   const [searchValue, setSearchValue] = useState('');
+   const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['products', page, limit, sort.field, sort.order, search], () =>
-      get('/products', page, limit, sort.field, sort.order, search)
+   const query = useQuery(['products', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
+      get('/products', page, limit, sort.field, sort.order, debouncedSearchValue)
    );
    const deleteMutation = useMutation((id) => del(`/products/id/${id}`), {
       onSuccess: async () => {
@@ -73,15 +74,7 @@ const Products = () => {
    const handleSort = (key) => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
-   const handleSearch = () => {
-      setSearch(searchValue);
-   };
 
-   useEffect(() => {
-      if (searchValue === '') {
-         setSearch('');
-      }
-   }, [searchValue]);
    return (
       <>
          <PageTItle activeMenu="products" motherMenu="Manage" />
@@ -99,14 +92,9 @@ const Products = () => {
                      className="input-rounded tw-rounded-r-none tw-pl-6"
                      placeholder="Search products..."
                      disabled={deleteMutation.isLoading}
-                     onChange={(e) => setSearchValue(e.target.value)}
+                     onChange={(e) => setSearch(e.target.value)}
                   />
-                  <Button
-                     variant="secondary"
-                     className="btn btn-secondary tw-pl-6"
-                     onClick={handleSearch}
-                     loading={deleteMutation.isLoading}
-                  >
+                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={query.isLoading}>
                      Search
                   </Button>
                </ButtonGroup>
@@ -138,52 +126,25 @@ const Products = () => {
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('title')}>
                                           TITLE
-                                          <If condition={sort.order === 1 && sort.field === 'title'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('model')}>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('modelNumber')}>
                                           MODEL#
-                                          <If condition={sort.order === 1 && sort.field === 'model'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('type')}>
                                           TYPE
-                                          <If condition={sort.order === 1 && sort.field === 'type'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                  </tr>
@@ -199,19 +160,19 @@ const Products = () => {
                                        <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
                                        <td>
                                           <OverlayTrigger
-                                             trigger="hover"
+                                             trigger={['hover', 'hover']}
                                              placement="top"
                                              overlay={
-                                                <Popover>
+                                                <Popover className="tw-border-gray-500">
                                                    <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 1
+                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
                                                          ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
                                                          : dayjs(e.createdAt).fromNow()
                                                    }.`}</Popover.Content>
                                                 </Popover>
                                              }
                                           >
-                                             <AiOutlineQuestionCircle />
+                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                           </OverlayTrigger>
                                        </td>
                                        <td>
@@ -248,7 +209,9 @@ const Products = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <p className="tw-m-0">No products created</p>
+                           <When condition={!query.isLoading}>
+                              <p className="tw-m-0">No products created</p>
+                           </When>
                         </Else>
                      </If>
                   </Card.Body>

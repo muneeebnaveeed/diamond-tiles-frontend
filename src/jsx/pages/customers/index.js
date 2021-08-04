@@ -13,7 +13,8 @@ import { useHistory } from 'react-router-dom';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import swal from 'sweetalert';
-import { FaSortUp, FaSortDown } from 'react-icons/fa';
+import { FaSort } from 'react-icons/fa';
+import { useDebounce } from 'ahooks';
 
 const Customers = () => {
    dayjs.extend(relativeTime);
@@ -22,13 +23,13 @@ const Customers = () => {
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: 1 });
    const [search, setSearch] = useState('');
-   const [searchValue, setSearchValue] = useState('');
+   const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['customers', page, limit, sort.field, sort.order, search], () =>
-      get('/customers', page, limit, sort.field, sort.order, search)
+   const query = useQuery(['customers', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
+      get('/customers', page, limit, sort.field, sort.order, debouncedSearchValue)
    );
    const deleteMutation = useMutation((id) => del(`/customers/id/${id}`), {
       onSuccess: async () => {
@@ -74,16 +75,6 @@ const Customers = () => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
 
-   const handleSearch = () => {
-      setSearch(searchValue);
-   };
-
-   useEffect(() => {
-      if (searchValue === '') {
-         setSearch('');
-      }
-   }, [searchValue]);
-
    return (
       <>
          <PageTItle activeMenu="Customers" motherMenu="Manage" />
@@ -101,14 +92,9 @@ const Customers = () => {
                      className="input-rounded tw-rounded-r-none tw-pl-6"
                      placeholder="Search Customers..."
                      disabled={deleteMutation.isLoading}
-                     onChange={(e) => setSearchValue(e.target.value)}
+                     onChange={(e) => setSearch(e.target.value)}
                   />
-                  <Button
-                     variant="secondary"
-                     className="btn btn-secondary tw-pl-6"
-                     onClick={handleSearch}
-                     loading={deleteMutation.isLoading}
-                  >
+                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={query.isLoading}>
                      Search
                   </Button>
                </ButtonGroup>
@@ -140,35 +126,17 @@ const Customers = () => {
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('name')}>
                                           NAME
-                                          <If condition={sort.order === 1 && sort.field === 'name'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('phone')}>
                                           Phone
-                                          <If condition={sort.order === 1 && sort.field === 'phone'}>
-                                             <Then>
-                                                <span>
-                                                   <FaSortDown className="d-inline mx-1" />
-                                                </span>
-                                             </Then>
-                                             <Else>
-                                                <span>
-                                                   <FaSortUp className="d-inline mx-1" />
-                                                </span>
-                                             </Else>
-                                          </If>
+                                          <span>
+                                             <FaSort className="d-inline mx-1" />
+                                          </span>
                                        </strong>
                                     </th>
                                  </tr>
@@ -186,16 +154,16 @@ const Customers = () => {
                                              trigger="hover"
                                              placement="top"
                                              overlay={
-                                                <Popover>
+                                                <Popover className="tw-border-gray-500">
                                                    <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 1
+                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
                                                          ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
                                                          : dayjs(e.createdAt).fromNow()
                                                    }.`}</Popover.Content>
                                                 </Popover>
                                              }
                                           >
-                                             <AiOutlineQuestionCircle />
+                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                           </OverlayTrigger>
                                        </td>
                                        <td>
@@ -232,7 +200,9 @@ const Customers = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <p className="tw-m-0">No customers created</p>
+                           <When condition={!query.isLoading}>
+                              <p className="tw-m-0">No customers created</p>
+                           </When>
                         </Else>
                      </If>
                   </Card.Body>

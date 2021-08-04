@@ -1,13 +1,15 @@
 import useUrlState from '@ahooksjs/use-url-state';
 import { useFormik } from 'formik';
 import Button from 'jsx/components/Button';
+import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ButtonGroup, Card, select } from 'react-bootstrap';
+import { ButtonGroup, Card } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
-import { Else, If, Then } from 'react-if';
+import { Else, If, Then, When } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
+import CreatableSelect from 'react-select/creatable';
 
 const ProductActions = () => {
    const history = useHistory();
@@ -60,6 +62,10 @@ const ProductActions = () => {
       },
    });
 
+   const handleCreateType = (title) => {
+      history.push({ pathname: '/types', search: `?action=add&title=${title}&redirect=/products/add` });
+   };
+
    const fetchproductData = async () => {
       let response;
       try {
@@ -82,17 +88,14 @@ const ProductActions = () => {
       }
    }, []);
 
-   useEffect(() => {
-      if (getTypes.data?.length > 0 && formik.values.type === '') {
-         formik.setFieldValue('type', getTypes.data[0]._id);
-      }
-   }, [getTypes.data]);
-
    return (
       <>
          <PageTItle activeMenu="products" motherMenu="Manage" />
          {alert.getAlert()}
          <Card>
+            <When condition={getTypes.isLoading}>
+               <SpinnerOverlay />
+            </When>
             <If condition={isAddProduct || isEditing}>
                <Then>
                   <form onSubmit={formik.handleSubmit}>
@@ -129,19 +132,15 @@ const ProductActions = () => {
                         <div className="row">
                            <div className="form-group col-xl-6">
                               <label className="col-form-label">Type</label>
-                              <select
-                                 className="form-control form-control-lg"
-                                 id="inlineFormCustomSelect"
-                                 onChange={formik.handleChange}
-                                 value={formik.values.type}
-                                 name="type"
-                              >
-                                 {getTypes.data?.map((e) => (
-                                    <option key={e._id} selected={e._id === product?.type?._id} value={e._id}>
-                                       {e.title}
-                                    </option>
-                                 ))}
-                              </select>
+                              <CreatableSelect
+                                 isClearable
+                                 onChange={(e) => formik.setFieldValue('type', e?._id)}
+                                 options={
+                                    getTypes.data?.length > 0 &&
+                                    getTypes.data.map((e) => ({ ...e, label: e.title, value: e.title }))
+                                 }
+                                 onCreateOption={handleCreateType}
+                              />
                            </div>
                         </div>
                      </Card.Body>
