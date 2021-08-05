@@ -8,8 +8,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ButtonGroup, Card } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { Else, If, Then, When } from 'react-if';
+import { useQueryClient } from 'react-query';
 import { useHistory, useParams } from 'react-router-dom';
-import CreatableSelect from 'react-select/creatable';
+import CreatableSelect from '../../components/CreatableSelect';
 
 const ProductActions = () => {
    const history = useHistory();
@@ -21,6 +22,7 @@ const ProductActions = () => {
 
    const alert = useAlert();
    const getTypes = useQuery('types', () => get('/types'));
+   const queryClient = useQueryClient();
 
    const patchMutation = useMutation((payload) => patch(`/products/id/${params.id}`, payload), {
       onError: (err) => {
@@ -37,6 +39,11 @@ const ProductActions = () => {
       },
       onError: (err) => {
          alert.setErrorAlert({ message: 'Unable to add product', err });
+      },
+   });
+   const postTypeMutation = useMutation((payload) => post('/types', payload), {
+      onSuccess: async () => {
+         await queryClient.invalidateQueries('types');
       },
    });
 
@@ -62,15 +69,16 @@ const ProductActions = () => {
       },
    });
 
-   const handleCreateType = (title) => {
-      history.push({ pathname: '/types', search: `?action=add&title=${title}&redirect=/products/add` });
+   const handleCreateType = async (title) => {
+      postTypeMutation.mutate({ title });
+      // history.push({ pathname: '/types', search: `?action=add&title=${title}&redirect=/products/add` });
    };
 
    const fetchproductData = async () => {
       let response;
       try {
-         response = await get(`/products/${params.id}`);
-         setProduct(response.data);
+         response = await get(`/products/id/${params.id}`);
+         setProduct(response);
       } catch (err) {
          setIsError(true);
          alert.setErrorAlert({
@@ -93,7 +101,7 @@ const ProductActions = () => {
          <PageTItle activeMenu="products" motherMenu="Manage" />
          {alert.getAlert()}
          <Card>
-            <When condition={getTypes.isLoading}>
+            <When condition={getTypes.isLoading || postTypeMutation.isLoading}>
                <SpinnerOverlay />
             </When>
             <If condition={isAddProduct || isEditing}>

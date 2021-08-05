@@ -1,3 +1,4 @@
+import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Button from 'jsx/components/Button';
@@ -6,15 +7,14 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
-import { FaSort } from 'react-icons/fa';
-import { useDebounce } from 'ahooks';
 
 const Employees = () => {
    dayjs.extend(relativeTime);
@@ -127,7 +127,15 @@ const Employees = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('name')}>
                                           NAME
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'name'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'name' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'name' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -135,7 +143,15 @@ const Employees = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('phone')}>
                                           PHONE#
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'phone'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'phone' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'phone' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -143,7 +159,15 @@ const Employees = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('cnic')}>
                                           CNIC
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'cnic'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'cnic' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'cnic' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -151,7 +175,15 @@ const Employees = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('address')}>
                                           ADDRESS
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'address'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'address' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'address' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -159,7 +191,15 @@ const Employees = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('salary')}>
                                           SALARY
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'salary'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'salary' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'salary' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -227,8 +267,11 @@ const Employees = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <When condition={!query.isLoading}>
+                           <When condition={!query.isLoading && !debouncedSearchValue}>
                               <p className="tw-m-0">No employees created</p>
+                           </When>
+                           <When condition={!query.isLoading && debouncedSearchValue}>
+                              <p className="tw-m-0">No result found!</p>
                            </When>
                         </Else>
                      </If>

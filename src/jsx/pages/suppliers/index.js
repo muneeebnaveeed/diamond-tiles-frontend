@@ -10,7 +10,7 @@ import _ from 'lodash';
 import React, { useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
-import { FaSort } from 'react-icons/fa';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
@@ -126,7 +126,15 @@ const Suppliers = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('name')}>
                                           NAME
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'name'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'name' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'name' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -134,7 +142,15 @@ const Suppliers = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('phone')}>
                                           PHONE
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'phone'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'phone' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'phone' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -142,7 +158,15 @@ const Suppliers = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('company')}>
                                           COMPANY
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'company'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'company' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'company' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -208,8 +232,11 @@ const Suppliers = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <When condition={!query.isLoading}>
+                           <When condition={!query.isLoading && !debouncedSearchValue}>
                               <p className="tw-m-0">No suppliers created</p>
+                           </When>
+                           <When condition={!query.isLoading && debouncedSearchValue}>
+                              <p className="tw-m-0">No result found!</p>
                            </When>
                         </Else>
                      </If>

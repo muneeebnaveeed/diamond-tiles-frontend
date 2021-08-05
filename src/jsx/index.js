@@ -104,9 +104,11 @@ import CustomerActions from './pages/customers/CustomerActions';
 import SupplierActions from './pages/suppliers/SupplierActions';
 import EmployeeActions from './pages/employees/EmployeeActions';
 import ProductActions from './pages/products/ProductActions';
-import Types from './pages/types';
-import Units from './pages/units';
+// import Types from './pages/types';
+// import Units from './pages/units';
 import Purchase from './pages/purchase';
+import Sales from './pages/sale';
+import Expenses from './pages/expenses';
 
 /// Pages
 // const Registration = React.lazy(() => import('./pages/Registration'));
@@ -288,9 +290,11 @@ const routes = [
    { url: 'suppliers/:id', component: SupplierActions },
    { url: 'products', component: Products },
    { url: 'products/:id', component: ProductActions },
-   { url: 'types', component: Types },
-   { url: 'units', component: Units },
+   // { url: 'types', component: Types },
+   // { url: 'units', component: Units },
    { url: 'purchase', component: Purchase },
+   { url: 'sale', component: Sales },
+   { url: 'expenses', component: Expenses },
 ];
 
 const Markup = () => (

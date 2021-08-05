@@ -13,7 +13,7 @@ import { useHistory } from 'react-router-dom';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import swal from 'sweetalert';
-import { FaSort } from 'react-icons/fa';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { useDebounce } from 'ahooks';
 
 const Customers = () => {
@@ -127,7 +127,15 @@ const Customers = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('name')}>
                                           NAME
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'name'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'name' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'name' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -135,7 +143,15 @@ const Customers = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('phone')}>
                                           Phone
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'phone'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'phone' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'phone' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -200,8 +216,11 @@ const Customers = () => {
                            </Table>
                         </Then>
                         <Else>
-                           <When condition={!query.isLoading}>
+                           <When condition={!query.isLoading && !debouncedSearchValue}>
                               <p className="tw-m-0">No customers created</p>
+                           </When>
+                           <When condition={!query.isLoading && debouncedSearchValue}>
+                              <p className="tw-m-0">No result found!</p>
                            </When>
                         </Else>
                      </If>

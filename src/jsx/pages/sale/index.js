@@ -1,3 +1,4 @@
+import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Button from 'jsx/components/Button';
@@ -6,7 +7,7 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
@@ -14,11 +15,8 @@ import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
-import { useDebounce } from 'ahooks';
-import Types from '../types';
-import Units from '../units';
 
-const Products = () => {
+const Sale = () => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -30,31 +28,31 @@ const Products = () => {
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['products', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
-      get('/products', page, limit, sort.field, sort.order, debouncedSearchValue)
+   const query = useQuery(['sales', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
+      get('/sales', page, limit, sort.field, sort.order, debouncedSearchValue)
    );
-   const deleteMutation = useMutation((id) => del(`/products/id/${id}`), {
+   const deleteMutation = useMutation((id) => del(`/sales/id/${id}`), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('products');
+         await queryClient.invalidateQueries('sales');
          alert.setAlert({
-            message: 'User deleted successfully',
+            message: 'Sale deleted successfully',
             variant: 'success',
          });
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to delete product', err });
+         alert.setErrorAlert({ message: 'Unable to delete sale', err });
       },
    });
 
    const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/products/${obj._id}`, search: `?type=edit` });
+      history.push({ pathname: `/sales/${obj._id}`, search: `?type=edit` });
    };
 
    const handleOnClickView = (obj) => {
-      history.push({ pathname: `/products/${obj._id}`, search: `?type=view` });
+      history.push({ pathname: `/sales/${obj._id}`, search: `?type=view` });
    };
    const handleOnClickAdd = () => {
-      history.push('/products/add');
+      history.push('/sales/add');
    };
 
    const handleOnClickDelete = (id) => {
@@ -76,22 +74,32 @@ const Products = () => {
    const handleSort = (key) => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
-   const handleAddType = () => {
-      history.push({ pathname: '/types', search: `?action=add` });
-   };
 
    return (
       <>
-         <PageTItle activeMenu="products" motherMenu="Manage" />
-         <div className="row">
-            <div className="col-xl-5  my-2">
-               <Types />
+         <PageTItle activeMenu="sales" motherMenu="Diamond Tiles" />
+         <div className="row tw-mb-8">
+            <div className="col-xl-6">
+               <Button variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
+                  Add New Sale
+               </Button>
             </div>
-            <div className="col-xl-7  my-2">
-               <Units />
+
+            <div className="col-xl-6">
+               {/* <ButtonGroup className="tw-float-right">
+                  <input
+                     type="text"
+                     className="input-rounded tw-rounded-r-none tw-pl-6"
+                     placeholder="Search Purchase..."
+                     disabled={deleteMutation.isLoading}
+                     onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={query.isLoading}>
+                     Search
+                  </Button>
+               </ButtonGroup> */}
             </div>
          </div>
-
          {alertMarkup ? (
             <Row>
                <Col lg={12}>{alertMarkup}</Col>
@@ -104,19 +112,7 @@ const Products = () => {
                      <SpinnerOverlay />
                   </When>
                   <Card.Header>
-                     <Card.Title>Manage Products</Card.Title>
-                     <ButtonGroup className="tw-float-right">
-                        <input
-                           type="text"
-                           className="input-rounded tw-rounded-r-none tw-pl-6 tw-shadow-inner tw-ring-1 "
-                           placeholder="Search products..."
-                           disabled={deleteMutation.isLoading}
-                           onChange={(e) => setSearch(e.target.value)}
-                        />
-                        <Button size="sm" variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
-                           Add New Product
-                        </Button>
-                     </ButtonGroup>
+                     <Card.Title>Manage Sales</Card.Title>
                   </Card.Header>
                   <Card.Body>
                      <If condition={query.data?.totalDocs > 0}>
@@ -128,48 +124,80 @@ const Products = () => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('title')}>
-                                          TITLE
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('customer')}>
+                                          CUSTOMER
                                           <span>
-                                             <When condition={sort.field !== 'title'}>
+                                             <When condition={sort.field !== 'customer'}>
                                                 <FaSort className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'title' && sort.order === -1}>
+                                             <When condition={sort.field === 'customer' && sort.order === -1}>
                                                 <FaSortDown className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'title' && sort.order === 1}>
+                                             <When condition={sort.field === 'customer' && sort.order === 1}>
                                                 <FaSortUp className="d-inline mx-1" />
                                              </When>
                                           </span>
                                        </strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('modelNumber')}>
-                                          MODEL#
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('inventory')}>
+                                          INVENTORY
                                           <span>
-                                             <When condition={sort.field !== 'modelNumber'}>
+                                             <When condition={sort.field !== 'inventory'}>
                                                 <FaSort className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'modelNumber' && sort.order === -1}>
+                                             <When condition={sort.field === 'inventory' && sort.order === -1}>
                                                 <FaSortDown className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'modelNumber' && sort.order === 1}>
+                                             <When condition={sort.field === 'inventory' && sort.order === 1}>
                                                 <FaSortUp className="d-inline mx-1" />
                                              </When>
                                           </span>
                                        </strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('type')}>
-                                          TYPE
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('quantity')}>
+                                          QUANTITY
                                           <span>
-                                             <When condition={sort.field !== 'type'}>
+                                             <When condition={sort.field !== 'quantity'}>
                                                 <FaSort className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'type' && sort.order === -1}>
+                                             <When condition={sort.field === 'quantity' && sort.order === -1}>
                                                 <FaSortDown className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'type' && sort.order === 1}>
+                                             <When condition={sort.field === 'quantity' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
+                                          </span>
+                                       </strong>
+                                    </th>
+                                    <th>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('retailPrice')}>
+                                          RETAIL PRICE
+                                          <span>
+                                             <When condition={sort.field !== 'retailPrice'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'retailPrice' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'retailPrice' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
+                                          </span>
+                                       </strong>
+                                    </th>
+                                    <th>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('paid')}>
+                                          PAID
+                                          <span>
+                                             <When condition={sort.field !== 'paid'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'paid' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'paid' && sort.order === 1}>
                                                 <FaSortUp className="d-inline mx-1" />
                                              </When>
                                           </span>
@@ -183,9 +211,11 @@ const Products = () => {
                                        <td>
                                           <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                        </td>
-                                       <td>{e.title}</td>
-                                       <td>{e.modelNumber}</td>
-                                       <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
+                                       <td>{e?.customer ?? 'N/A'}</td>
+                                       <td>{e?.inventory?.title ?? 'N/A'}</td>
+                                       <td>{e?.quantity ?? 'N/a'}</td>
+                                       <td>{e?.retailPrice ?? 'N/A'}</td>
+                                       <td>{e?.paid ?? 'N/A'}</td>
                                        <td>
                                           <OverlayTrigger
                                              trigger={['hover', 'hover']}
@@ -238,7 +268,7 @@ const Products = () => {
                         </Then>
                         <Else>
                            <When condition={!query.isLoading && !debouncedSearchValue}>
-                              <p className="tw-m-0">No products created</p>
+                              <p className="tw-m-0">No sales created</p>
                            </When>
                            <When condition={!query.isLoading && debouncedSearchValue}>
                               <p className="tw-m-0">No result found!</p>
@@ -262,4 +292,4 @@ const Products = () => {
    );
 };
 
-export default Products;
+export default Sale;

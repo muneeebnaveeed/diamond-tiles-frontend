@@ -148,12 +148,12 @@ class SideBar extends Component {
                         <li>
                            <Link to="/employees">Employees</Link>
                         </li>
-                        <li>
+                        {/* <li>
                            <Link to="/types">Types</Link>
                         </li>
                         <li>
                            <Link to="/units">Units</Link>
-                        </li>
+                        </li> */}
                      </ul>
                   </li>
                   <li className={`${path.slice(1).includes('purchase') ? 'mm-active' : ''}`}>
@@ -162,8 +162,8 @@ class SideBar extends Component {
                         <span className="nav-text">Purchase</span>
                      </Link>
                   </li>
-                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
-                     <Link className="" to="/" aria-expanded="false">
+                  <li className={`${path.slice(1).includes('sale') ? 'mm-active' : ''}`}>
+                     <Link className="" to="/sale" aria-expanded="false">
                         <i className="flaticon-381-calendar" />
                         <span className="nav-text">Sale</span>
                      </Link>
@@ -174,8 +174,8 @@ class SideBar extends Component {
                         <span className="nav-text">Khaata</span>
                      </Link>
                   </li>
-                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
-                     <Link className="" to="/" aria-expanded="false">
+                  <li className={`${path.slice(1).includes('expenses') ? 'mm-active' : ''}`}>
+                     <Link className="" to="/expenses" aria-expanded="false">
                         <i className="flaticon-381-briefcase" />
                         <span className="nav-text">Expenses</span>
                      </Link>

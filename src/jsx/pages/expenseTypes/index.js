@@ -1,89 +1,70 @@
-import useUrlState from '@ahooksjs/use-url-state';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { useFormik } from 'formik';
 import Button from 'jsx/components/Button';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
-import PageTItle from 'jsx/layouts/PageTitle';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import swal from 'sweetalert';
-import { useHistory } from 'react-router-dom';
-import { useFormik } from 'formik';
-import CreatableSelect from '../../components/CreatableSelect';
 
-const Units = () => {
-   const history = useHistory();
+const ExpenseTypes = () => {
    dayjs.extend(relativeTime);
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
-   const [urlState, setUrlState] = useUrlState({});
-   const [search, setSearch] = useState('');
+   const [sort, setSort] = useState({ field: null, order: -1 });
 
    const [showModal, setShowModal] = useState(false);
-   const [selectedRow, setSelectedRow] = useState(null);
 
    const alert = useAlert();
 
    const queryClient = useQueryClient();
 
-   const query = useQuery(['units', page, limit, search], () => get('/units', page, limit, '', '', search));
-   const getTypes = useQuery('types', () => get('/types'));
-   const deleteMutation = useMutation((id) => del(`/units/id/${id}`), {
+   const query = useQuery(['expenses/types', page, limit, sort.field, sort.order], () =>
+      get('/expenses/types', page, limit, sort.field, sort.order)
+   );
+   const deleteMutation = useMutation((id) => del(`/expenses/types/id/${id}`), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('units');
+         await queryClient.invalidateQueries('expenses/types');
          alert.setAlert({
-            message: 'Unit deleted successfully',
+            message: 'Expense type deleted successfully.',
             variant: 'success',
          });
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to delete Unit', err });
+         alert.setErrorAlert({ message: 'Unable to delete Expense type.', err });
       },
    });
 
-   const postMutation = useMutation((payload) => post('/units', payload), {
+   const postMutation = useMutation((payload) => post('/expenses/types', payload), {
       onSuccess: () => {
          setShowModal(false);
-         setUrlState({});
          query.refetch();
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to add unit', err });
+         alert.setErrorAlert({ message: 'Unable to add Expense type.', err });
       },
    });
-   const postTypeMutation = useMutation((payload) => post('/types', payload), {
-      onSuccess: async () => {
-         await queryClient.invalidateQueries('types');
-      },
-   });
-
-   const isAdd = useMemo(() => urlState?.action === 'add', [urlState.action]);
-   const mutation = useMemo(() => postMutation, [postMutation]);
 
    const formik = useFormik({
       initialValues: {
          title: '',
-         value: '',
-         type: '',
       },
       validateOnChange: false,
       validateOnBlur: false,
       onSubmit: (values) => {
-         mutation.mutate(values);
+         postMutation.mutate(values);
       },
    });
 
    const handleOnClickAdd = () => {
       setShowModal(true);
       formik.setFieldValue('title', '');
-      formik.setFieldValue('value', '');
-      formik.setFieldValue('type', '');
-      // setUrlState({ action: 'add' });
    };
 
    const handleOnClickDelete = (id) => {
@@ -100,33 +81,13 @@ const Units = () => {
       });
    };
 
-   const handleCreateType = (title) => {
-      postTypeMutation.mutate({ title });
-
-      // history.push({ pathname: '/types', search: `?action=add&title=${title}&redirect=/units?action=add` });
+   const handleSort = (key) => {
+      setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
-
    const alertMarkup = alert.getAlert();
-
-   // useEffect(() => {
-   //    if (isAdd) {
-   //       // setShowModal(true);
-   //       formik.setFieldValue('title', '');
-   //       formik.setFieldValue('value', '');
-   //       formik.setFieldValue('type', '');
-   //    }
-   // }, [isAdd]);
 
    return (
       <>
-         {/* <PageTItle activeMenu="units" motherMenu="Manage" /> */}
-         {/* <div className="row tw-mb-8">
-            <div className="col-xl-6">
-               <Button variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
-                  Add New Unit
-               </Button>
-            </div>
-         </div> */}
          {alertMarkup ? (
             <Row>
                <Col lg={12}>{alertMarkup}</Col>
@@ -137,9 +98,9 @@ const Units = () => {
                <SpinnerOverlay />
             </When>
             <Card.Header>
-               <Card.Title>Manage units</Card.Title>
+               <Card.Title>Manage Types</Card.Title>
                <Button size="sm" variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
-                  Add New Unit
+                  Add New Expense Type
                </Button>
             </Card.Header>
             <Card.Body>
@@ -151,14 +112,21 @@ const Units = () => {
                               <th className="width80">
                                  <strong>#</strong>
                               </th>
-                              <th>
-                                 <strong className="tw-cursor-pointer">TITLE</strong>
-                              </th>
-                              <th>
-                                 <strong className="tw-cursor-pointer">VALUE</strong>
-                              </th>
-                              <th>
-                                 <strong className="tw-cursor-pointer">TYPE</strong>
+                              <th className="tw-cursor-pointer" onClick={() => handleSort('title')}>
+                                 <strong className="tw-cursor-pointer">
+                                    TITLE
+                                    <span>
+                                       <When condition={sort.field !== 'title'}>
+                                          <FaSort className="d-inline mx-1" />
+                                       </When>
+                                       <When condition={sort.field === 'title' && sort.order === -1}>
+                                          <FaSortDown className="d-inline mx-1" />
+                                       </When>
+                                       <When condition={sort.field === 'title' && sort.order === 1}>
+                                          <FaSortUp className="d-inline mx-1" />
+                                       </When>
+                                    </span>
+                                 </strong>
                               </th>
                            </tr>
                         </thead>
@@ -169,8 +137,6 @@ const Units = () => {
                                     <strong>{index + 1}</strong>
                                  </td>
                                  <td>{e.title}</td>
-                                 <td>{e.value}</td>
-                                 <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
                                  <td>
                                     <OverlayTrigger
                                        trigger={['hover', 'hover']}
@@ -205,7 +171,7 @@ const Units = () => {
                   </Then>
                   <Else>
                      <When condition={!query.isLoading}>
-                        <p className="tw-m-0">No units created</p>
+                        <p className="tw-m-0">No types found</p>
                      </When>
                   </Else>
                </If>
@@ -217,17 +183,13 @@ const Units = () => {
             show={showModal}
             onHide={() => {
                setShowModal(false);
-               setUrlState({});
             }}
-            title="Add New Unit"
+            title="Add New Expense Type"
             isLoading={query.isLoading || postMutation.isLoading}
             size="md"
             onSubmit={formik.handleSubmit}
             submitButtonText="Confirm"
          >
-            <When condition={getTypes.isLoading}>
-               <SpinnerOverlay />
-            </When>
             <form onSubmit={formik.handleSubmit}>
                <div className="row">
                   <div className="form-group col-xl-6">
@@ -241,37 +203,10 @@ const Units = () => {
                      />
                   </div>
                </div>
-               <div className="row">
-                  <div className="form-group col-xl-6">
-                     <label className="col-form-label">Value</label>
-                     <input
-                        className="form-control"
-                        onChange={formik.handleChange}
-                        type="text"
-                        name="value"
-                        value={formik.values.value}
-                     />
-                  </div>
-                  <button type="submit" className="tw-invisible" />
-               </div>
             </form>
-            <div className="row">
-               <div className="form-group col-xl-6">
-                  <label className="col-form-label">Type</label>
-                  <CreatableSelect
-                     isClearable
-                     onChange={(e) => formik.setFieldValue('type', e?._id)}
-                     options={
-                        getTypes.data?.length > 0 &&
-                        getTypes.data.map((e) => ({ ...e, label: e.title, value: e.title }))
-                     }
-                     onCreateOption={handleCreateType}
-                  />
-               </div>
-            </div>
          </ModalWrapper>
       </>
    );
 };
 
-export default React.memo(Units);
+export default React.memo(ExpenseTypes);

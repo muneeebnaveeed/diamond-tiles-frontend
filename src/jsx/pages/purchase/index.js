@@ -22,14 +22,12 @@ const Purchase = () => {
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
-   const [search, setSearch] = useState('');
-   const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['inventories', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
-      get('/inventories', page, limit, sort.field, sort.order, debouncedSearchValue)
+   const query = useQuery(['inventories', page, limit, sort.field, sort.order], () =>
+      get('/inventories', page, limit, sort.field, sort.order)
    );
    const deleteMutation = useMutation((id) => del(`/inventories/id/${id}`), {
       onSuccess: async () => {
@@ -40,7 +38,7 @@ const Purchase = () => {
          });
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to delete employee', err });
+         alert.setErrorAlert({ message: 'Unable to delete inventory', err });
       },
    });
 
@@ -86,7 +84,7 @@ const Purchase = () => {
             </div>
 
             <div className="col-xl-6">
-               <ButtonGroup className="tw-float-right">
+               {/* <ButtonGroup className="tw-float-right">
                   <input
                      type="text"
                      className="input-rounded tw-rounded-r-none tw-pl-6"
@@ -97,7 +95,7 @@ const Purchase = () => {
                   <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={query.isLoading}>
                      Search
                   </Button>
-               </ButtonGroup>
+               </ButtonGroup> */}
             </div>
          </div>
          {alertMarkup ? (
