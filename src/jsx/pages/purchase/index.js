@@ -1,4 +1,3 @@
-import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Button from 'jsx/components/Button';
@@ -7,10 +6,10 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
-import { FaSort } from 'react-icons/fa';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
@@ -73,6 +72,12 @@ const Purchase = () => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
 
+   useEffect(() => {
+      if (page > query.data?.totalPages) {
+         setPage((prev) => prev - 1);
+      }
+   }, [page, query.data?.totalPages]);
+
    return (
       <>
          <PageTItle activeMenu="purchase" motherMenu="Diamond Tiles" />
@@ -125,15 +130,31 @@ const Purchase = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('supplier')}>
                                           SUPPLIER
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'supplier'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'supplier' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'supplier' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('product')}>
-                                          PRODUCT
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('modelNumber')}>
+                                          MODEL NUMBER
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'modelNumber'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'modelNumber' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'modelNumber' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -141,7 +162,15 @@ const Purchase = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('sourcePrice')}>
                                           PRICE
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'sourcePrice'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'sourcePrice' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'sourcePrice' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -149,7 +178,15 @@ const Purchase = () => {
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('paid')}>
                                           PAID
                                           <span>
-                                             <FaSort className="d-inline mx-1" />
+                                             <When condition={sort.field !== 'paid'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'paid' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'paid' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
                                           </span>
                                        </strong>
                                     </th>
@@ -157,12 +194,14 @@ const Purchase = () => {
                               </thead>
                               <tbody>
                                  {query.data?.docs.map((e, index) => (
-                                    <tr key={`${e._id}`}>
+                                    <tr key={`${e._id}`} className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}>
                                        <td>
-                                          <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                          <strong className={e.isRemaining && 'tw-text-gray-50'}>
+                                             {query.data.pagingCounter * (index + 1)}
+                                          </strong>
                                        </td>
                                        <td>{e?.supplier?.name ?? 'N/A'}</td>
-                                       <td>{e?.product?.title ?? 'N/A'}</td>
+                                       <td>{e?.product?.modelNumber ?? 'N/A'}</td>
                                        <td>{e?.sourcePrice ?? 'N/a'}</td>
                                        <td>{e?.paid ?? 'N/A'}</td>
                                        <td>

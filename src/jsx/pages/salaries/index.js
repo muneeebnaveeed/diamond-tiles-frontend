@@ -4,8 +4,8 @@ import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, useQuery } from 'jsx/helpers';
 import _ from 'lodash';
-import React, { useState } from 'react';
-import { Card, Col, Table } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Card, Table } from 'react-bootstrap';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 
@@ -22,6 +22,11 @@ const Salaries = () => {
    const handleSort = (key) => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
+   useEffect(() => {
+      if (page > query.data?.totalPages) {
+         setPage((prev) => prev - 1);
+      }
+   }, [page, query.data?.totalPages]);
    return (
       <>
          <Card className="h-100">

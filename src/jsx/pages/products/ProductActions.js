@@ -15,7 +15,6 @@ import CreatableSelect from '../../components/CreatableSelect';
 const ProductActions = () => {
    const history = useHistory();
    const params = useParams();
-   const [product, setProduct] = useState(null);
    const [isError, setIsError] = useState(false);
 
    const [urlState, setUrlState] = useUrlState({});
@@ -24,6 +23,22 @@ const ProductActions = () => {
    const getTypes = useQuery('types', () => get('/types'));
    const queryClient = useQueryClient();
 
+   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
+   const isViewProduct = useMemo(() => urlState?.type === 'view', [urlState.type]);
+   const isAddProduct = useMemo(() => params?.id === 'add', [params.id]);
+
+   const query = useQuery(['product', params.id], () => get(`/products/id/${params.id}`), {
+      enabled: !isAddProduct,
+      onError: (err) => {
+         setIsError(true);
+         alert.setErrorAlert({
+            message: 'Invalid URL!',
+            err: { message: ['The page will redirect to manage products.'] },
+            callback: () => history.push('/products'),
+            duration: 3000,
+         });
+      },
+   });
    const patchMutation = useMutation((payload) => patch(`/products/id/${params.id}`, payload), {
       onError: (err) => {
          alert.setErrorAlert({
@@ -47,9 +62,6 @@ const ProductActions = () => {
       },
    });
 
-   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
-   const isViewProduct = useMemo(() => urlState?.type === 'view', [urlState.type]);
-   const isAddProduct = useMemo(() => params?.id === 'add', [params.id]);
    const mutation = useMemo(() => (isEditing ? patchMutation : postMutation), [isEditing, patchMutation, postMutation]);
 
    if (!isEditing && !isViewProduct && !isAddProduct) {
@@ -58,9 +70,9 @@ const ProductActions = () => {
 
    const formik = useFormik({
       initialValues: {
-         title: isEditing ? product?.title : '',
-         modelNumber: isEditing ? product?.modelNumber : '',
-         type: isEditing ? product?.type?._id : '',
+         title: '',
+         modelNumber: '',
+         type: '',
       },
       validateOnChange: false,
       validateOnBlur: false,
@@ -74,34 +86,19 @@ const ProductActions = () => {
       // history.push({ pathname: '/types', search: `?action=add&title=${title}&redirect=/products/add` });
    };
 
-   const fetchproductData = async () => {
-      let response;
-      try {
-         response = await get(`/products/id/${params.id}`);
-         setProduct(response);
-      } catch (err) {
-         setIsError(true);
-         alert.setErrorAlert({
-            message: 'Invalid URL!',
-            err: { message: ['The page will redirect to manage products.'] },
-            callback: () => history.push('/products'),
-            duration: 3000,
-         });
-      }
-   };
-
    useEffect(() => {
-      if (!isAddProduct) {
-         fetchproductData();
+      if (isEditing && query.data?.product) {
+         formik.setFieldValue('title', query.data?.product?.title ?? '');
+         formik.setFieldValue('modelNumber', query.data?.product?.modelNumber ?? '');
+         formik.setFieldValue('type', query.data?.product?.type?._id ?? '');
       }
-   }, []);
-
+   }, [isEditing, query.data?.product]);
    return (
       <>
          <PageTItle activeMenu="products" motherMenu="Manage" />
          {alert.getAlert()}
          <Card>
-            <When condition={getTypes.isLoading || postTypeMutation.isLoading}>
+            <When condition={getTypes.isLoading || postTypeMutation.isLoading || query.isLoading}>
                <SpinnerOverlay />
             </When>
             <If condition={isAddProduct || isEditing}>
@@ -140,15 +137,24 @@ const ProductActions = () => {
                         <div className="row">
                            <div className="form-group col-xl-6">
                               <label className="col-form-label">Type</label>
-                              <CreatableSelect
-                                 isClearable
-                                 onChange={(e) => formik.setFieldValue('type', e?._id)}
-                                 options={
-                                    getTypes.data?.length > 0 &&
-                                    getTypes.data.map((e) => ({ ...e, label: e.title, value: e.title }))
-                                 }
-                                 onCreateOption={handleCreateType}
-                              />
+                              {(query.data?.product || isAddProduct) && (
+                                 <CreatableSelect
+                                    isClearable
+                                    defaultValue={
+                                       isEditing && {
+                                          _id: query.data?.product?.type?.id,
+                                          label: query.data?.product?.type?.title,
+                                          value: query.data?.product?.type?.title,
+                                       }
+                                    }
+                                    onChange={(e) => formik.setFieldValue('type', e?._id)}
+                                    options={
+                                       getTypes.data?.length > 0 &&
+                                       getTypes.data.map((e) => ({ ...e, label: e.title, value: e.title }))
+                                    }
+                                    onCreateOption={handleCreateType}
+                                 />
+                              )}
                            </div>
                         </div>
                      </Card.Body>
@@ -187,19 +193,19 @@ const ProductActions = () => {
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Title</label>
-                           <h4>{product?.title ?? 'N/A'}</h4>
+                           <h4>{query.data?.product?.title ?? 'N/A'}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Model Number</label>
-                           <h4>{product?.modelNumber ?? 'N/A'}</h4>
+                           <h4>{query.data?.product?.modelNumber ?? 'N/A'}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Type</label>
-                           <h4>{product?.type?.title ?? 'N/A'}</h4>
+                           <h4>{query.data?.product?.type?.title ?? 'N/A'}</h4>
                         </div>
                      </div>
                   </Card.Body>

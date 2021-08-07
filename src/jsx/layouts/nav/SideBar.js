@@ -134,7 +134,7 @@ class SideBar extends Component {
                      </Link>
                      <ul aria-expanded="false">
                         <li>
-                           <Link to="/Products">Products</Link>
+                           <Link to="/products">Products</Link>
                         </li>
                         <li>
                            <Link to="/suppliers">Suppliers</Link>

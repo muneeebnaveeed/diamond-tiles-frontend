@@ -75,6 +75,12 @@ const Customers = () => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
 
+   useEffect(() => {
+      if (page > query.data?.totalPages) {
+         setPage((prev) => prev - 1);
+      }
+   }, [page, query.data?.totalPages]);
+
    return (
       <>
          <PageTItle activeMenu="Customers" motherMenu="Manage" />

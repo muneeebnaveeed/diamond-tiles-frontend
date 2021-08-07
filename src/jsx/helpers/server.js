@@ -33,7 +33,4 @@ export const patch = (path, payload) =>
  * @returns
  */
 export const del = (path) =>
-   api
-      .delete(path)
-      .then((res) => (res.status === 200 ? { ...res.data, status: 'ok' } : res.data))
-      .catch((err) => err.response.data);
+   api.delete(path).then((res) => (res.status === 200 ? { ...res.data, status: 'ok' } : res.data));

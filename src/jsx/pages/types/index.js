@@ -7,7 +7,7 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import React, { useMemo, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
-import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { AiFillDelete, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
@@ -53,7 +53,6 @@ const Types = () => {
       },
    });
 
-   const isAdd = useMemo(() => urlState?.action === 'add', [urlState.action]);
    const mutation = useMemo(() => postMutation, [postMutation]);
 
    const handleOnClickAdd = () => {
@@ -75,18 +74,16 @@ const Types = () => {
          }
       });
    };
+   const handleOnClickView = (id) => {
+      history.push(`/products/types/${id}`);
+   };
 
    const handleSubmit = (e) => {
       e.preventDefault();
       mutation.mutate({ title });
    };
    const alertMarkup = alert.getAlert();
-   // useEffect(() => {
-   //    if (isAdd) {
-   //       setShowModal(true);
-   //       setTitle(urlState.title ?? '');
-   //    }
-   // }, [isAdd]);
+
    return (
       <>
          {alertMarkup ? (
@@ -144,6 +141,12 @@ const Types = () => {
                                  </td>
                                  <td>
                                     <ButtonGroup>
+                                       <Button
+                                          variant="dark"
+                                          size="sm"
+                                          icon={AiFillEye}
+                                          onClick={() => handleOnClickView(e._id)}
+                                       />
                                        <Button
                                           variant="danger"
                                           size="sm"

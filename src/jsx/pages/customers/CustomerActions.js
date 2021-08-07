@@ -1,12 +1,13 @@
 import useUrlState from '@ahooksjs/use-url-state';
 import { useFormik } from 'formik';
 import Button from 'jsx/components/Button';
-import { get, patch, post, useAlert, useMutation } from 'jsx/helpers';
+import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
+import { get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ButtonGroup, Card } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
-import { Else, If, Then } from 'react-if';
+import { Else, If, Then, When } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
 
 const CustomerActions = () => {
@@ -18,6 +19,22 @@ const CustomerActions = () => {
    const [urlState, setUrlState] = useUrlState({});
 
    const alert = useAlert();
+   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
+   const isViewCustomer = useMemo(() => urlState?.type === 'view', [urlState.type]);
+   const isAddCustomer = useMemo(() => params?.id === 'add', [params.id]);
+
+   const query = useQuery(['customer', params.id], () => get(`/customers/id/${params.id}`), {
+      enabled: !isAddCustomer,
+      onError: (err) => {
+         setIsError(true);
+         alert.setErrorAlert({
+            message: 'Invalid URL!',
+            err: { message: ['The page will redirect to manage customers.'] },
+            callback: () => history.push('/customers'),
+            duration: 3000,
+         });
+      },
+   });
    const patchMutation = useMutation((payload) => patch(`/customers/id/${params.id}`, payload), {
       onError: (err) => {
          alert.setErrorAlert({
@@ -36,9 +53,6 @@ const CustomerActions = () => {
       },
    });
 
-   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
-   const isViewCustomer = useMemo(() => urlState?.type === 'view', [urlState.type]);
-   const isAddCustomer = useMemo(() => params?.id === 'add', [params.id]);
    const mutation = useMemo(() => (isEditing ? patchMutation : postMutation), [isEditing, patchMutation, postMutation]);
 
    if (!isEditing && !isViewCustomer && !isAddCustomer) {
@@ -54,33 +68,21 @@ const CustomerActions = () => {
       },
    });
 
-   const fetchCustomerData = async () => {
-      let response;
-      try {
-         response = await get(`/customers/${params.id}`);
-         setCustomer(response.data);
-      } catch (err) {
-         setIsError(true);
-         alert.setErrorAlert({
-            message: 'Invalid URL!',
-            err: { message: ['The page will redirect to manage customers.'] },
-            callback: () => history.push('/customers'),
-            duration: 3000,
-         });
-      }
-   };
-
    useEffect(() => {
-      if (!isAddCustomer) {
-         fetchCustomerData();
+      if (isEditing && query.data) {
+         formik.setFieldValue('name', query.data?.customer?.name ?? '');
+         formik.setFieldValue('phone', query.data?.customer?.phone ?? '');
       }
-   }, []);
+   }, [isEditing, query.data]);
 
    return (
       <>
          <PageTItle activeMenu="Customers" motherMenu="Manage" />
          {alert.getAlert()}
          <Card>
+            <When condition={patchMutation.isLoading || postMutation.isLoading || query.isLoading}>
+               <SpinnerOverlay />
+            </When>
             <If condition={isAddCustomer || isEditing}>
                <Then>
                   <form onSubmit={formik.handleSubmit}>
@@ -150,13 +152,13 @@ const CustomerActions = () => {
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Name</label>
-                           <h4>{customer?.name}</h4>
+                           <h4>{query.data?.customer?.name ?? 'N/A'}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Phone</label>
-                           <h4>{customer?.phone}</h4>
+                           <h4>{query.data?.customer?.phone ?? 'N/A'}</h4>
                         </div>
                      </div>
                   </Card.Body>

@@ -1,12 +1,13 @@
 import useUrlState from '@ahooksjs/use-url-state';
 import { useFormik } from 'formik';
 import Button from 'jsx/components/Button';
-import { get, patch, post, useAlert, useMutation } from 'jsx/helpers';
+import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
+import { get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ButtonGroup, Card } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
-import { Else, If, Then } from 'react-if';
+import { Else, If, Then, When } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
 
 const EmployeeActions = () => {
@@ -18,6 +19,22 @@ const EmployeeActions = () => {
    const [urlState, setUrlState] = useUrlState({});
 
    const alert = useAlert();
+   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
+   const isViewEmployee = useMemo(() => urlState?.type === 'view', [urlState.type]);
+   const isAddEmployee = useMemo(() => params?.id === 'add', [params.id]);
+
+   const query = useQuery(['employee', params.id], () => get(`/employees/id/${params.id}`), {
+      enabled: !isAddEmployee,
+      onError: (err) => {
+         setIsError(true);
+         alert.setErrorAlert({
+            message: 'Invalid URL!',
+            err: { message: ['The page will redirect to manage employees.'] },
+            callback: () => history.push('/employees'),
+            duration: 3000,
+         });
+      },
+   });
    const patchMutation = useMutation((payload) => patch(`/employees/id/${params.id}`, payload), {
       onError: (err) => {
          alert.setErrorAlert({
@@ -36,9 +53,6 @@ const EmployeeActions = () => {
       },
    });
 
-   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
-   const isViewEmployee = useMemo(() => urlState?.type === 'view', [urlState.type]);
-   const isAddEmployee = useMemo(() => params?.id === 'add', [params.id]);
    const mutation = useMemo(() => (isEditing ? patchMutation : postMutation), [isEditing, patchMutation, postMutation]);
 
    if (!isEditing && !isViewEmployee && !isAddEmployee) {
@@ -60,33 +74,24 @@ const EmployeeActions = () => {
       },
    });
 
-   const fetchemployeeData = async () => {
-      let response;
-      try {
-         response = await get(`/employees/${params.id}`);
-         setEmployee(response.data);
-      } catch (err) {
-         setIsError(true);
-         alert.setErrorAlert({
-            message: 'Invalid URL!',
-            err: { message: ['The page will redirect to manage employees.'] },
-            callback: () => history.push('/employees'),
-            duration: 3000,
-         });
-      }
-   };
-
    useEffect(() => {
-      if (!isAddEmployee) {
-         fetchemployeeData();
+      if (isEditing && query.data) {
+         formik.setFieldValue('name', query.data?.employee?.name ?? '');
+         formik.setFieldValue('phone', query.data?.employee?.phone ?? '');
+         formik.setFieldValue('cnic', query.data?.employee?.cnic ?? '');
+         formik.setFieldValue('address', query.data?.employee?.address ?? '');
+         formik.setFieldValue('salary', query.data?.employee?.salary ?? '');
       }
-   }, []);
+   }, [isEditing, query.data]);
 
    return (
       <>
          <PageTItle activeMenu="employees" motherMenu="Manage" />
          {alert.getAlert()}
          <Card>
+            <When condition={patchMutation.isLoading || postMutation.isLoading || query.isLoading}>
+               <SpinnerOverlay />
+            </When>
             <If condition={isAddEmployee || isEditing}>
                <Then>
                   <form onSubmit={formik.handleSubmit}>
@@ -195,31 +200,31 @@ const EmployeeActions = () => {
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Name</label>
-                           <h4>{employee?.name}</h4>
+                           <h4>{query.data?.employee?.name}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Phone</label>
-                           <h4>{employee?.phone}</h4>
+                           <h4>{query.data?.employee?.phone}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">CNIC</label>
-                           <h4>{employee?.cnic}</h4>
+                           <h4>{query.data?.employee?.cnic}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Address</label>
-                           <h4>{employee?.address}</h4>
+                           <h4>{query.data?.employee?.address}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Salary</label>
-                           <h4>{employee?.salary}</h4>
+                           <h4>{query.data?.employee?.salary}</h4>
                         </div>
                      </div>
                   </Card.Body>

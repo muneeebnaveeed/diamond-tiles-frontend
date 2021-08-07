@@ -7,7 +7,7 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
@@ -76,11 +76,16 @@ const Expenses = () => {
    const handleSort = (key) => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
+   useEffect(() => {
+      if (page > query.data?.totalPages) {
+         setPage((prev) => prev - 1);
+      }
+   }, [page, query.data?.totalPages]);
 
    return (
       <>
          <PageTItle activeMenu="Expenses" motherMenu="Diamond Tiles" />
-         <div className="row">
+         <div className="row my-3">
             <div className="col-xl-5  my-2">
                <Salaries />
             </div>

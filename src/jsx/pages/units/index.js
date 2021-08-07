@@ -8,7 +8,7 @@ import { del, get, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
-import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle, AiFillEye } from 'react-icons/ai';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import swal from 'sweetalert';
@@ -99,6 +99,9 @@ const Units = () => {
          }
       });
    };
+   const handleOnClickView = (id) => {
+      history.push(`/products/units/${id}`);
+   };
 
    const handleCreateType = (title) => {
       postTypeMutation.mutate({ title });
@@ -107,15 +110,6 @@ const Units = () => {
    };
 
    const alertMarkup = alert.getAlert();
-
-   // useEffect(() => {
-   //    if (isAdd) {
-   //       // setShowModal(true);
-   //       formik.setFieldValue('title', '');
-   //       formik.setFieldValue('value', '');
-   //       formik.setFieldValue('type', '');
-   //    }
-   // }, [isAdd]);
 
    return (
       <>
@@ -190,6 +184,12 @@ const Units = () => {
                                  </td>
                                  <td>
                                     <ButtonGroup>
+                                       <Button
+                                          variant="dark"
+                                          size="sm"
+                                          icon={AiFillEye}
+                                          onClick={() => handleOnClickView(e._id)}
+                                       />
                                        <Button
                                           variant="danger"
                                           size="sm"

@@ -113,7 +113,10 @@ const Pagination = ({
 
    return (
       <div className="tw-flex tw-flex-col tw-items-center tw-gap-3 tw-overflow-visible">
-         <p className="tw-m-0">{`Showing ${5} of ${totalDocs}`}</p>
+         <p className="tw-m-0">{`Showing ${
+            // eslint-disable-next-line no-nested-ternary
+            totalPages === page ? totalDocs : page * option.value > totalDocs ? totalDocs : page * option.value
+         } of ${totalDocs}`}</p>
          <ul className="tw-flex ">{renderPagination()}</ul>
          <Select
             isDisabled={isLimitDisabled}

@@ -7,7 +7,7 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
@@ -74,6 +74,12 @@ const Employees = () => {
    const handleSort = (key) => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
+
+   useEffect(() => {
+      if (page > query.data?.totalPages) {
+         setPage((prev) => prev - 1);
+      }
+   }, [page, query.data?.totalPages]);
 
    return (
       <>

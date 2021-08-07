@@ -80,10 +80,16 @@ const Products = () => {
       history.push({ pathname: '/types', search: `?action=add` });
    };
 
+   useEffect(() => {
+      if (page > query.data?.totalPages) {
+         setPage((prev) => prev - 1);
+      }
+   }, [page, query.data?.totalPages]);
+
    return (
       <>
          <PageTItle activeMenu="products" motherMenu="Manage" />
-         <div className="row">
+         <div className="row my-3">
             <div className="col-xl-5  my-2">
                <Types />
             </div>
