@@ -256,7 +256,7 @@ const Purchase = () => {
                         </Then>
                         <Else>
                            <When condition={!query.isLoading}>
-                              <p className="tw-m-0">No employees created</p>
+                              <p className="tw-m-0">No purchases created</p>
                            </When>
                         </Else>
                      </If>

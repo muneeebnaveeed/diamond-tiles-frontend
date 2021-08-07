@@ -256,7 +256,7 @@ const Expenses = () => {
                         </Then>
                         <Else>
                            <When condition={!query.isLoading && !debouncedSearchValue}>
-                              <p className="tw-m-0">No sales created</p>
+                              <p className="tw-m-0">No Expenses created</p>
                            </When>
                            <When condition={!query.isLoading && debouncedSearchValue}>
                               <p className="tw-m-0">No result found!</p>

@@ -109,6 +109,7 @@ import ProductActions from './pages/products/ProductActions';
 import Purchase from './pages/purchase';
 import Sales from './pages/sale';
 import Expenses from './pages/expenses';
+import TypeActions from './pages/types/TypeActions';
 
 /// Pages
 // const Registration = React.lazy(() => import('./pages/Registration'));
@@ -290,6 +291,7 @@ const routes = [
    { url: 'suppliers/:id', component: SupplierActions },
    { url: 'products', component: Products },
    { url: 'products/:id', component: ProductActions },
+   { url: 'products/types/:id', component: TypeActions },
    // { url: 'types', component: Types },
    // { url: 'units', component: Units },
    { url: 'purchase', component: Purchase },

@@ -1,21 +1,35 @@
 import useUrlState from '@ahooksjs/use-url-state';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
 import { useFormik } from 'formik';
 import Button from 'jsx/components/Button';
+import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
+import _ from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ButtonGroup, Card } from 'react-bootstrap';
-import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
+import { ButtonGroup, Card, OverlayTrigger, Popover, Table } from 'react-bootstrap';
+import { AiFillCaretLeft, AiFillEye, AiFillSave, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory, useParams } from 'react-router-dom';
 import CreatableSelect from '../../components/CreatableSelect';
 
 const ProductActions = () => {
+   dayjs.extend(relativeTime);
+
    const history = useHistory();
    const params = useParams();
    const [isError, setIsError] = useState(false);
+   const [salePage, setSalePage] = useState(1);
+   const [saleLimit, setSaleLimit] = useState(5);
+   const [saleSort, setSaleSort] = useState({ field: 'sourcePrice', order: 1 });
+   const [inventoriesPage, setInventoriesPage] = useState(1);
+   const [inventoriesLimit, setInventoriesLimit] = useState(5);
+   const [inventoriesSort, setInventoriesSort] = useState({ field: 'sourcePrice', order: 1 });
 
    const [urlState, setUrlState] = useUrlState({});
 
@@ -27,18 +41,36 @@ const ProductActions = () => {
    const isViewProduct = useMemo(() => urlState?.type === 'view', [urlState.type]);
    const isAddProduct = useMemo(() => params?.id === 'add', [params.id]);
 
-   const query = useQuery(['product', params.id], () => get(`/products/id/${params.id}`), {
-      enabled: !isAddProduct,
-      onError: (err) => {
-         setIsError(true);
-         alert.setErrorAlert({
-            message: 'Invalid URL!',
-            err: { message: ['The page will redirect to manage products.'] },
-            callback: () => history.push('/products'),
-            duration: 3000,
-         });
-      },
-   });
+   const query = useQuery(
+      [
+         'product',
+         params.id,
+         salePage,
+         saleLimit,
+         saleSort.field,
+         saleSort.order,
+         inventoriesPage,
+         inventoriesLimit,
+         inventoriesSort.field,
+         inventoriesSort.order,
+      ],
+      () =>
+         get(
+            `/products/id/${params.id}?salePage=${salePage}&saleLimit=${saleLimit}&saleSort[${saleSort.field}]=${saleSort.order}&inventoriesPage=${inventoriesPage}&inventoriesLimit=${inventoriesLimit}&inventoriesSort[${inventoriesSort.field}]=${inventoriesSort.order}`
+         ),
+      {
+         enabled: !isAddProduct,
+         onError: (err) => {
+            setIsError(true);
+            alert.setErrorAlert({
+               message: 'Invalid URL!',
+               err: { message: ['The page will redirect to manage products.'] },
+               callback: () => history.push('/products'),
+               duration: 3000,
+            });
+         },
+      }
+   );
    const patchMutation = useMutation((payload) => patch(`/products/id/${params.id}`, payload), {
       onError: (err) => {
          alert.setErrorAlert({
@@ -85,6 +117,9 @@ const ProductActions = () => {
       postTypeMutation.mutate({ title });
       // history.push({ pathname: '/types', search: `?action=add&title=${title}&redirect=/products/add` });
    };
+   const handleInventoriesSort = (key) => {
+      setInventoriesSort((prev) => ({ field: key, order: prev.order * -1 }));
+   };
 
    useEffect(() => {
       if (isEditing && query.data?.product) {
@@ -95,7 +130,21 @@ const ProductActions = () => {
    }, [isEditing, query.data?.product]);
    return (
       <>
-         <PageTItle activeMenu="products" motherMenu="Manage" />
+         <div className="row p-0 m-0">
+            <div className="col-10">
+               <PageTItle activeMenu="View" motherMenu="Products" />
+            </div>
+            <div className="col-1">
+               <Button
+                  icon={AiFillCaretLeft}
+                  variant="warning light"
+                  onClick={() => history.replace('/products')}
+                  loading={mutation.isLoading}
+               >
+                  Back
+               </Button>
+            </div>
+         </div>
          {alert.getAlert()}
          <Card>
             <When condition={getTypes.isLoading || postTypeMutation.isLoading || query.isLoading}>
@@ -162,14 +211,14 @@ const ProductActions = () => {
                         <div className="row">
                            <div className="col-xl-12 tw-justify-center">
                               <ButtonGroup>
-                                 <Button
+                                 {/* <Button
                                     icon={AiFillCaretLeft}
                                     variant="warning light"
                                     onClick={() => history.replace('/products')}
                                     loading={mutation.isLoading}
                                  >
                                     Back
-                                 </Button>
+                                 </Button> */}
                                  <Button
                                     icon={AiFillSave}
                                     variant="primary"
@@ -209,23 +258,183 @@ const ProductActions = () => {
                         </div>
                      </div>
                   </Card.Body>
-                  <Card.Footer>
-                     <div className="row">
-                        <div className="col-xl-12 tw-justify-center">
-                           <Button
-                              icon={AiFillCaretLeft}
-                              variant="warning light"
-                              onClick={() => history.replace('/products')}
-                              loading={mutation.isLoading}
-                           >
-                              Back
-                           </Button>
-                        </div>
-                     </div>
-                  </Card.Footer>
                </Else>
             </If>
          </Card>
+         <When condition={isViewProduct}>
+            <Card>
+               <When condition={query.isLoading}>
+                  <SpinnerOverlay />
+               </When>
+               <Card.Header>
+                  <Card.Title>View Expenses</Card.Title>
+               </Card.Header>
+               <Card.Body>
+                  <If condition={query.data?.inventories?.totalDocs > 0}>
+                     <Then>
+                        <Table className="tw-relative" responsive>
+                           <thead>
+                              <tr>
+                                 <th className="width80">
+                                    <strong>#</strong>
+                                 </th>
+                                 <th>
+                                    <strong
+                                       className="tw-cursor-pointer"
+                                       onClick={() => handleInventoriesSort('supplier')}
+                                    >
+                                       SUPPLIER
+                                       <span>
+                                          <When condition={inventoriesSort.field !== 'supplier'}>
+                                             <FaSort className="d-inline mx-1" />
+                                          </When>
+                                          <When
+                                             condition={
+                                                inventoriesSort.field === 'supplier' && inventoriesSort.order === -1
+                                             }
+                                          >
+                                             <FaSortDown className="d-inline mx-1" />
+                                          </When>
+                                          <When
+                                             condition={
+                                                inventoriesSort.field === 'supplier' && inventoriesSort.order === 1
+                                             }
+                                          >
+                                             <FaSortUp className="d-inline mx-1" />
+                                          </When>
+                                       </span>
+                                    </strong>
+                                 </th>
+                                 <th>
+                                    <strong
+                                       className="tw-cursor-pointer"
+                                       onClick={() => handleInventoriesSort('modelNumber')}
+                                    >
+                                       MODEL NUMBER
+                                       <span>
+                                          <When condition={inventoriesSort.field !== 'modelNumber'}>
+                                             <FaSort className="d-inline mx-1" />
+                                          </When>
+                                          <When
+                                             condition={
+                                                inventoriesSort.field === 'modelNumber' && inventoriesSort.order === -1
+                                             }
+                                          >
+                                             <FaSortDown className="d-inline mx-1" />
+                                          </When>
+                                          <When
+                                             condition={
+                                                inventoriesSort.field === 'modelNumber' && inventoriesSort.order === 1
+                                             }
+                                          >
+                                             <FaSortUp className="d-inline mx-1" />
+                                          </When>
+                                       </span>
+                                    </strong>
+                                 </th>
+                                 <th>
+                                    <strong
+                                       className="tw-cursor-pointer"
+                                       onClick={() => handleInventoriesSort('sourcePrice')}
+                                    >
+                                       PRICE
+                                       <span>
+                                          <When condition={inventoriesSort.field !== 'sourcePrice'}>
+                                             <FaSort className="d-inline mx-1" />
+                                          </When>
+                                          <When
+                                             condition={
+                                                inventoriesSort.field === 'sourcePrice' && inventoriesSort.order === -1
+                                             }
+                                          >
+                                             <FaSortDown className="d-inline mx-1" />
+                                          </When>
+                                          <When
+                                             condition={
+                                                inventoriesSort.field === 'sourcePrice' && inventoriesSort.order === 1
+                                             }
+                                          >
+                                             <FaSortUp className="d-inline mx-1" />
+                                          </When>
+                                       </span>
+                                    </strong>
+                                 </th>
+                                 <th>
+                                    <strong className="tw-cursor-pointer" onClick={() => handleInventoriesSort('paid')}>
+                                       PAID
+                                       <span>
+                                          <When condition={inventoriesSort.field !== 'paid'}>
+                                             <FaSort className="d-inline mx-1" />
+                                          </When>
+                                          <When
+                                             condition={
+                                                inventoriesSort.field === 'paid' && inventoriesSort.order === -1
+                                             }
+                                          >
+                                             <FaSortDown className="d-inline mx-1" />
+                                          </When>
+                                          <When
+                                             condition={inventoriesSort.field === 'paid' && inventoriesSort.order === 1}
+                                          >
+                                             <FaSortUp className="d-inline mx-1" />
+                                          </When>
+                                       </span>
+                                    </strong>
+                                 </th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {query.data?.inventories?.docs.map((e, index) => (
+                                 <tr key={`${e._id}`} className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}>
+                                    <td>
+                                       <strong className={e.isRemaining && 'tw-text-gray-50'}>
+                                          {query.data.inventories?.pagingCounter * (index + 1)}
+                                       </strong>
+                                    </td>
+                                    <td>{e?.supplier?.name ?? 'N/A'}</td>
+                                    <td>{e?.product?.modelNumber ?? 'N/A'}</td>
+                                    <td>{e?.sourcePrice ?? 'N/a'}</td>
+                                    <td>{e?.paid ?? 'N/A'}</td>
+                                    <td>
+                                       <OverlayTrigger
+                                          trigger={['hover', 'hover']}
+                                          placement="top"
+                                          overlay={
+                                             <Popover className="tw-border-gray-500">
+                                                <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
+                                                   dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
+                                                      ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
+                                                      : dayjs(e.createdAt).fromNow()
+                                                }.`}</Popover.Content>
+                                             </Popover>
+                                          }
+                                       >
+                                          <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                       </OverlayTrigger>
+                                    </td>
+                                 </tr>
+                              ))}
+                           </tbody>
+                        </Table>
+                     </Then>
+                     <Else>
+                        <When condition={!query.isLoading}>
+                           <p className="tw-m-0">No Puchahes created</p>
+                        </When>
+                     </Else>
+                  </If>
+               </Card.Body>
+            </Card>
+         </When>
+         <When condition={inventoriesLimit > 5 ? true : query.data?.inventories?.totalPages > 1}>
+            <Pagination
+               page={inventoriesPage}
+               onPageChange={setInventoriesPage}
+               onLimitChange={setInventoriesLimit}
+               {..._.omit(query.data, ['docs'])}
+               isLimitDisabled={query.isLoading}
+            />
+         </When>
       </>
    );
 };

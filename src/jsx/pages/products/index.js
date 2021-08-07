@@ -1,3 +1,4 @@
+import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Button from 'jsx/components/Button';
@@ -14,7 +15,6 @@ import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
-import { useDebounce } from 'ahooks';
 import Types from '../types';
 import Units from '../units';
 
@@ -75,9 +75,6 @@ const Products = () => {
 
    const handleSort = (key) => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
-   };
-   const handleAddType = () => {
-      history.push({ pathname: '/types', search: `?action=add` });
    };
 
    useEffect(() => {
