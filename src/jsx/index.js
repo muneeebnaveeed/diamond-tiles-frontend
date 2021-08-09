@@ -110,6 +110,9 @@ import Purchase from './pages/purchase';
 import Sales from './pages/sale';
 import Expenses from './pages/expenses';
 import TypeActions from './pages/types/TypeActions';
+import Dashboard from './pages/dashboard';
+import Khaata from './pages/khaata';
+import PurchaseActions from './pages/purchase/PurchaseActions';
 
 /// Pages
 // const Registration = React.lazy(() => import('./pages/Registration'));
@@ -200,7 +203,7 @@ import TypeActions from './pages/types/TypeActions';
 const routes = [
    /// Deshborad
    { url: '', component: () => <Redirect to="/dashboard" /> },
-   { url: 'dashboard', component: Home },
+   { url: 'dashboard', component: Dashboard },
    { url: 'workout-statistic', component: WorkoutStatistic },
    { url: 'workout-plan', component: WorkoutPlan },
    { url: 'distance-map', component: DistanceMap },
@@ -297,6 +300,8 @@ const routes = [
    { url: 'purchase', component: Purchase },
    { url: 'sale', component: Sales },
    { url: 'expenses', component: Expenses },
+   { url: 'inventories/:id', component: PurchaseActions },
+   { url: 'khaata', component: Khaata },
 ];
 
 const Markup = () => (

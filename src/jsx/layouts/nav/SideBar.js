@@ -168,8 +168,8 @@ class SideBar extends Component {
                         <span className="nav-text">Sale</span>
                      </Link>
                   </li>
-                  <li className={`${dashboard.includes(path.slice(1)) ? 'mm-active' : ''}`}>
-                     <Link className="" to="/" aria-expanded="false">
+                  <li className={`${path.slice(1).includes('khaata') ? 'mm-active' : ''}`}>
+                     <Link className="" to="/khaata" aria-expanded="false">
                         <i className="flaticon-381-book" />
                         <span className="nav-text">Khaata</span>
                      </Link>

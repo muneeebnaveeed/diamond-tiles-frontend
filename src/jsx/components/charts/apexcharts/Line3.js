@@ -8,7 +8,7 @@ class ApexLine3 extends React.Component {
       this.state = {
          series: [
             {
-               name: 'Running',
+               name: 'Sales',
                data: [20, 40, 20, 80, 40, 40, 20, 60, 60, 20, 110, 60],
             },
          ],
