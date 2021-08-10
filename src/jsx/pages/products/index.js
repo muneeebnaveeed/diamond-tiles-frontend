@@ -130,22 +130,7 @@ const Products = () => {
                                     <th className="width80">
                                        <strong>#</strong>
                                     </th>
-                                    <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('title')}>
-                                          TITLE
-                                          <span>
-                                             <When condition={sort.field !== 'title'}>
-                                                <FaSort className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'title' && sort.order === -1}>
-                                                <FaSortDown className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'title' && sort.order === 1}>
-                                                <FaSortUp className="d-inline mx-1" />
-                                             </When>
-                                          </span>
-                                       </strong>
-                                    </th>
+
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('modelNumber')}>
                                           MODEL#
@@ -157,6 +142,22 @@ const Products = () => {
                                                 <FaSortDown className="d-inline mx-1" />
                                              </When>
                                              <When condition={sort.field === 'modelNumber' && sort.order === 1}>
+                                                <FaSortUp className="d-inline mx-1" />
+                                             </When>
+                                          </span>
+                                       </strong>
+                                    </th>
+                                    <th>
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('retailPrice')}>
+                                          RETAIL PRICE
+                                          <span>
+                                             <When condition={sort.field !== 'retailPrice'}>
+                                                <FaSort className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'retailPrice' && sort.order === -1}>
+                                                <FaSortDown className="d-inline mx-1" />
+                                             </When>
+                                             <When condition={sort.field === 'retailPrice' && sort.order === 1}>
                                                 <FaSortUp className="d-inline mx-1" />
                                              </When>
                                           </span>
@@ -186,8 +187,8 @@ const Products = () => {
                                        <td>
                                           <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                        </td>
-                                       <td>{e.title}</td>
                                        <td>{e.modelNumber}</td>
+                                       <td>{e.retailPrice}</td>
                                        <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
                                        <td>
                                           <OverlayTrigger

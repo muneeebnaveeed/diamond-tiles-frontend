@@ -10,7 +10,13 @@ import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { FaMinusCircle, FaPlusCircle } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useHistory } from 'react-router-dom';
+import _ from 'lodash';
 import Select from '../../components/Select';
+
+const getDefaultOption = () => ({
+   label: 'Walk In',
+   value: null,
+});
 
 const AddSale = () => {
    const printRef = useRef(null);
@@ -18,22 +24,30 @@ const AddSale = () => {
    const [showPrintDialog, setShowPrintDialog] = useState(false);
 
    const [formdata, setFormdata] = useState([
-      { customer: '', retailPrice: '', price: '', quantity: '', inventory: '' },
+      { customer: '', retailPrice: '', price: '', quantity: '', unit: 1, inventory: '' },
    ]);
 
    const alert = useAlert();
 
    const customerQuery = useQuery(['customers', 1, 10000], () => get('/customers', 1, 10000));
    const inventoryQuery = useQuery(['inventories', 1, 10000], () => get('/inventories', 1, 100));
+   const unitQuery = useQuery('units', () => get('/units'));
 
-   const postMutation = useMutation((payload) => post('/inventories/many', payload), {
-      onSuccess: () => {
-         setShowPrintDialog(true);
+   const postMutation = useMutation(
+      (sales) => {
+         const promises = [];
+         sales.forEach((s) => promises.push(post('/sales', s)));
+         return Promise.all(promises);
       },
-      onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to add Purchase', err });
-      },
-   });
+      {
+         onSuccess: () => {
+            setShowPrintDialog(true);
+         },
+         onError: (err) => {
+            alert.setErrorAlert({ message: 'Unable to add sale', err });
+         },
+      }
+   );
 
    const mutation = useMemo(() => postMutation, [postMutation]);
 
@@ -45,18 +59,37 @@ const AddSale = () => {
 
    const handleSubmitData = (e) => {
       e.preventDefault();
-      mutation.mutate(formdata);
+      const payload = _.map(formdata, (d) => {
+         console.log('d', d);
+         return {
+            ..._.pick(d, ['customer', 'inventory', 'quantity', 'retailPrice']),
+            paid: d.price,
+            quantity: d.quantity * d.unit,
+         };
+      });
+      console.log(payload);
+      mutation.mutate(payload);
+   };
+
+   const getOptions = () => {
+      const data = customerQuery.data?.docs?.map?.((x) => ({
+         label: x.name,
+         value: x,
+      }));
+      let options = [getDefaultOption()];
+      if (data) options = [...options, ...data];
+      return options;
    };
 
    return (
       <>
-         <PageTItle activeMenu="employees" motherMenu="Manage" />
+         <PageTItle activeMenu="Sales" motherMenu="Diamond Tiles" />
          {alert.getAlert()}
          <ModalWrapper
             show={showPrintDialog}
             onHide={() => {
                setShowPrintDialog(false);
-               history.push('/purchase');
+               history.push('/sale');
             }}
             isLoading={false}
             title="Print Invoice"
@@ -82,7 +115,7 @@ const AddSale = () => {
             </When>
             <form onSubmit={handleSubmitData}>
                <Card.Header>
-                  <Card.Title>Add New Purchase</Card.Title>
+                  <Card.Title>Add New Sale</Card.Title>
                </Card.Header>
                <Card.Body>
                   <Table>
@@ -92,6 +125,8 @@ const AddSale = () => {
                            <th>RETAIL PRICE</th>
                            <th>PAID</th>
                            <th>QUANTITY</th>
+                           <th>UNIT</th>
+
                            <th>INVENTORY</th>
                         </tr>
                      </thead>
@@ -102,39 +137,52 @@ const AddSale = () => {
                                  if (key !== 'customerName' && key !== 'inventoryID') {
                                     return (
                                        <td>
-                                          <If condition={key === 'customer' || key === 'inventory'}>
+                                          <If condition={key === 'customer' || key === 'inventory' || key === 'unit'}>
                                              <Then>
                                                 <When condition={key === 'customer'}>
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
-                                                         handleOnChange('customer', x?._id, idx);
-                                                         handleOnChange('customerName', x?.name, idx);
+                                                         console.log('onChange', x);
+                                                         handleOnChange('customer', x?.value?._id, idx);
+                                                         handleOnChange('customerName', x?.value?.name, idx);
                                                       }}
-                                                      options={
-                                                         customerQuery.data?.docs?.length > 0 &&
-                                                         customerQuery.data.docs.map((x) => ({
-                                                            ...x,
-                                                            label: x.name,
-                                                            value: x.name,
-                                                         }))
-                                                      }
+                                                      defaultValue={getDefaultOption()}
+                                                      options={getOptions()}
                                                    />
                                                 </When>
                                                 <When condition={key === 'inventory'}>
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
-                                                         handleOnChange('inventory', x?._id, idx);
-                                                         handleOnChange('inventoryID', x?._id, idx);
+                                                         handleOnChange('inventory', x?.value?._id, idx);
+                                                         handleOnChange('inventoryID', x?.value?._id, idx);
+                                                         const retailPrice = x?.value?.product?.retailPrice;
+                                                         if (retailPrice)
+                                                            handleOnChange('retailPrice', retailPrice, idx);
                                                       }}
                                                       options={
-                                                         inventoryQuery.data?.docs?.length > 0 &&
-                                                         inventoryQuery.data.docs.map((x) => ({
-                                                            ...x,
-                                                            label: x._id,
-                                                            value: x._id,
-                                                         }))
+                                                         (inventoryQuery.data?.docs?.length > 0 &&
+                                                            inventoryQuery.data.docs.map((x) => ({
+                                                               label: x.product.modelNumber,
+                                                               value: x,
+                                                            }))) || [{ label: 'No Inventories', value: null }]
+                                                      }
+                                                   />
+                                                </When>
+                                                <When condition={key === 'unit'}>
+                                                   <Select
+                                                      placeholder=""
+                                                      onChange={(x) => {
+                                                         console.log(x);
+                                                         handleOnChange('unit', x?.value?.value, idx);
+                                                      }}
+                                                      options={
+                                                         (unitQuery.data?.length > 0 &&
+                                                            unitQuery.data.map((x) => ({
+                                                               label: x.title,
+                                                               value: x,
+                                                            }))) || [{ label: 'No Units', value: null }]
                                                       }
                                                    />
                                                 </When>
@@ -164,7 +212,7 @@ const AddSale = () => {
                                        icon={FaMinusCircle}
                                        disabled={formdata.length === 1}
                                        onClick={() => {
-                                          const tmp = formdata.filter((_, i) => i !== idx);
+                                          const tmp = formdata.filter((_e, i) => i !== idx);
                                           setFormdata(tmp);
                                        }}
                                     />
@@ -200,7 +248,7 @@ const AddSale = () => {
                            <Button
                               icon={AiFillCaretLeft}
                               variant="warning light"
-                              onClick={() => history.replace('/purchase')}
+                              onClick={() => history.replace('/sale')}
                               loading={mutation.isLoading}
                            >
                               Back

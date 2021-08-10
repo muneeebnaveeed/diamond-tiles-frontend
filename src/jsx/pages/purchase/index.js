@@ -190,67 +190,87 @@ const Purchase = () => {
                                           </span>
                                        </strong>
                                     </th>
+                                    <th>
+                                       <strong>REMAINING</strong>
+                                    </th>
+                                    <th>
+                                       <strong>QUANTITY</strong>
+                                    </th>
                                  </tr>
                               </thead>
                               <tbody>
-                                 {query.data?.docs.map((e, index) => (
-                                    <tr key={`${e._id}`} className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}>
-                                       <td>
-                                          <strong className={e.isRemaining && 'tw-text-gray-50'}>
-                                             {query.data.pagingCounter * (index + 1)}
-                                          </strong>
-                                       </td>
-                                       <td>{e?.supplier?.name ?? 'N/A'}</td>
-                                       <td>{e?.product?.modelNumber ?? 'N/A'}</td>
-                                       <td>{e?.sourcePrice ?? 'N/a'}</td>
-                                       <td>{e?.paid ?? 'N/A'}</td>
-                                       <td>
-                                          <OverlayTrigger
-                                             trigger={['hover', 'hover']}
-                                             placement="top"
-                                             overlay={
-                                                <Popover className="tw-border-gray-500">
-                                                   <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                         ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                         : dayjs(e.createdAt).fromNow()
-                                                   }.`}</Popover.Content>
-                                                </Popover>
-                                             }
-                                          >
-                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                          </OverlayTrigger>
-                                       </td>
-                                       <td>
-                                          <ButtonGroup>
-                                             {/* <Button
-                                                variant="dark"
-                                                size="sm"
-                                                icon={AiFillEye}
-                                                onClick={() => handleOnClickView(e)}
+                                 {query.data?.docs.map((e, index) => {
+                                    const getRemainig = () => {
+                                       if (!e?.sourcePrice || !e?.paid) return null;
+                                       if (e.sourcePrice === e.paid) return null;
+                                       return e.sourcePrice - e.paid;
+                                    };
+
+                                    return (
+                                       <tr
+                                          key={`${e._id}`}
+                                          className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}
+                                       >
+                                          <td>
+                                             <strong className={e.isRemaining && 'tw-text-gray-50'}>
+                                                {query.data.pagingCounter * (index + 1)}
+                                             </strong>
+                                          </td>
+                                          <td>{e?.supplier?.name ?? 'N/A'}</td>
+                                          <td>{e?.product?.modelNumber ?? 'N/A'}</td>
+                                          <td>{e?.sourcePrice ?? 'N/a'}</td>
+                                          <td>{e?.paid ?? 'N/A'}</td>
+                                          <td>{getRemainig()}</td>
+                                          <td>{e?.quantity?.single?.[0]}</td>
+
+                                          <td>
+                                             <OverlayTrigger
+                                                trigger={['hover', 'hover']}
+                                                placement="top"
+                                                overlay={
+                                                   <Popover className="tw-border-gray-500">
+                                                      <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
+                                                         dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
+                                                            ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
+                                                            : dayjs(e.createdAt).fromNow()
+                                                      }.`}</Popover.Content>
+                                                   </Popover>
+                                                }
                                              >
-                                                View
-                                             </Button>
-                                             <Button
-                                                variant="warning"
-                                                size="sm"
-                                                icon={AiFillEdit}
-                                                onClick={() => handleOnClickEdit(e)}
-                                             >
-                                                Edit
-                                             </Button> */}
-                                             <Button
-                                                variant="danger"
-                                                size="sm"
-                                                icon={AiFillDelete}
-                                                onClick={() => handleOnClickDelete(e._id)}
-                                             >
-                                                Delete
-                                             </Button>
-                                          </ButtonGroup>
-                                       </td>
-                                    </tr>
-                                 ))}
+                                                <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                             </OverlayTrigger>
+                                          </td>
+                                          <td>
+                                             <ButtonGroup>
+                                                {/* <Button
+                                                   variant="dark"
+                                                   size="sm"
+                                                   icon={AiFillEye}
+                                                   onClick={() => handleOnClickView(e)}
+                                                >
+                                                   View
+                                                </Button>
+                                                <Button
+                                                   variant="warning"
+                                                   size="sm"
+                                                   icon={AiFillEdit}
+                                                   onClick={() => handleOnClickEdit(e)}
+                                                >
+                                                   Edit
+                                                </Button> */}
+                                                <Button
+                                                   variant="danger"
+                                                   size="sm"
+                                                   icon={AiFillDelete}
+                                                   onClick={() => handleOnClickDelete(e._id)}
+                                                >
+                                                   Delete
+                                                </Button>
+                                             </ButtonGroup>
+                                          </td>
+                                       </tr>
+                                    );
+                                 })}
                               </tbody>
                            </Table>
                         </Then>

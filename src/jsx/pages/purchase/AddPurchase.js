@@ -27,14 +27,21 @@ const PurchaseActions = () => {
    const unitsQuery = useQuery(['units'], () => get('/units', 1, 10000));
    const productsQuery = useQuery(['products'], () => get('/products', 1, 10000));
 
-   const postMutation = useMutation((payload) => post('/inventories/many', payload), {
-      onSuccess: () => {
-         setShowPrintDialog(true);
+   const postMutation = useMutation(
+      (payload) => {
+         const promises = [];
+         payload.forEach((p) => promises.push(post('/inventories', p)));
+         return Promise.all(promises);
       },
-      onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to add Purchase', err });
-      },
-   });
+      {
+         onSuccess: () => {
+            setShowPrintDialog(true);
+         },
+         onError: (err) => {
+            alert.setErrorAlert({ message: 'Unable to add Purchase', err });
+         },
+      }
+   );
 
    const mutation = useMemo(() => postMutation, [postMutation]);
 

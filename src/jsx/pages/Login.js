@@ -1,10 +1,13 @@
-import { post } from 'jsx/helpers';
+import { post, useAlert } from 'jsx/helpers';
 import React, { useState, useEffect } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
 const Login = () => {
    const history = useHistory();
    const [loginData, setLoginData] = useState({});
+
+   const alert = useAlert();
+
    const handleBlur = (e) => {
       const newLoginData = { ...loginData };
       newLoginData[e.target.name] = e.target.value;
@@ -25,7 +28,7 @@ const Login = () => {
          localStorage.setItem('auth_token', res.token);
          history.push('/dashboard');
       } catch (err) {
-         alert(err.response.data?.data ?? err.message);
+         alert.setErrorAlert({ message: 'Unable to login', err });
       }
    };
 
@@ -38,6 +41,7 @@ const Login = () => {
                      <div className="row no-gutters">
                         <div className="col-xl-12">
                            <div className="auth-form">
+                              {alert.getAlert()}
                               <h4 className="text-center mb-4">Sign in your account</h4>
                               <form action="" onSubmit={handleLogin}>
                                  <div className="form-group">

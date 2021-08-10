@@ -72,6 +72,9 @@ const ProductActions = () => {
       }
    );
    const patchMutation = useMutation((payload) => patch(`/products/id/${params.id}`, payload), {
+      onSuccess: () => {
+         history.push('/products');
+      },
       onError: (err) => {
          alert.setErrorAlert({
             message: 'Unable to edit product.',
@@ -102,8 +105,8 @@ const ProductActions = () => {
 
    const formik = useFormik({
       initialValues: {
-         title: '',
          modelNumber: '',
+         retailPrice: '',
          type: '',
       },
       validateOnChange: false,
@@ -125,6 +128,7 @@ const ProductActions = () => {
       if (isEditing && query.data?.product) {
          formik.setFieldValue('title', query.data?.product?.title ?? '');
          formik.setFieldValue('modelNumber', query.data?.product?.modelNumber ?? '');
+         formik.setFieldValue('retailPrice', query.data?.product?.retailPrice ?? '');
          formik.setFieldValue('type', query.data?.product?.type?._id ?? '');
       }
    }, [isEditing, query.data?.product]);
@@ -159,19 +163,6 @@ const ProductActions = () => {
                      <Card.Body>
                         <div className="row">
                            <div className="form-group col-xl-6">
-                              <label className="col-form-label">Title</label>
-                              <input
-                                 className="form-control"
-                                 onChange={formik.handleChange}
-                                 type="text"
-                                 name="title"
-                                 disabled={isError}
-                                 value={formik.values.title}
-                              />
-                           </div>
-                        </div>
-                        <div className="row">
-                           <div className="form-group col-xl-6">
                               <label className="col-form-label">Model Number</label>
                               <input
                                  className="form-control"
@@ -180,6 +171,19 @@ const ProductActions = () => {
                                  name="modelNumber"
                                  disabled={isError}
                                  value={formik.values.modelNumber}
+                              />
+                           </div>
+                        </div>
+                        <div className="row">
+                           <div className="form-group col-xl-6">
+                              <label className="col-form-label">Retail Price</label>
+                              <input
+                                 className="form-control"
+                                 onChange={formik.handleChange}
+                                 type="text"
+                                 name="retailPrice"
+                                 disabled={isError}
+                                 value={formik.values.retailPrice}
                               />
                            </div>
                         </div>
@@ -241,14 +245,14 @@ const ProductActions = () => {
                   <Card.Body>
                      <div className="row">
                         <div className="form-group col-xl-6">
-                           <label className="col-form-label">Title</label>
-                           <h4>{query.data?.product?.title ?? 'N/A'}</h4>
+                           <label className="col-form-label">Model Number</label>
+                           <h4>{query.data?.product?.modelNumber ?? 'N/A'}</h4>
                         </div>
                      </div>
                      <div className="row">
                         <div className="form-group col-xl-6">
-                           <label className="col-form-label">Model Number</label>
-                           <h4>{query.data?.product?.modelNumber ?? 'N/A'}</h4>
+                           <label className="col-form-label">Retail Price</label>
+                           <h4>{query.data?.product?.retailPrice ?? 'N/A'}</h4>
                         </div>
                      </div>
                      <div className="row">
@@ -267,7 +271,7 @@ const ProductActions = () => {
                   <SpinnerOverlay />
                </When>
                <Card.Header>
-                  <Card.Title>View Expenses</Card.Title>
+                  <Card.Title>View Related Purchases</Card.Title>
                </Card.Header>
                <Card.Body>
                   <If condition={query.data?.inventories?.totalDocs > 0}>
@@ -419,7 +423,7 @@ const ProductActions = () => {
                      </Then>
                      <Else>
                         <When condition={!query.isLoading}>
-                           <p className="tw-m-0">No Puchahes created</p>
+                           <p className="tw-m-0">No Purchases created</p>
                         </When>
                      </Else>
                   </If>

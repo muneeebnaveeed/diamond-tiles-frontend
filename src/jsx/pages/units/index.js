@@ -183,20 +183,12 @@ const Units = () => {
                                     </OverlayTrigger>
                                  </td>
                                  <td>
-                                    <ButtonGroup>
-                                       <Button
-                                          variant="dark"
-                                          size="sm"
-                                          icon={AiFillEye}
-                                          onClick={() => handleOnClickView(e._id)}
-                                       />
-                                       <Button
-                                          variant="danger"
-                                          size="sm"
-                                          icon={AiFillDelete}
-                                          onClick={() => handleOnClickDelete(e._id)}
-                                       />
-                                    </ButtonGroup>
+                                    <Button
+                                       variant="danger"
+                                       size="sm"
+                                       icon={AiFillDelete}
+                                       onClick={() => handleOnClickDelete(e._id)}
+                                    />
                                  </td>
                               </tr>
                            ))}

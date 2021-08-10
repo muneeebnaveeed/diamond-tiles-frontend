@@ -29,7 +29,8 @@ const Types = () => {
 
    const query = useQuery('types', () => get('/types', page, limit, '', '', search));
    const postMutation = useMutation((payload) => post('/types', payload), {
-      onSuccess: () => {
+      onSuccess: async () => {
+         await queryClient.invalidateQueries('units');
          if (urlState.redirect) {
             history.replace(urlState.redirect);
          }

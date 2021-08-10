@@ -35,7 +35,7 @@ const Customers = () => {
       onSuccess: async () => {
          await queryClient.invalidateQueries('customers');
          alert.setAlert({
-            message: 'User deleted successfully',
+            message: 'Customer deleted successfully',
             variant: 'success',
          });
       },

@@ -36,6 +36,9 @@ const CustomerActions = () => {
       },
    });
    const patchMutation = useMutation((payload) => patch(`/customers/id/${params.id}`, payload), {
+      onSuccess: () => {
+         history.push('/customers');
+      },
       onError: (err) => {
          alert.setErrorAlert({
             message: 'Unable to edit customer.',
