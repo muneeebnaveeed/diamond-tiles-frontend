@@ -112,7 +112,8 @@ import Expenses from './pages/expenses';
 import TypeActions from './pages/types/TypeActions';
 import Dashboard from './pages/dashboard';
 import Khaata from './pages/khaata';
-import PurchaseActions from './pages/purchase/PurchaseActions';
+import AddPurchase from './pages/purchase/AddPurchase';
+import AddSale from './pages/sale/AddSale';
 
 /// Pages
 // const Registration = React.lazy(() => import('./pages/Registration'));
@@ -202,7 +203,7 @@ import PurchaseActions from './pages/purchase/PurchaseActions';
 
 const routes = [
    /// Deshborad
-   { url: '', component: () => <Redirect to="/dashboard" /> },
+   { url: '', component: () => <Redirect to="/page-login" /> },
    { url: 'dashboard', component: Dashboard },
    { url: 'workout-statistic', component: WorkoutStatistic },
    { url: 'workout-plan', component: WorkoutPlan },
@@ -298,9 +299,10 @@ const routes = [
    // { url: 'types', component: Types },
    // { url: 'units', component: Units },
    { url: 'purchase', component: Purchase },
+   { url: 'purchase/add', component: AddPurchase },
    { url: 'sale', component: Sales },
+   { url: 'sale/add', component: AddSale },
    { url: 'expenses', component: Expenses },
-   { url: 'inventories/:id', component: PurchaseActions },
    { url: 'khaata', component: Khaata },
 ];
 

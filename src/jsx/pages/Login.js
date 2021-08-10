@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { post } from 'jsx/helpers';
+import React, { useState, useEffect } from 'react';
+import { Link, useHistory } from 'react-router-dom';
 
 const Login = () => {
+   const history = useHistory();
    const [loginData, setLoginData] = useState({});
    const handleBlur = (e) => {
       const newLoginData = { ...loginData };
       newLoginData[e.target.name] = e.target.value;
       setLoginData(newLoginData);
    };
-   const submitHandler = (e) => {
+
+   useEffect(() => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+         history.push('/dashboard');
+      }
+   }, []);
+
+   const handleLogin = async (e) => {
       e.preventDefault();
-      const submitLogin = { ...loginData };
+      try {
+         const res = await post('/auth/login', loginData);
+         localStorage.setItem('auth_token', res.token);
+         history.push('/dashboard');
+      } catch (err) {
+         alert(err.response.data?.data ?? err.message);
+      }
    };
+
    return (
       <div className="authincation">
          <div className="container p-0">
@@ -22,17 +39,16 @@ const Login = () => {
                         <div className="col-xl-12">
                            <div className="auth-form">
                               <h4 className="text-center mb-4">Sign in your account</h4>
-                              <form action="" onSubmit={(e) => e.preventDefault(submitHandler)}>
+                              <form action="" onSubmit={handleLogin}>
                                  <div className="form-group">
                                     <label className="mb-1" htmlFor="login-email">
                                        <strong>Email</strong>
                                     </label>
                                     <input
                                        id="login-email"
-                                       type="email"
+                                       type="text"
                                        className="form-control"
-                                       defaultValue="hello@example.com"
-                                       name="Email"
+                                       name="name"
                                        onChange={handleBlur}
                                     />
                                  </div>
@@ -44,34 +60,17 @@ const Login = () => {
                                        id="login-password"
                                        type="password"
                                        className="form-control"
-                                       defaultValue="Password"
                                        name="password"
                                        onChange={handleBlur}
                                     />
                                  </div>
                                  <div className="form-row d-flex justify-content-between mt-4 mb-2">
                                     <div className="form-group">
-                                       <div className="custom-control custom-checkbox ml-1">
-                                          <input
-                                             type="checkbox"
-                                             className="custom-control-input"
-                                             id="basic_checkbox_1"
-                                          />
-                                          <label className="custom-control-label" htmlFor="basic_checkbox_1">
-                                             Remember my preference
-                                          </label>
-                                       </div>
-                                    </div>
-                                    <div className="form-group">
                                        <Link to="/page-forgot-password">Forgot Password?</Link>
                                     </div>
                                  </div>
                                  <div className="text-center">
-                                    <button
-                                       type="submit"
-                                       className="btn btn-primary btn-block"
-                                       onClick={() => submitHandler}
-                                    >
+                                    <button type="submit" className="btn btn-primary btn-block">
                                        Sign Me In
                                     </button>
                                  </div>

@@ -1,16 +1,25 @@
+import { post } from 'jsx/helpers';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 const Register = () => {
+   const history = useHistory();
+
    const [registrationData, setRegistrationData] = useState({});
    const handleBlur = (e) => {
       const newRegistrationData = { ...registrationData };
       newRegistrationData[e.target.name] = e.target.value;
       setRegistrationData(newRegistrationData);
    };
-   const submitHandler = (e) => {
+   const handleRegister = async (e) => {
       e.preventDefault();
-      const submitRegister = { ...registrationData };
+      try {
+         const res = await post('/auth/register', registrationData);
+         localStorage.setItem('auth_token', res.token);
+         history.push('/dashboard');
+      } catch (err) {
+         alert(err.response?.data?.data ?? err.message);
+      }
    };
    return (
       <div className="authincation">
@@ -22,7 +31,7 @@ const Register = () => {
                         <div className="col-xl-12">
                            <div className="auth-form">
                               <h4 className="text-center mb-4">Sign up your account</h4>
-                              <form action="" onSubmit={(e) => e.preventDefault(submitHandler)}>
+                              <form action="" onSubmit={handleRegister}>
                                  <div className="form-group">
                                     <label className="mb-1" htmlFor="registration-username">
                                        <strong>Username</strong>
@@ -31,12 +40,11 @@ const Register = () => {
                                        id="registration-username"
                                        type="text"
                                        className="form-control"
-                                       placeholder="username"
                                        name="name"
                                        onChange={handleBlur}
                                     />
                                  </div>
-                                 <div className="form-group">
+                                 {/* <div className="form-group">
                                     <label className="mb-1" htmlFor="registration-email">
                                        <strong>Email</strong>
                                     </label>
@@ -48,6 +56,18 @@ const Register = () => {
                                        name="Email"
                                        onChange={handleBlur}
                                     />
+                                 </div> */}
+                                 <div className="form-group">
+                                    <label className="mb-1" htmlFor="registration-password">
+                                       <strong>Password</strong>
+                                    </label>
+                                    <input
+                                       id="registration-password"
+                                       type="password"
+                                       className="form-control"
+                                       name="password"
+                                       onChange={handleBlur}
+                                    />
                                  </div>
                                  <div className="form-group">
                                     <label className="mb-1" htmlFor="registration-password">
@@ -57,17 +77,12 @@ const Register = () => {
                                        id="registration-password"
                                        type="password"
                                        className="form-control"
-                                       defaultValue="Password"
-                                       name="password"
+                                       name="passwordConfirm"
                                        onChange={handleBlur}
                                     />
                                  </div>
                                  <div className="text-center mt-4">
-                                    <button
-                                       type="submit"
-                                       className="btn btn-primary btn-block"
-                                       onClick={() => submitHandler}
-                                    >
+                                    <button type="submit" className="btn btn-primary btn-block">
                                        Sign me up
                                     </button>
                                  </div>

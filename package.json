@@ -78,6 +78,7 @@
       "react-summernote": "^2.0.2",
       "react-svg-map": "^2.1.2",
       "react-times": "^3.1.12",
+      "react-to-print": "^2.13.0",
       "react-toastify": "^6.1.0",
       "recharts": "^1.8.5",
       "simple-react-lightbox": "^3.5.0",

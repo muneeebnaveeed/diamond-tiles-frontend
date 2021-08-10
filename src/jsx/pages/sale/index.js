@@ -52,7 +52,7 @@ const Sale = () => {
       history.push({ pathname: `/sales/${obj._id}`, search: `?type=view` });
    };
    const handleOnClickAdd = () => {
-      history.push('/sales/add');
+      history.push('/sale/add');
    };
 
    const handleOnClickDelete = (id) => {

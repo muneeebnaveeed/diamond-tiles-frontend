@@ -49,7 +49,7 @@ const Purchase = () => {
       history.push({ pathname: `/inventories/${obj._id}`, search: `?type=view` });
    };
    const handleOnClickAdd = () => {
-      history.push('/inventories/add');
+      history.push('/purchase/add');
    };
 
    const handleOnClickDelete = (id) => {
@@ -223,7 +223,7 @@ const Purchase = () => {
                                        </td>
                                        <td>
                                           <ButtonGroup>
-                                             <Button
+                                             {/* <Button
                                                 variant="dark"
                                                 size="sm"
                                                 icon={AiFillEye}
@@ -238,7 +238,7 @@ const Purchase = () => {
                                                 onClick={() => handleOnClickEdit(e)}
                                              >
                                                 Edit
-                                             </Button>
+                                             </Button> */}
                                              <Button
                                                 variant="danger"
                                                 size="sm"
