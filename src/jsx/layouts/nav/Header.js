@@ -1,17 +1,12 @@
 import React from 'react';
-
-import { Link } from 'react-router-dom';
-/// Scroll
-import PerfectScrollbar from 'react-perfect-scrollbar';
-
 /// Image
 import Avatar from 'react-avatar';
-import profile from '../../../images/profile/17.jpg';
-import avatar from '../../../images/avatar/1.jpg';
+import { Link, useHistory } from 'react-router-dom';
 
 const pages = ['app', 'ui', 'uc', 'basic', 'form', 'table', 'page', 'email', 'ecom', 'chart', 'editor'];
 
 const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
+   const history = useHistory();
    const path = window.location.pathname.split('/');
    const name = path[path.length - 1].split('-');
    const filterName = name.length >= 3 ? name.filter((n, i) => i > 0) : name;
@@ -24,6 +19,15 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
          break;
       }
    }
+
+   const handleLogout = () => localStorage.clear();
+
+   React.useEffect(() => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+         history.push('/page-login');
+      }
+   }, []);
 
    return (
       <div className="header">
@@ -86,7 +90,7 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
                               </svg>
                               <span className="ml-2">Inbox </span>
                            </Link>
-                           <Link to="/page-login" className="dropdown-item ai-icon">
+                           <Link to="/" className="dropdown-item ai-icon" onClick={handleLogout}>
                               <svg
                                  id="icon-logout"
                                  xmlns="http://www.w3.org/2000/svg"

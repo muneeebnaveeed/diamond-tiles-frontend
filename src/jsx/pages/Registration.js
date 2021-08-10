@@ -15,8 +15,8 @@ const Register = () => {
       e.preventDefault();
       try {
          const res = await post('/auth/register', registrationData);
-         localStorage.setItem('auth_token', res.token);
-         history.push('/dashboard');
+         // localStorage.setItem('auth_token', res.token);
+         history.push('/page-login');
       } catch (err) {
          alert(err.response?.data?.data ?? err.message);
       }

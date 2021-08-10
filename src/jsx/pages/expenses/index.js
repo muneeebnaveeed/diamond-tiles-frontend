@@ -161,22 +161,6 @@ const Expenses = () => {
                                        </strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('employee')}>
-                                          EMPLOYEE
-                                          <span>
-                                             <When condition={sort.field !== 'employee'}>
-                                                <FaSort className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'employee' && sort.order === -1}>
-                                                <FaSortDown className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'employee' && sort.order === 1}>
-                                                <FaSortUp className="d-inline mx-1" />
-                                             </When>
-                                          </span>
-                                       </strong>
-                                    </th>
-                                    <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('amount')}>
                                           AMOUNT
                                           <span>
@@ -202,7 +186,6 @@ const Expenses = () => {
                                        </td>
                                        <td>{e?.title ?? 'N/A'}</td>
                                        <td>{e?.type?.title ?? 'N/A'}</td>
-                                       <td>{e?.employee?.name ?? 'N/a'}</td>
                                        <td>{e?.amount ?? 'N/A'}</td>
                                        <td>
                                           <OverlayTrigger
@@ -230,14 +213,6 @@ const Expenses = () => {
                                                 onClick={() => handleOnClickView(e)}
                                              >
                                                 View
-                                             </Button>
-                                             <Button
-                                                variant="warning"
-                                                size="sm"
-                                                icon={AiFillEdit}
-                                                onClick={() => handleOnClickEdit(e)}
-                                             >
-                                                Edit
                                              </Button>
                                              <Button
                                                 variant="danger"

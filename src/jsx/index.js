@@ -109,6 +109,7 @@ import ProductActions from './pages/products/ProductActions';
 import Purchase from './pages/purchase';
 import Sales from './pages/sale';
 import Expenses from './pages/expenses';
+import ExpensesActions from './pages/expenses/ExpenseActions';
 import TypeActions from './pages/types/TypeActions';
 import Dashboard from './pages/dashboard';
 import Khaata from './pages/khaata';
@@ -303,6 +304,7 @@ const routes = [
    { url: 'sale', component: Sales },
    { url: 'sale/add', component: AddSale },
    { url: 'expenses', component: Expenses },
+   { url: 'expenses/:id', component: ExpensesActions },
    { url: 'khaata', component: Khaata },
 ];
 

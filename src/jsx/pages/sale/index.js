@@ -9,7 +9,14 @@ import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
-import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import {
+   AiFillDelete,
+   AiFillEdit,
+   AiFillEye,
+   AiFillPlusCircle,
+   AiOutlineHistory,
+   AiOutlineQuestionCircle,
+} from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
@@ -264,10 +271,10 @@ const Sale = () => {
                                                    <Button
                                                       variant="warning"
                                                       size="sm"
-                                                      icon={AiFillEdit}
+                                                      icon={AiOutlineHistory}
                                                       onClick={() => handleOnClickEdit(e)}
                                                    >
-                                                      Edit
+                                                      Refund
                                                    </Button>
                                                    <Button
                                                       variant="danger"

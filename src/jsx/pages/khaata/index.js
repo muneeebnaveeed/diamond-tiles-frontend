@@ -31,9 +31,9 @@ const Khaata = () => {
       get('/expenses/khaata', page, limit, sort.field, sort.order)
    );
 
-   const handleOnClickView = (obj) => {
-      history.push({ pathname: `/expenses/khaata/${obj._id}`, search: `?type=view` });
-   };
+   // const handleOnClickView = (obj) => {
+   //    history.push({ pathname: `/expenses/khaata/${obj._id}`, search: `?type=view` });
+   // };
 
    const alertMarkup = alert.getAlert();
 
@@ -184,7 +184,7 @@ const Khaata = () => {
                                                 <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                              </OverlayTrigger>
                                           </td>
-                                          <td>
+                                          {/* <td>
                                              <Button
                                                 variant="dark"
                                                 size="sm"
@@ -193,7 +193,7 @@ const Khaata = () => {
                                              >
                                                 View
                                              </Button>
-                                          </td>
+                                          </td> */}
                                        </tr>
                                     ))}
                               </tbody>

@@ -224,12 +224,12 @@ const AddSale = () => {
                                           setFormdata([
                                              ...formdata,
                                              {
-                                                supplier: '',
-                                                sourcePrice: '',
-                                                paid: '',
+                                                customer: '',
+                                                retailPrice: '',
+                                                price: '',
                                                 quantity: '',
-                                                units: '',
-                                                product: '',
+                                                unit: 1,
+                                                inventory: '',
                                              },
                                           ])
                                        }

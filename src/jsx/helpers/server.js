@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { isArray } from 'lodash';
 
-export const api = axios.create({ baseURL: 'http://localhost:6500' });
+export const api = axios.create({ baseURL: 'https://diamond-tiles-backend.herokuapp.com/' });
 
 export const getError = (err) => {
    const response = err.response?.data?.data;
