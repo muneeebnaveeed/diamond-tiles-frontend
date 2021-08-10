@@ -1,20 +1,29 @@
 import useUrlState from '@ahooksjs/use-url-state';
+import { useDebounce } from 'ahooks';
 import { useFormik } from 'formik';
 import Button from 'jsx/components/Button';
+import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ButtonGroup, Card } from 'react-bootstrap';
-import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
+import { ButtonGroup, Card, Table, OverlayTrigger, Popover } from 'react-bootstrap';
+import { AiFillCaretLeft, AiFillSave, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
+import _ from 'lodash';
 
 const EmployeeActions = () => {
    const history = useHistory();
    const params = useParams();
    const [employee, setEmployee] = useState(null);
    const [isError, setIsError] = useState(false);
+   const [page, setPage] = useState(1);
+   const [limit, setLimit] = useState(5);
+   const [sort, setSort] = useState({ field: null, order: 1 });
+   const [search, setSearch] = useState('');
+   const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const [urlState, setUrlState] = useUrlState({});
 
@@ -73,7 +82,9 @@ const EmployeeActions = () => {
          mutation.mutate(values);
       },
    });
-
+   const handleSort = (key) => {
+      setSort((prev) => ({ field: key, order: prev.order * -1 }));
+   };
    useEffect(() => {
       if (isEditing && query.data) {
          formik.setFieldValue('name', query.data?.employee?.name ?? '');
@@ -83,7 +94,11 @@ const EmployeeActions = () => {
          formik.setFieldValue('salary', query.data?.employee?.salary ?? '');
       }
    }, [isEditing, query.data]);
-
+   useEffect(() => {
+      if (page > query.data?.sales?.totalPages) {
+         setPage((prev) => prev - 1);
+      }
+   }, [page, query.data?.sales?.totalPages]);
    return (
       <>
          <PageTItle activeMenu="employees" motherMenu="Manage" />
@@ -245,6 +260,88 @@ const EmployeeActions = () => {
                </Else>
             </If>
          </Card>
+         <When condition={isViewEmployee}>
+            <Card>
+               <When condition={query.isLoading}>
+                  <SpinnerOverlay />
+               </When>
+               <Card.Header>
+                  <Card.Title>View Related Salaries</Card.Title>
+               </Card.Header>
+               <Card.Body>
+                  <If condition={query.data?.salaries?.totalDocs > 0}>
+                     <Then>
+                        <Table className="tw-relative" responsive>
+                           <thead>
+                              <tr>
+                                 <th className="width80">
+                                    <strong>#</strong>
+                                 </th>
+                                 {/* <th>
+                                 <strong className="tw-cursor-pointer" onClick={() => handleSort('employee')}>
+                                    EMPLOYEE
+                                    <span>
+                                       <When condition={sort.field !== 'employee'}>
+                                          <FaSort className="d-inline mx-1" />
+                                       </When>
+                                       <When condition={sort.field === 'employee' && sort.order === -1}>
+                                          <FaSortDown className="d-inline mx-1" />
+                                       </When>
+                                       <When condition={sort.field === 'employee' && sort.order === 1}>
+                                          <FaSortUp className="d-inline mx-1" />
+                                       </When>
+                                    </span>
+                                 </strong>
+                              </th> */}
+                                 <th>
+                                    <strong className="tw-cursor-pointer" onClick={() => handleSort('salary')}>
+                                       SALARY
+                                       <span>
+                                          <When condition={sort.field !== 'salary'}>
+                                             <FaSort className="d-inline mx-1" />
+                                          </When>
+                                          <When condition={sort.field === 'salary' && sort.order === -1}>
+                                             <FaSortDown className="d-inline mx-1" />
+                                          </When>
+                                          <When condition={sort.field === 'salary' && sort.order === 1}>
+                                             <FaSortUp className="d-inline mx-1" />
+                                          </When>
+                                       </span>
+                                    </strong>
+                                 </th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                              {query.data?.salaries?.docs?.map((e, index) => (
+                                 <tr key={`${e._id}`}>
+                                    <td>
+                                       <strong>{index + 1}</strong>
+                                    </td>
+                                    {/* <td>{e?.employee?.name ?? 'N/A'}</td> */}
+                                    <td>{e?.employee?.salary ?? 'N/A'}</td>
+                                 </tr>
+                              ))}
+                           </tbody>
+                        </Table>
+                     </Then>
+                     <Else>
+                        <When condition={!query.isLoading}>
+                           <p className="tw-m-0">No Salaries created</p>
+                        </When>
+                     </Else>
+                  </If>
+               </Card.Body>
+            </Card>
+         </When>
+         <When condition={limit > 5 ? true : query.data?.salaries?.totalPages > 1}>
+            <Pagination
+               page={page}
+               onPageChange={setPage}
+               onLimitChange={setLimit}
+               {..._.omit(query.data?.salaries, ['docs'])}
+               isLimitDisabled={query.isLoading}
+            />
+         </When>
       </>
    );
 };

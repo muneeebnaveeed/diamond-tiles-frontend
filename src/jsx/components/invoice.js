@@ -41,6 +41,31 @@ class ComponentToPrint extends React.Component {
                   </div>
                </div>
             </div>
+            <div className="row">
+               <div className="col-lg-4 col-sm-5"> </div>
+               <div className="col-lg-4 col-sm-5 ml-auto">
+                  <table className="table table-clear">
+                     <tbody>
+                        <tr>
+                           <td className="left">
+                              <strong>Subtotal</strong>
+                           </td>
+                           <td className="right">$8.497,00</td>
+                        </tr>
+                        <tr>
+                           <td className="left">
+                              <strong>Total</strong>
+                           </td>
+                           <td className="right">
+                              <strong>$7.477,36</strong>
+                              <br />
+                              <strong>0.15050000 BTC</strong>
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
          </>
       );
    }

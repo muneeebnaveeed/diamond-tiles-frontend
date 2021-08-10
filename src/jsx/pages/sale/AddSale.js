@@ -143,7 +143,7 @@ const AddSale = () => {
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
-                                                         console.log('onChange', x);
+                                                         // console.log('onChange', x);
                                                          handleOnChange('customer', x?.value?._id, idx);
                                                          handleOnChange('customerName', x?.value?.name, idx);
                                                       }}
@@ -155,8 +155,13 @@ const AddSale = () => {
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
+                                                         // console.log('onChange', x);
                                                          handleOnChange('inventory', x?.value?._id, idx);
-                                                         handleOnChange('inventoryID', x?.value?._id, idx);
+                                                         handleOnChange(
+                                                            'inventoryID',
+                                                            x?.value?.product?.modelNumber,
+                                                            idx
+                                                         );
                                                          const retailPrice = x?.value?.product?.retailPrice;
                                                          if (retailPrice)
                                                             handleOnChange('retailPrice', retailPrice, idx);
@@ -174,7 +179,7 @@ const AddSale = () => {
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
-                                                         console.log(x);
+                                                         // console.log(x);
                                                          handleOnChange('unit', x?.value?.value, idx);
                                                       }}
                                                       options={

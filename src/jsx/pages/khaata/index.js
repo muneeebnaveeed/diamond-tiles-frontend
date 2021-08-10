@@ -9,7 +9,14 @@ import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
-import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import {
+   AiFillDelete,
+   AiFillEdit,
+   AiFillEye,
+   AiFillPlusCircle,
+   AiOutlineClear,
+   AiOutlineQuestionCircle,
+} from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
@@ -184,16 +191,16 @@ const Khaata = () => {
                                                 <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                              </OverlayTrigger>
                                           </td>
-                                          {/* <td>
+                                          <td>
                                              <Button
-                                                variant="dark"
+                                                variant="danger"
                                                 size="sm"
-                                                icon={AiFillEye}
-                                                onClick={() => handleOnClickView(e)}
+                                                icon={AiOutlineClear}
+                                                onClick={() => {}}
                                              >
-                                                View
+                                                Clear
                                              </Button>
-                                          </td> */}
+                                          </td>
                                        </tr>
                                     ))}
                               </tbody>
