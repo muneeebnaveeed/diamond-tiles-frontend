@@ -69,9 +69,9 @@ const SideBar = (props) => {
                      <li>
                         <Link to="/customers">Customers</Link>
                      </li>
-                     <li>
+                     {/* <li>
                         <Link to="/app-calender">Users</Link>
-                     </li>
+                     </li> */}
                      <li>
                         <Link to="/employees">Employees</Link>
                      </li>

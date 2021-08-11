@@ -33,6 +33,7 @@ const Login = () => {
          localStorage.setItem('auth_token', res.token);
          history.push('/dashboard');
       } catch (err) {
+         console.log('error', err);
          setIsLoading(false);
          alert.setErrorAlert({ message: 'Unable to login', err });
       }

@@ -1,9 +1,26 @@
+/* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/button-has-type */
 import React from 'react';
 import ReactToPrint from 'react-to-print';
 import dayjs from 'dayjs';
 
 class ComponentToPrint extends React.Component {
+   getTotal = () => {
+      const { data, type } = this.props;
+      if (!data || !data.length) return '';
+
+      const subtotals = [];
+
+      data.forEach((d) => {
+         const price = d[type === 'purchase' ? 'sourcePrice' : 'retailPrice'];
+         subtotals.push(parseInt(price) * d.quantity);
+      });
+
+      const total = subtotals.reduce((a, b) => a + b);
+
+      return total;
+   };
+
    render() {
       return (
          <>
@@ -48,18 +65,10 @@ class ComponentToPrint extends React.Component {
                      <tbody>
                         <tr>
                            <td className="left">
-                              <strong>Subtotal</strong>
-                           </td>
-                           <td className="right">$8.497,00</td>
-                        </tr>
-                        <tr>
-                           <td className="left">
                               <strong>Total</strong>
                            </td>
                            <td className="right">
-                              <strong>$7.477,36</strong>
-                              <br />
-                              <strong>0.15050000 BTC</strong>
+                              <strong>{this.getTotal()}</strong>
                            </td>
                         </tr>
                      </tbody>
@@ -80,6 +89,7 @@ class Example extends React.Component {
                content={() => this.componentRef}
             />
             <ComponentToPrint
+               type={this.props.type}
                ref={(el) => (this.componentRef = el)}
                data={this.props.data}
                columns={this.props.columns}
