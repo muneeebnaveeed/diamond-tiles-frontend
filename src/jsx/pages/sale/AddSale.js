@@ -28,8 +28,8 @@ const AddSale = () => {
          inventory: null,
          customer: null,
          retailPrice: null,
-         quantity: null,
          unit: null,
+         quantity: null,
          subtotal: null,
          paid: null,
          totalQuantity: null,
@@ -38,7 +38,7 @@ const AddSale = () => {
 
    const alert = useAlert();
 
-   const customerQuery = useQuery(['customers', 1, 10000], () => get('/customers', 1, 10000));
+   const customerQuery = useQuery(['customers', 1, 10000], () => get('/customers', 1, 10000, null, 1, ''));
    const inventoryQuery = useQuery(['inventories', 1, 10000], () => get('/sales/inventories', 1, 100));
    const unitQuery = useQuery('units', () => get('/units'));
 
@@ -131,8 +131,8 @@ const AddSale = () => {
                            <th>Product</th>
                            <th>Customer</th>
                            <th>Price</th>
-                           <th>Qty</th>
                            <th>Unit</th>
+                           <th>Qty</th>
                            <th>Subtotal</th>
                            <th>Paid</th>
                         </tr>

@@ -231,7 +231,7 @@ const CustomerActions = (props) => {
                                  </th>
                                  <th>
                                     <strong className="tw-cursor-pointer" onClick={() => handleSort('customer')}>
-                                       CUSTOMER
+                                       Customer
                                        <span>
                                           <When condition={sort.field !== 'customer'}>
                                              <FaSort className="d-inline mx-1" />
@@ -247,7 +247,7 @@ const CustomerActions = (props) => {
                                  </th>
                                  <th>
                                     <strong className="tw-cursor-pointer" onClick={() => handleSort('inventory')}>
-                                       INVENTORY
+                                       Model Number
                                        <span>
                                           <When condition={sort.field !== 'inventory'}>
                                              <FaSort className="d-inline mx-1" />
@@ -263,7 +263,7 @@ const CustomerActions = (props) => {
                                  </th>
                                  <th>
                                     <strong className="tw-cursor-pointer" onClick={() => handleSort('quantity')}>
-                                       QUANTITY
+                                       Qty
                                        <span>
                                           <When condition={sort.field !== 'quantity'}>
                                              <FaSort className="d-inline mx-1" />
@@ -279,7 +279,7 @@ const CustomerActions = (props) => {
                                  </th>
                                  <th>
                                     <strong className="tw-cursor-pointer" onClick={() => handleSort('retailPrice')}>
-                                       RETAIL PRICE
+                                       Total
                                        <span>
                                           <When condition={sort.field !== 'retailPrice'}>
                                              <FaSort className="d-inline mx-1" />
@@ -295,7 +295,7 @@ const CustomerActions = (props) => {
                                  </th>
                                  <th>
                                     <strong className="tw-cursor-pointer" onClick={() => handleSort('paid')}>
-                                       PAID
+                                       Paid
                                        <span>
                                           <When condition={sort.field !== 'paid'}>
                                              <FaSort className="d-inline mx-1" />
@@ -310,7 +310,7 @@ const CustomerActions = (props) => {
                                     </strong>
                                  </th>
                                  <th>
-                                    <strong>REMAINING</strong>
+                                    <strong>Remaining</strong>
                                  </th>
                               </tr>
                            </thead>
@@ -322,10 +322,17 @@ const CustomerActions = (props) => {
                                        if (e.sourcePrice === e.paid) return null;
                                        return e.sourcePrice - e.paid;
                                     };
+                                    const getId = () => {
+                                       const id = e._id;
+                                       return id.slice(id.length - 3);
+                                    };
                                     return (
-                                       <tr key={`${e._id}`}>
+                                       <tr
+                                          key={`${e._id}`}
+                                          className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}
+                                       >
                                           <td>
-                                             <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                             <strong>{getId()}</strong>
                                           </td>
                                           <td>{e?.customer?.name ?? 'N/A'}</td>
                                           <td>{e?.inventory?.modelNumber ?? 'N/A'}</td>

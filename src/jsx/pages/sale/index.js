@@ -24,6 +24,7 @@ import { useQueryClient } from 'react-query';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
+import cls from 'classnames';
 
 const Sale = (props) => {
    dayjs.extend(relativeTime);
@@ -140,7 +141,7 @@ const Sale = (props) => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('customer')}>
-                                          CUSTOMER
+                                          Customer
                                           <span>
                                              <When condition={sort.field !== 'customer'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -156,7 +157,7 @@ const Sale = (props) => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('inventory')}>
-                                          INVENTORY
+                                          Inventory
                                           <span>
                                              <When condition={sort.field !== 'inventory'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -172,7 +173,7 @@ const Sale = (props) => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('quantity')}>
-                                          QUANTITY
+                                          Quantity
                                           <span>
                                              <When condition={sort.field !== 'quantity'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -188,7 +189,7 @@ const Sale = (props) => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('retailPrice')}>
-                                          RETAIL PRICE
+                                          Subtotal
                                           <span>
                                              <When condition={sort.field !== 'retailPrice'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -204,7 +205,7 @@ const Sale = (props) => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('paid')}>
-                                          PAID
+                                          Paid
                                           <span>
                                              <When condition={sort.field !== 'paid'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -219,22 +220,30 @@ const Sale = (props) => {
                                        </strong>
                                     </th>
                                     <th>
-                                       <strong>REMAINING</strong>
+                                       <strong>Remaining</strong>
                                     </th>
+                                    <th />
                                  </tr>
                               </thead>
                               <tbody>
                                  {query.data &&
-                                    query.data?.docs.map((e, index) => {
+                                    query.data?.docs.map((e) => {
                                        const getRemainig = () => {
-                                          if (!e?.sourcePrice || !e?.paid) return null;
-                                          if (e.sourcePrice === e.paid) return null;
-                                          return e.sourcePrice - e.paid;
+                                          if (!e?.retailPrice || !e?.paid) return null;
+                                          if (e.retailPrice === e.paid) return null;
+                                          return e.retailPrice - e.paid;
+                                       };
+                                       const getId = () => {
+                                          const id = e._id;
+                                          return id.slice(id.length - 3);
                                        };
                                        return (
-                                          <tr key={`${e._id}`}>
+                                          <tr
+                                             key={`${e._id}`}
+                                             className={cls({ 'tw-bg-red-400 tw-text-gray-50': e.isRemaining })}
+                                          >
                                              <td>
-                                                <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                                <strong>{getId()}</strong>
                                              </td>
                                              <td>{e?.customer?.name ?? 'N/A'}</td>
                                              <td>{e?.inventory?.modelNumber ?? 'N/A'}</td>
@@ -260,25 +269,18 @@ const Sale = (props) => {
                                                    <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                                 </OverlayTrigger>
                                              </td>
-                                             <td>
-                                                <ButtonGroup>
-                                                   <Button
-                                                      variant="dark"
-                                                      size="sm"
-                                                      icon={AiFillEye}
-                                                      // onClick={() => handleOnClickView(e)}
-                                                   >
-                                                      View
-                                                   </Button>
-                                                   <Button
-                                                      variant="warning"
-                                                      size="sm"
-                                                      icon={AiOutlineHistory}
-                                                      // onClick={() => handleOnClickEdit(e)}
-                                                   >
-                                                      Refund
-                                                   </Button>
-                                                   <When condition={props.user?.role !== userRoles.CASHIER}>
+                                             <When condition={props.user?.role !== userRoles.CASHIER}>
+                                                <td>
+                                                   <ButtonGroup>
+                                                      <Button
+                                                         variant="warning"
+                                                         size="sm"
+                                                         icon={AiOutlineHistory}
+                                                         // onClick={() => handleOnClickEdit(e)}
+                                                      >
+                                                         Refund
+                                                      </Button>
+
                                                       <Button
                                                          variant="danger"
                                                          size="sm"
@@ -287,9 +289,9 @@ const Sale = (props) => {
                                                       >
                                                          Delete
                                                       </Button>
-                                                   </When>
-                                                </ButtonGroup>
-                                             </td>
+                                                   </ButtonGroup>
+                                                </td>
+                                             </When>
                                           </tr>
                                        );
                                     })}

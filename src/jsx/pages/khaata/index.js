@@ -5,6 +5,7 @@ import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, useAlert, useQuery } from 'jsx/helpers';
+import { userRoles } from 'jsx/helpers/enums';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
@@ -20,9 +21,10 @@ import {
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
+import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 
-const Khaata = () => {
+const Khaata = (props) => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -82,7 +84,7 @@ const Khaata = () => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('customer')}>
-                                          CUSTOMER
+                                          Customer
                                           <span>
                                              <When condition={sort.field !== 'customer'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -98,7 +100,7 @@ const Khaata = () => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('inventory')}>
-                                          INVENTORY
+                                          Product
                                           <span>
                                              <When condition={sort.field !== 'inventory'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -114,7 +116,7 @@ const Khaata = () => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('quantity')}>
-                                          QUANTITY
+                                          Qty
                                           <span>
                                              <When condition={sort.field !== 'quantity'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -130,7 +132,7 @@ const Khaata = () => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('retailPrice')}>
-                                          RETAIL PRICE
+                                          Total
                                           <span>
                                              <When condition={sort.field !== 'retailPrice'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -146,7 +148,7 @@ const Khaata = () => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('paid')}>
-                                          PAID
+                                          Paid
                                           <span>
                                              <When condition={sort.field !== 'paid'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -164,45 +166,55 @@ const Khaata = () => {
                               </thead>
                               <tbody>
                                  {query.data &&
-                                    query.data?.docs.map((e, index) => (
-                                       <tr key={`${e._id}`}>
-                                          <td>
-                                             <strong>{query.data.pagingCounter * (index + 1)}</strong>
-                                          </td>
-                                          <td>{e?.customer?.name ?? 'N/A'}</td>
-                                          <td>{e?.inventory?.title ?? 'N/A'}</td>
-                                          <td>{e?.quantity ?? 'N/a'}</td>
-                                          <td>{e?.retailPrice ?? 'N/A'}</td>
-                                          <td>{e?.paid ?? 'N/A'}</td>
-                                          <td>
-                                             <OverlayTrigger
-                                                trigger={['hover', 'hover']}
-                                                placement="top"
-                                                overlay={
-                                                   <Popover className="tw-border-gray-500">
-                                                      <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                         dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                            ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                            : dayjs(e.createdAt).fromNow()
-                                                      }.`}</Popover.Content>
-                                                   </Popover>
-                                                }
-                                             >
-                                                <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                             </OverlayTrigger>
-                                          </td>
-                                          <td>
-                                             <Button
-                                                variant="danger"
-                                                size="sm"
-                                                icon={AiOutlineClear}
-                                                onClick={() => {}}
-                                             >
-                                                Clear
-                                             </Button>
-                                          </td>
-                                       </tr>
-                                    ))}
+                                    query.data?.docs.map((e, index) => {
+                                       const getId = () => {
+                                          const id = e._id;
+                                          return id.slice(id.length - 3);
+                                       };
+                                       return (
+                                          <tr key={`${e._id}`}>
+                                             <td>
+                                                <strong>{getId()}</strong>
+                                             </td>
+                                             <td>{e[e.type === 'sale' ? 'customer' : 'supplier']?.name ?? 'N/A'}</td>
+                                             <td>
+                                                {e[e.type === 'sale' ? 'inventory' : 'product']?.modelNumber ?? 'N/A'}
+                                             </td>
+                                             <td>{e?.quantity ?? 'N/a'}</td>
+                                             <td>{e[e.type === 'sale' ? 'retailPrice' : 'sourcePrice'] ?? 'N/A'}</td>
+                                             <td>{e?.paid ?? 'N/A'}</td>
+                                             <td>
+                                                <OverlayTrigger
+                                                   trigger={['hover', 'hover']}
+                                                   placement="top"
+                                                   overlay={
+                                                      <Popover className="tw-border-gray-500">
+                                                         <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
+                                                            dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
+                                                               ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
+                                                               : dayjs(e.createdAt).fromNow()
+                                                         }.`}</Popover.Content>
+                                                      </Popover>
+                                                   }
+                                                >
+                                                   <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                                </OverlayTrigger>
+                                             </td>
+                                             <When condition={props.user?.role !== userRoles.CASHIER}>
+                                                <td>
+                                                   <Button
+                                                      variant="danger"
+                                                      size="sm"
+                                                      icon={AiOutlineClear}
+                                                      onClick={() => {}}
+                                                   >
+                                                      Clear
+                                                   </Button>
+                                                </td>
+                                             </When>
+                                          </tr>
+                                       );
+                                    })}
                               </tbody>
                            </Table>
                         </Then>
@@ -232,4 +244,9 @@ const Khaata = () => {
    );
 };
 
-export default Khaata;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+export default connect(mapStateToProps, mapDispatchToProps)(Khaata);
