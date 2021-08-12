@@ -4,7 +4,7 @@ import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ButtonGroup, Card, Table } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { FaMinusCircle, FaPlusCircle } from 'react-icons/fa';
@@ -24,7 +24,7 @@ const AddSale = () => {
    const [showPrintDialog, setShowPrintDialog] = useState(false);
 
    const [formdata, setFormdata] = useState([
-      { customer: '', retailPrice: '', price: '', quantity: '', unit: 1, inventory: '' },
+      { customer: '', retailPrice: '', price: '', quantity: '', unit: 1, inventory: '', totalQuantity: '' },
    ]);
 
    const alert = useAlert();
@@ -59,15 +59,11 @@ const AddSale = () => {
 
    const handleSubmitData = (e) => {
       e.preventDefault();
-      const payload = _.map(formdata, (d) => {
-         console.log('d', d);
-         return {
-            ..._.pick(d, ['customer', 'inventory', 'quantity', 'retailPrice']),
-            paid: d.price,
-            quantity: d.quantity * d.unit,
-         };
-      });
-      console.log(payload);
+      const payload = _.map(formdata, (d) => ({
+         ..._.pick(d, ['customer', 'inventory', 'retailPrice']),
+         paid: d.price,
+         quantity: d.totalQuantity,
+      }));
       mutation.mutate(payload);
    };
 
@@ -180,7 +176,14 @@ const AddSale = () => {
                                                       placeholder=""
                                                       onChange={(x) => {
                                                          // console.log(x);
-                                                         handleOnChange('unit', x?.value?.value, idx);
+                                                         const u = x?.value?.value;
+                                                         handleOnChange('unit', u, idx);
+
+                                                         handleOnChange(
+                                                            'totalQuantity',
+                                                            formdata[idx].quantity * u,
+                                                            idx
+                                                         );
                                                       }}
                                                       options={
                                                          (unitQuery.data?.length > 0 &&
@@ -193,10 +196,24 @@ const AddSale = () => {
                                                 </When>
                                              </Then>
                                              <Else>
-                                                <When condition={key !== 'customerName' && key !== 'inventoryID'}>
+                                                <When
+                                                   condition={
+                                                      !['customerName', 'inventoryID', 'totalQuantity'].includes(key)
+                                                   }
+                                                >
                                                    <input
                                                       className="form-control"
-                                                      onChange={(event) => handleOnChange(key, event.target.value, idx)}
+                                                      onChange={(event) => {
+                                                         const q = event.target.value;
+                                                         handleOnChange(key, q, idx);
+
+                                                         if (key === 'quantity')
+                                                            handleOnChange(
+                                                               'totalQuantity',
+                                                               q * formdata[idx].unit,
+                                                               idx
+                                                            );
+                                                      }}
                                                       type="text"
                                                       name={key}
                                                       value={e[key]}

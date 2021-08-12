@@ -1,9 +1,26 @@
+/* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/button-has-type */
 import React from 'react';
 import ReactToPrint from 'react-to-print';
 import dayjs from 'dayjs';
 
 class ComponentToPrint extends React.Component {
+   getTotal = () => {
+      const { data, type } = this.props;
+      if (!data || !data.length) return '';
+
+      const subtotals = [];
+
+      data.forEach((d) => {
+         const price = d[type === 'purchase' ? 'sourcePrice' : 'retailPrice'];
+         subtotals.push(parseInt(price) * d.quantity);
+      });
+
+      const total = subtotals.reduce((a, b) => a + b);
+
+      return total;
+   };
+
    render() {
       return (
          <>
@@ -38,24 +55,17 @@ class ComponentToPrint extends React.Component {
                                     ))}
                               </tbody>
                            </table>
-                           <div className="row">
+                           <div className="row mt-5">
                               <div className="col-lg-4 col-sm-5"> </div>
                               <div className="col-lg-4 col-sm-5 ml-auto">
                                  <table className="table table-clear">
                                     <tbody>
                                        <tr>
                                           <td className="left">
-                                             <strong>Subtotal</strong>
-                                          </td>
-                                          <td className="right">440</td>
-                                       </tr>
-                                       <tr>
-                                          <td className="left">
                                              <strong>Total</strong>
                                           </td>
                                           <td className="right">
-                                             <strong>480</strong>
-                                             <br />
+                                             <strong>{this.getTotal()}</strong>
                                           </td>
                                        </tr>
                                     </tbody>
@@ -81,6 +91,7 @@ class Example extends React.Component {
                content={() => this.componentRef}
             />
             <ComponentToPrint
+               type={this.props.type}
                ref={(el) => (this.componentRef = el)}
                data={this.props.data}
                columns={this.props.columns}

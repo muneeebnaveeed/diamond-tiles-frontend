@@ -3,7 +3,7 @@ import React from 'react';
 import Avatar from 'react-avatar';
 import { Link, useHistory } from 'react-router-dom';
 
-const pages = ['app', 'ui', 'uc', 'basic', 'form', 'table', 'page', 'email', 'ecom', 'chart', 'editor'];
+const pages = ['products', 'suppliers', 'customers', 'users', 'employees', 'purchase', 'sale', 'khaata', 'expenses'];
 
 const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
    const history = useHistory();
@@ -11,11 +11,11 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
    const name = path[path.length - 1].split('-');
    const filterName = name.length >= 3 ? name.filter((n, i) => i > 0) : name;
 
-   let finalName = [];
+   let finalName = '';
 
    for (const page of pages) {
       if (filterName.includes(page)) {
-         finalName = filterName.filter((f) => f !== page);
+         finalName = filterName.find((f) => f === page);
          break;
       }
    }
@@ -36,7 +36,7 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
                <div className="collapse navbar-collapse justify-content-between">
                   <div className="header-left">
                      <div className="dashboard_bar" style={{ textTransform: 'capitalize' }}>
-                        {finalName.join(' ').length === 0 ? 'Dashboard' : finalName.join(' ')}
+                        {finalName || 'Dashboard'}
                      </div>
                   </div>
                   <ul className="navbar-nav header-right">

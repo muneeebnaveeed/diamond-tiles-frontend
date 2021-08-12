@@ -1,17 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Dropdown, Table, ButtonGroup } from 'react-bootstrap';
-import { FaEye } from 'react-icons/fa';
 import Button from 'jsx/components/Button';
 
-import loadable from '@loadable/component';
-import pMinDelay from 'p-min-delay';
 import { AiFillEye } from 'react-icons/ai';
-
-const ApexLine3 = loadable(() => pMinDelay(import('../../components/charts/apexcharts/Line3'), 500));
-const ApexLine = loadable(() => pMinDelay(import('../../components/charts/apexcharts/Line'), 500));
-const ApexLine2 = loadable(() => pMinDelay(import('../../components/charts/apexcharts/Line2'), 500));
-const ApexPie = loadable(() => pMinDelay(import('../../components/charts/apexcharts/Pie'), 500));
 
 const Dashboard = () => {
    const [activeModal, setActiveModal] = useState(false);
@@ -101,9 +92,7 @@ const Dashboard = () => {
                               </Dropdown.Menu>
                            </Dropdown>
                         </div>
-                        <div className="card-body pb-0 h-100">
-                           <ApexLine3 />
-                        </div>
+                        <div className="card-body pb-0 h-100">{/* <ApexLine3 /> */}</div>
                      </div>
                   </div>
                </div>
@@ -276,9 +265,7 @@ const Dashboard = () => {
                               </Dropdown.Menu>
                            </Dropdown>
                         </div>
-                        <div className="card-body pb-0 h-100">
-                           <ApexLine3 />
-                        </div>
+                        <div className="card-body pb-0 h-100">{/* <ApexLine3 /> */}</div>
                      </div>
                   </div>
                </div>

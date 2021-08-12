@@ -6,7 +6,7 @@ export const api = axios.create({ baseURL: 'https://diamond-tiles-backend.heroku
 export const getError = (err) => {
    const response = err.response?.data?.data;
 
-   if (!response) return err.message;
+   if (!response) return [err.message];
 
    if (!isArray(response)) return [response];
 

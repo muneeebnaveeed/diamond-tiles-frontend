@@ -18,7 +18,7 @@ const PurchaseActions = () => {
    const [showPrintDialog, setShowPrintDialog] = useState(false);
 
    const [formdata, setFormdata] = useState([
-      { supplier: '', sourcePrice: '', paid: '', quantity: '', units: '', product: '' },
+      { supplier: '', sourcePrice: '', paid: '', quantity: '', units: '', product: '', totalQuantity: '' },
    ]);
 
    const alert = useAlert();
@@ -53,7 +53,8 @@ const PurchaseActions = () => {
 
    const handleSubmitData = (e) => {
       e.preventDefault();
-      mutation.mutate(formdata);
+      console.log(formdata);
+      mutation.mutate(formdata.map((d) => ({ ...d, units: [d.units._id], quantity: d.totalQuantity })));
    };
 
    return (
@@ -73,6 +74,7 @@ const PurchaseActions = () => {
             size="lg"
          >
             <Invoice
+               type="purchase"
                printRef={printRef}
                data={formdata}
                columns={{
@@ -139,15 +141,20 @@ const PurchaseActions = () => {
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
-                                                         handleOnChange('units', [x?._id], idx);
-                                                         handleOnChange('unitsTitle', [x?.title], idx);
+                                                         handleOnChange('units', x.value, idx);
+                                                         handleOnChange('unitsTitle', x.title, idx);
+
+                                                         handleOnChange(
+                                                            'totalQuantity',
+                                                            formdata[idx].quantity * x.value?.value,
+                                                            idx
+                                                         );
                                                       }}
                                                       options={
                                                          unitsQuery.data?.length > 0 &&
                                                          unitsQuery.data.map((x) => ({
-                                                            ...x,
                                                             label: x.title,
-                                                            value: x.title,
+                                                            value: x,
                                                          }))
                                                       }
                                                    />
@@ -173,14 +180,27 @@ const PurchaseActions = () => {
                                              <Else>
                                                 <When
                                                    condition={
-                                                      key !== 'productModel' &&
-                                                      key !== 'unitsTitle' &&
-                                                      key !== 'supplierName'
+                                                      ![
+                                                         'productModel',
+                                                         'unitsTitle',
+                                                         'supplierName',
+                                                         'totalQuantity',
+                                                      ].includes(key)
                                                    }
                                                 >
                                                    <input
                                                       className="form-control"
-                                                      onChange={(event) => handleOnChange(key, event.target.value, idx)}
+                                                      onChange={(event) => {
+                                                         const q = event.target.value;
+                                                         handleOnChange(key, q, idx);
+
+                                                         if (key === 'quantity' && formdata[idx].units)
+                                                            handleOnChange(
+                                                               'totalQuantity',
+                                                               q * formdata[idx].units.value,
+                                                               idx
+                                                            );
+                                                      }}
                                                       type="text"
                                                       name={key}
                                                       value={e[key]}
