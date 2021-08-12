@@ -207,6 +207,10 @@ const Purchase = (props) => {
                                        if (e.sourcePrice === e.paid) return null;
                                        return e.sourcePrice - e.paid;
                                     };
+                                    const getId = () => {
+                                       const id = e._id;
+                                       return id.slice(id.length - 3);
+                                    };
 
                                     return (
                                        <tr
@@ -214,9 +218,7 @@ const Purchase = (props) => {
                                           className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}
                                        >
                                           <td>
-                                             <strong className={e.isRemaining && 'tw-text-gray-50'}>
-                                                {query.data.pagingCounter * (index + 1)}
-                                             </strong>
+                                             <strong className={e.isRemaining && 'tw-text-gray-50'}>{getId()}</strong>
                                           </td>
                                           <td>{e?.supplier?.name ?? 'N/A'}</td>
                                           <td>{e?.product?.modelNumber ?? 'N/A'}</td>
