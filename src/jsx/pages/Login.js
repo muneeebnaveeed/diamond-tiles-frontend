@@ -1,9 +1,10 @@
-import { post, useAlert } from 'jsx/helpers';
+import { api, get, post, useAlert } from 'jsx/helpers';
 import React, { useState, useEffect } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { When } from 'react-if';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { connect } from 'react-redux';
+import { userRoles } from 'jsx/helpers/enums';
 import { setLogin } from '../../store/auth/actions';
 
 const Login = (props) => {
@@ -20,27 +21,55 @@ const Login = (props) => {
    };
 
    useEffect(() => {
+      setIsLoading(true);
       const token = localStorage.getItem('auth_token');
       if (token) {
-         history.push('/dashboard');
-      }
+         get(`auth/decode/${token}`)
+            .then((decode) => {
+               props.setLogin({ ...decode, auth_token: token });
+               localStorage.setItem('auth_token', token);
+               setIsLoading(false);
+               if (decode?.isConfirmed) {
+                  if (decode?.role === userRoles.CASHIER) {
+                     history.push('/purchase');
+                  } else if (decode?.role === userRoles.ADMINISTRATOR) {
+                     history.push('/dashboard');
+                  } else {
+                     alert.setErrorAlert({ message: 'Unable to login', err: 'Account not confirmed!' });
+                  }
+               } else {
+                  localStorage.clear();
+                  props.setLogin({});
+                  alert.setErrorAlert({ message: 'Unable to login', err: 'Account not confirmed!' });
+               }
+            })
+            .catch((err) => setIsLoading(false));
+      } else setIsLoading(false);
    }, []);
 
    const handleLogin = async (e) => {
       e.preventDefault();
       setIsLoading(true);
       try {
-         const res = await post('/auth/login', loginData);
+         const res = await api.post('/auth/login', loginData);
          setIsLoading(false);
-         localStorage.setItem('auth_token', res.token);
-         props.setLogin(res);
-         if (res?.type === 'cashier') {
-            history.push('/purchase');
+         const decode = await get(`auth/decode/${res.data}`);
+         props.setLogin({ ...decode, auth_token: res.data });
+         localStorage.setItem('auth_token', res.data);
+         if (decode?.isConfirmed) {
+            if (decode?.role === userRoles.CASHIER) {
+               history.push('/purchase');
+            } else if (decode?.role === userRoles.ADMINISTRATOR) {
+               history.push('/dashboard');
+            } else {
+               alert.setErrorAlert({ message: 'Unable to login', err: 'Account not confirmed!' });
+            }
          } else {
-            history.push('/dashboard');
+            localStorage.clear();
+            props.setLogin({});
+            alert.setErrorAlert({ message: 'Unable to login', err: 'Account not confirmed!' });
          }
       } catch (err) {
-         console.log('error', err);
          setIsLoading(false);
          alert.setErrorAlert({ message: 'Unable to login', err });
       }

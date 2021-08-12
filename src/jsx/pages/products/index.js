@@ -16,6 +16,7 @@ import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 import { connect } from 'react-redux';
+import { userRoles } from 'jsx/helpers/enums';
 import Types from '../types';
 import Units from '../units';
 
@@ -218,7 +219,7 @@ const Products = (props) => {
                                              >
                                                 View
                                              </Button>
-                                             <When condition={props.user?.type !== 'cashier'}>
+                                             <When condition={props.user?.role !== userRoles.CASHIER}>
                                                 <Button
                                                    variant="warning"
                                                    size="sm"

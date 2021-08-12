@@ -9,6 +9,7 @@ import { When } from 'react-if';
 
 import { connect } from 'react-redux';
 import { setLogin } from 'store/auth/actions';
+import { userRoles } from 'jsx/helpers/enums';
 /// Active menu
 const manage = ['/employees', '/customers', '/products', '/users', '/types', '/units'];
 
@@ -51,7 +52,7 @@ const SideBar = (props) => {
       <div className="deznav">
          <PerfectScrollbar className="deznav-scroll">
             <MM className="metismenu" id="menu">
-               <When condition={props.user?.type !== 'cashier'}>
+               <When condition={props.user?.role !== userRoles.CASHIER}>
                   <li className={path === '/dashboard' ? 'mm-active' : ''}>
                      <Link className="" to="/dashboard" aria-expanded="false">
                         <i className="flaticon-381-networking" />
@@ -83,7 +84,7 @@ const SideBar = (props) => {
                      {/* <li>
                         <Link to="/app-calender">Users</Link>
                      </li> */}
-                     <When condition={props.user?.type !== 'cashier'}>
+                     <When condition={props.user?.role !== userRoles.CASHIER}>
                         <li>
                            <Link to="/employees">Employees</Link>
                         </li>

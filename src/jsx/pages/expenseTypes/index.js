@@ -5,6 +5,7 @@ import Button from 'jsx/components/Button';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { userRoles } from 'jsx/helpers/enums';
 import React, { useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
@@ -155,7 +156,7 @@ const ExpenseTypes = (props) => {
                                        <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                     </OverlayTrigger>
                                  </td>
-                                 <When condition={props.user?.type !== 'cashier'}>
+                                 <When condition={props.user?.role !== userRoles.CASHIER}>
                                     <td>
                                        <ButtonGroup>
                                           <Button

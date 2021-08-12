@@ -5,6 +5,7 @@ import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { userRoles } from 'jsx/helpers/enums';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
@@ -87,12 +88,12 @@ const Expenses = (props) => {
       <>
          <PageTItle activeMenu="Expenses" motherMenu="Diamond Tiles" />
          <div className="row my-3">
-            <When condition={props.user?.type !== 'cashier'}>
+            <When condition={props.user?.role !== userRoles.CASHIER}>
                <div className="col-xl-5  my-2">
                   <Salaries />
                </div>
             </When>
-            <div className={props?.user?.type == 'cashier' ? 'col-xl-12 my-2' : 'col-xl-7  my-2'}>
+            <div className={props?.user?.role == userRoles.CASHIER ? 'col-xl-12 my-2' : 'col-xl-7  my-2'}>
                <ExpenseTypes />
             </div>
          </div>
@@ -217,7 +218,7 @@ const Expenses = (props) => {
                                              >
                                                 View
                                              </Button>
-                                             <When condition={props.user?.type !== 'cashier'}>
+                                             <When condition={props.user?.role !== userRoles.CASHIER}>
                                                 <Button
                                                    variant="danger"
                                                    size="sm"

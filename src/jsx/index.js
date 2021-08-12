@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 /// React router dom
 import { BrowserRouter as Router, Redirect, Route, Switch } from 'react-router-dom';
 import './chart.css';
+import { userRoles } from './helpers/enums';
 /// Css
 import './index.css';
 import Layout from './layouts';
@@ -63,7 +64,7 @@ const Markup = (props) => (
    <Suspense fallback={<p>Loading</p>}>
       <Router>
          <Switch>
-            <If condition={props.user?.type === 'cashier'}>
+            <If condition={props.user?.role === userRoles.CASHIER}>
                <Then>
                   {routes.map((data, i) => {
                      const getComponent = () => {};

@@ -15,6 +15,7 @@ import swal from 'sweetalert';
 import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { connect } from 'react-redux';
+import { userRoles } from 'jsx/helpers/enums';
 import CreatableSelect from '../../components/CreatableSelect';
 
 const Units = (props) => {
@@ -183,7 +184,7 @@ const Units = (props) => {
                                        <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                     </OverlayTrigger>
                                  </td>
-                                 <When condition={props.user?.type !== 'cashier'}>
+                                 <When condition={props.user?.role !== userRoles.CASHIER}>
                                     <td>
                                        <Button
                                           variant="danger"

@@ -1,11 +1,13 @@
 import React from 'react';
 /// Image
 import Avatar from 'react-avatar';
+import { connect } from 'react-redux';
 import { Link, useHistory } from 'react-router-dom';
+import { setLogout } from 'store/auth/actions';
 
 const pages = ['products', 'suppliers', 'customers', 'users', 'employees', 'purchase', 'sale', 'khaata', 'expenses'];
 
-const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
+const Header = ({ onNote, toggle, onProfile, onNotification, onBox, logout }) => {
    const history = useHistory();
    const path = window.location.pathname.split('/');
    const name = path[path.length - 1].split('-');
@@ -25,6 +27,8 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
    React.useEffect(() => {
       const token = localStorage.getItem('auth_token');
       if (!token) {
+         logout();
+         localStorage.clear();
          history.push('/page-login');
       }
    }, []);
@@ -82,4 +86,10 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onBox }) => {
    );
 };
 
-export default Header;
+const mapStateToProps = ({ auth }) => ({});
+
+const mapDispatchToProps = (dispatch) => ({
+   logout: () => dispatch(setLogout()),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header);

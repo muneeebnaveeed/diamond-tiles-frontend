@@ -3,6 +3,8 @@
 import React from 'react';
 import ReactToPrint from 'react-to-print';
 import dayjs from 'dayjs';
+import { connect } from 'react-redux';
+import { When } from 'react-if';
 
 class ComponentToPrint extends React.Component {
    getTotal = () => {
@@ -21,6 +23,8 @@ class ComponentToPrint extends React.Component {
       return total;
    };
 
+   capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+
    render() {
       return (
          <>
@@ -29,10 +33,18 @@ class ComponentToPrint extends React.Component {
                   <div className="card mt-3">
                      <h2 className="px-2 text-center">Invoice</h2>
                      <h3 className="px-2 ml-5">Diamond Tiles</h3>
-                     <h4 className="px-2 ml-5">Invoice# IU987</h4>
-                     <h4 className="px-2 ml-5">Admin</h4>
-                     <h4 className="px-2 ml-5">Customer: John Doe</h4>
-                     <h4 className="px-2 ml-5">{dayjs().format('DD-MMM-YYYY')}</h4>
+                     <h4 className="px-2 ml-5">{`Invoice# ${
+                        this.props.data.length > 0 ? this.props.data[0]?.inventory.substring(-4, 4) ?? '' : ''
+                     }`}</h4>
+                     <h4 className="px-2 ml-5">{`${this.capitalizeFirstLetter(this.props.user?.role)}: ${
+                        this.props.user?.name
+                     }`}</h4>
+                     <When condition={this.props.data.length > 0 ? !!this.props.data[0]?.customerName : false}>
+                        <h4 className="px-2 ml-5">{`Customer: ${
+                           this.props.data.length > 0 ? this.props.data[0]?.customerName ?? '' : ''
+                        }`}</h4>
+                     </When>
+                     <h4 className="px-2 ml-5">{`Date: ${dayjs().format('DD-MMM-YYYY')}`}</h4>
                      <div className="card-body">
                         <div className="table-responsive">
                            <table className="table table-striped">
@@ -95,10 +107,17 @@ class Example extends React.Component {
                ref={(el) => (this.componentRef = el)}
                data={this.props.data}
                columns={this.props.columns}
+               user={this.props.user}
             />
          </div>
       );
    }
 }
 
-export default Example;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Example);

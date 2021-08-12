@@ -16,6 +16,7 @@ import { useDebounce } from 'ahooks';
 import Pagination from 'jsx/components/Pagination';
 import _ from 'lodash';
 import { connect } from 'react-redux';
+import { userRoles } from 'jsx/helpers/enums';
 
 const CustomerActions = (props) => {
    dayjs.extend(relativeTime);
@@ -33,7 +34,10 @@ const CustomerActions = (props) => {
    const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const alert = useAlert();
-   const isEditing = useMemo(() => props.user?.type !== 'cashier' && urlState?.type === 'edit', [urlState.type]);
+   const isEditing = useMemo(
+      () => props.user?.role !== userRoles.CASHIER && urlState?.type === 'edit',
+      [urlState.type]
+   );
    const isViewCustomer = useMemo(() => urlState?.type === 'view', [urlState.type]);
    const isAddCustomer = useMemo(() => params?.id === 'add', [params.id]);
 

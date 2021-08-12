@@ -3,12 +3,21 @@ import { isArray } from 'lodash';
 
 export const api = axios.create({ baseURL: 'https://diamond-tiles-backend.herokuapp.com/' });
 
+api.interceptors.request.use(
+   async (config) => {
+      const token = await localStorage.getItem('auth_token');
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+      return config;
+   },
+   (err) => Promise.reject(err)
+);
+
 export const getError = (err) => {
    const response = err.response?.data?.data;
 
-   if (!response) return [err.message];
-
    if (!isArray(response)) return [response];
+
+   if (!response) return [err.message];
 
    return response;
 };

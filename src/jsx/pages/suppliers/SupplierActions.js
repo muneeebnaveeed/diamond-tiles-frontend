@@ -15,6 +15,7 @@ import { useHistory, useParams } from 'react-router-dom';
 
 import _ from 'lodash';
 import { connect } from 'react-redux';
+import { userRoles } from 'jsx/helpers/enums';
 
 const SupplierActions = (props) => {
    const history = useHistory();
@@ -24,7 +25,10 @@ const SupplierActions = (props) => {
    const [urlState, setUrlState] = useUrlState({});
 
    const alert = useAlert();
-   const isEditing = useMemo(() => props.user?.type !== 'cashier' && urlState?.type === 'edit', [urlState.type]);
+   const isEditing = useMemo(
+      () => props.user?.role !== userRoles.CASHIER && urlState?.type === 'edit',
+      [urlState.type]
+   );
    const isViewSupplier = useMemo(() => urlState?.type === 'view', [urlState.type]);
    const isAddSupplier = useMemo(() => params?.id === 'add', [params.id]);
 

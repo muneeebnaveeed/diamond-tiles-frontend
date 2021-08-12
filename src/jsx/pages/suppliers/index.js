@@ -5,6 +5,7 @@ import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { userRoles } from 'jsx/helpers/enums';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
 import React, { useState, useEffect } from 'react';
@@ -214,7 +215,7 @@ const Suppliers = (props) => {
                                              >
                                                 View
                                              </Button>
-                                             <When condition={props.user?.type !== 'cashier'}>
+                                             <When condition={props.user?.role !== userRoles.CASHIER}>
                                                 <Button
                                                    variant="warning"
                                                    size="sm"

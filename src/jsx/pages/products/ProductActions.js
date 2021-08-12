@@ -7,6 +7,7 @@ import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { userRoles } from 'jsx/helpers/enums';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -38,7 +39,10 @@ const ProductActions = (props) => {
    const getTypes = useQuery('types', () => get('/types'));
    const queryClient = useQueryClient();
 
-   const isEditing = useMemo(() => props.user?.type !== 'cashier' && urlState?.type === 'edit', [urlState.type]);
+   const isEditing = useMemo(
+      () => props.user?.role !== userRoles.CASHIER && urlState?.type === 'edit',
+      [urlState.type]
+   );
    const isViewProduct = useMemo(() => urlState?.type === 'view', [urlState.type]);
    const isAddProduct = useMemo(() => params?.id === 'add', [params.id]);
 

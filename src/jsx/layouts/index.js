@@ -1,5 +1,5 @@
 import React, { memo, useEffect } from 'react';
-import { setLogin } from 'store/auth/actions';
+import { setLogin, setLogout } from 'store/auth/actions';
 import { connect } from 'react-redux';
 import Nav from './nav';
 import Footer from './Footer';
@@ -7,13 +7,22 @@ import { get } from '../helpers';
 
 const token = localStorage.getItem('auth_token');
 
-const Layout = ({ children: Children, isPublic, setUser }) => {
+const Layout = ({ children: Children, isPublic, setUser, logout }) => {
    const getUserProfile = async () => {
       try {
          const res = await get(`/auth/decode/${token}`);
-         setUser(res);
+         if (!res?.isConfirmed) {
+            logout();
+            localStorage.clear();
+            window.location = 'page-login';
+         } else {
+            setUser({ ...res, auth_token: token });
+         }
       } catch (error) {
+         logout();
          setUser({});
+         localStorage.clear();
+         window.location = 'page-login';
       }
    };
 
@@ -55,6 +64,7 @@ const mapStateToProps = (state) => ({});
 
 const mapDispatchToProps = (dispatch) => ({
    setUser: (payload) => dispatch(setLogin(payload)),
+   logout: () => dispatch(setLogout()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Layout);

@@ -13,6 +13,7 @@ import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 import { connect } from 'react-redux';
+import { userRoles } from 'jsx/helpers/enums';
 
 const Types = (props) => {
    const history = useHistory();
@@ -149,7 +150,7 @@ const Types = (props) => {
                                           icon={AiFillEye}
                                           onClick={() => handleOnClickView(e._id)}
                                        />
-                                       <When condition={props.user?.type !== 'cashier'}>
+                                       <When condition={props.user?.role !== userRoles.CASHIER}>
                                           <Button
                                              variant="danger"
                                              size="sm"

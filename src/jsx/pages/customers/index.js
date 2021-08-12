@@ -16,6 +16,7 @@ import swal from 'sweetalert';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { useDebounce } from 'ahooks';
 import { connect } from 'react-redux';
+import { userRoles } from 'jsx/helpers/enums';
 
 const Customers = (props) => {
    dayjs.extend(relativeTime);
@@ -199,7 +200,7 @@ const Customers = (props) => {
                                              >
                                                 View
                                              </Button>
-                                             <When condition={props.user?.type !== 'cashier'}>
+                                             <When condition={props.user?.role !== userRoles.CASHIER}>
                                                 <Button
                                                    variant="warning"
                                                    size="sm"
