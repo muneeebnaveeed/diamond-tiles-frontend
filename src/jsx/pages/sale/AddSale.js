@@ -10,7 +10,7 @@ import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { FaMinusCircle, FaPlusCircle } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useHistory } from 'react-router-dom';
-import _ from 'lodash';
+import _, { isArray } from 'lodash';
 import Select from '../../components/Select';
 
 const getDefaultOption = () => ({
@@ -24,13 +24,22 @@ const AddSale = () => {
    const [showPrintDialog, setShowPrintDialog] = useState(false);
 
    const [formdata, setFormdata] = useState([
-      { customer: '', retailPrice: '', price: '', quantity: '', unit: 1, inventory: '', totalQuantity: '' },
+      {
+         inventory: null,
+         customer: null,
+         retailPrice: null,
+         quantity: null,
+         unit: null,
+         subtotal: null,
+         paid: null,
+         totalQuantity: null,
+      },
    ]);
 
    const alert = useAlert();
 
    const customerQuery = useQuery(['customers', 1, 10000], () => get('/customers', 1, 10000));
-   const inventoryQuery = useQuery(['inventories', 1, 10000], () => get('/inventories', 1, 100));
+   const inventoryQuery = useQuery(['inventories', 1, 10000], () => get('/sales/inventories', 1, 100));
    const unitQuery = useQuery('units', () => get('/units'));
 
    const postMutation = useMutation(
@@ -60,9 +69,11 @@ const AddSale = () => {
    const handleSubmitData = (e) => {
       e.preventDefault();
       const payload = _.map(formdata, (d) => ({
-         ..._.pick(d, ['customer', 'inventory', 'retailPrice']),
-         paid: d.price,
+         customer: d.customer,
+         retailPrice: d.subtotal,
+         paid: d.paid,
          quantity: d.totalQuantity,
+         inventory: d.inventory._id,
       }));
       mutation.mutate(payload);
    };
@@ -99,7 +110,7 @@ const AddSale = () => {
                columns={{
                   customerName: 'CUSTOMER',
                   retailPrice: 'RETAILS PRICE',
-                  price: 'PAID',
+                  paid: 'PAID',
                   quantity: 'QUANTITY',
                   inventoryID: 'INVENTORY',
                }}
@@ -117,13 +128,13 @@ const AddSale = () => {
                   <Table>
                      <thead>
                         <tr>
-                           <th>CUSTOMER</th>
-                           <th>RETAIL PRICE</th>
-                           <th>PAID</th>
-                           <th>QUANTITY</th>
-                           <th>UNIT</th>
-
-                           <th>INVENTORY</th>
+                           <th>Product</th>
+                           <th>Customer</th>
+                           <th>Price</th>
+                           <th>Qty</th>
+                           <th>Unit</th>
+                           <th>Subtotal</th>
+                           <th>Paid</th>
                         </tr>
                      </thead>
                      <tbody>
@@ -145,6 +156,8 @@ const AddSale = () => {
                                                       }}
                                                       defaultValue={getDefaultOption()}
                                                       options={getOptions()}
+                                                      width="tw-w-[120px]"
+                                                      // className="tw-w-[120px]"
                                                    />
                                                 </When>
                                                 <When condition={key === 'inventory'}>
@@ -152,19 +165,35 @@ const AddSale = () => {
                                                       placeholder=""
                                                       onChange={(x) => {
                                                          // console.log('onChange', x);
-                                                         handleOnChange('inventory', x?.value?._id, idx);
+                                                         const inventory = x?.value;
+                                                         handleOnChange('inventory', inventory, idx);
                                                          handleOnChange(
                                                             'inventoryID',
-                                                            x?.value?.product?.modelNumber,
+                                                            inventory.product?.modelNumber,
                                                             idx
                                                          );
-                                                         const retailPrice = x?.value?.product?.retailPrice;
+
+                                                         const retailPrice = inventory.product?.retailPrice;
+
+                                                         const { unit } = formdata[idx];
+
+                                                         if (unit) {
+                                                            const unitInInventory =
+                                                               inventory.quantity[unit.title.toLowerCase()];
+
+                                                            const quantity = isArray(unitInInventory)
+                                                               ? unitInInventory[0]
+                                                               : unitInInventory;
+
+                                                            handleOnChange('quantity', quantity, idx);
+                                                         }
+
                                                          if (retailPrice)
                                                             handleOnChange('retailPrice', retailPrice, idx);
                                                       }}
                                                       options={
-                                                         (inventoryQuery.data?.docs?.length > 0 &&
-                                                            inventoryQuery.data.docs.map((x) => ({
+                                                         (inventoryQuery.data?.length > 0 &&
+                                                            inventoryQuery.data.map((x) => ({
                                                                label: x.product.modelNumber,
                                                                value: x,
                                                             }))) || [{ label: 'No Inventories', value: null }]
@@ -176,14 +205,29 @@ const AddSale = () => {
                                                       placeholder=""
                                                       onChange={(x) => {
                                                          // console.log(x);
-                                                         const u = x?.value?.value;
-                                                         handleOnChange('unit', u, idx);
+                                                         const unit = x.value;
+                                                         handleOnChange('unit', unit, idx);
 
-                                                         handleOnChange(
-                                                            'totalQuantity',
-                                                            formdata[idx].quantity * u,
-                                                            idx
-                                                         );
+                                                         let { inventory, retailPrice, quantity } = formdata[idx];
+
+                                                         if (inventory) {
+                                                            const unitInInventory =
+                                                               inventory.quantity[unit.title.toLowerCase()];
+
+                                                            quantity = isArray(unitInInventory)
+                                                               ? unitInInventory[0]
+                                                               : unitInInventory;
+
+                                                            handleOnChange('quantity', quantity, idx);
+                                                            handleOnChange('totalQuantity', quantity * unit.value, idx);
+                                                         }
+
+                                                         if (quantity && retailPrice)
+                                                            handleOnChange(
+                                                               'subtotal',
+                                                               quantity * unit.value * parseInt(retailPrice),
+                                                               idx
+                                                            );
                                                       }}
                                                       options={
                                                          (unitQuery.data?.length > 0 &&
@@ -202,21 +246,32 @@ const AddSale = () => {
                                                    }
                                                 >
                                                    <input
-                                                      className="form-control"
+                                                      className="form-control tw-max-w-[90px]"
                                                       onChange={(event) => {
                                                          const q = event.target.value;
                                                          handleOnChange(key, q, idx);
 
-                                                         if (key === 'quantity')
-                                                            handleOnChange(
-                                                               'totalQuantity',
-                                                               q * formdata[idx].unit,
-                                                               idx
-                                                            );
+                                                         const { unit } = formdata[idx];
+
+                                                         if (key === 'quantity' && unit)
+                                                            handleOnChange('totalQuantity', q * unit.value, idx);
+
+                                                         if (['quantity', 'retailPrice'].includes(key)) {
+                                                            let { quantity, retailPrice } = formdata[idx];
+                                                            if (key === 'quantity') quantity = q;
+                                                            else retailPrice = q;
+                                                            if (quantity && retailPrice && unit)
+                                                               handleOnChange(
+                                                                  'subtotal',
+                                                                  quantity * unit.value * retailPrice,
+                                                                  idx
+                                                               );
+                                                         }
                                                       }}
                                                       type="text"
                                                       name={key}
                                                       value={e[key]}
+                                                      disabled={key === 'subtotal'}
                                                    />
                                                 </When>
                                              </Else>

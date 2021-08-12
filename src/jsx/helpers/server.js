@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { isArray } from 'lodash';
 
-export const api = axios.create({ baseURL: 'https://diamond-tiles-backend.herokuapp.com/' });
+export const api = axios.create({ baseURL: 'https://diamond-tiles-backend.herokuapp.com' });
 
 api.interceptors.request.use(
    async (config) => {

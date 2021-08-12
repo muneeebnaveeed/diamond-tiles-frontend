@@ -27,8 +27,8 @@ const selectStyles = {
    },
 };
 
-const Select = ({ className = '', ...props }) => (
-   <ReactSelect menuPlacement="auto" className={`tw-w-[100px] ${className}`} styles={selectStyles} {...props} />
+const Select = ({ width = 'tw-w-[100px]', className = '', ...props }) => (
+   <ReactSelect menuPlacement="auto" className={`${width} ${className}`} styles={selectStyles} {...props} />
 );
 
 export default Select;

@@ -23,9 +23,9 @@ const PurchaseActions = () => {
 
    const alert = useAlert();
 
-   const suppliersQuery = useQuery(['suppliers'], () => get('/suppliers', 1, 10000));
-   const unitsQuery = useQuery(['units'], () => get('/units', 1, 10000));
-   const productsQuery = useQuery(['products'], () => get('/products', 1, 10000));
+   const suppliersQuery = useQuery(['suppliers'], () => get('/suppliers', 1, 10000, null, 1, ''));
+   const unitsQuery = useQuery(['units'], () => get('/units', 1, 10000, ''));
+   const productsQuery = useQuery(['products'], () => get('/products', 1, 10000, null, 1, ''));
 
    const postMutation = useMutation(
       (payload) => {
