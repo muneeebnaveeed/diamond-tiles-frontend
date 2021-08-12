@@ -15,10 +15,11 @@ import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
+import { connect } from 'react-redux';
 import Types from '../types';
 import Units from '../units';
 
-const Products = () => {
+const Products = (props) => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -217,22 +218,24 @@ const Products = () => {
                                              >
                                                 View
                                              </Button>
-                                             <Button
-                                                variant="warning"
-                                                size="sm"
-                                                icon={AiFillEdit}
-                                                onClick={() => handleOnClickEdit(e)}
-                                             >
-                                                Edit
-                                             </Button>
-                                             <Button
-                                                variant="danger"
-                                                size="sm"
-                                                icon={AiFillDelete}
-                                                onClick={() => handleOnClickDelete(e._id)}
-                                             >
-                                                Delete
-                                             </Button>
+                                             <When condition={props.user?.type !== 'cashier'}>
+                                                <Button
+                                                   variant="warning"
+                                                   size="sm"
+                                                   icon={AiFillEdit}
+                                                   onClick={() => handleOnClickEdit(e)}
+                                                >
+                                                   Edit
+                                                </Button>
+                                                <Button
+                                                   variant="danger"
+                                                   size="sm"
+                                                   icon={AiFillDelete}
+                                                   onClick={() => handleOnClickDelete(e._id)}
+                                                >
+                                                   Delete
+                                                </Button>
+                                             </When>
                                           </ButtonGroup>
                                        </td>
                                     </tr>
@@ -265,5 +268,10 @@ const Products = () => {
       </>
    );
 };
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
 
-export default Products;
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Products);

@@ -12,8 +12,9 @@ import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
+import { connect } from 'react-redux';
 
-const Types = () => {
+const Types = (props) => {
    const history = useHistory();
    dayjs.extend(relativeTime);
    const [urlState, setUrlState] = useUrlState({});
@@ -148,12 +149,14 @@ const Types = () => {
                                           icon={AiFillEye}
                                           onClick={() => handleOnClickView(e._id)}
                                        />
-                                       <Button
-                                          variant="danger"
-                                          size="sm"
-                                          icon={AiFillDelete}
-                                          onClick={() => handleOnClickDelete(e._id)}
-                                       />
+                                       <When condition={props.user?.type !== 'cashier'}>
+                                          <Button
+                                             variant="danger"
+                                             size="sm"
+                                             icon={AiFillDelete}
+                                             onClick={() => handleOnClickDelete(e._id)}
+                                          />
+                                       </When>
                                     </ButtonGroup>
                                  </td>
                               </tr>
@@ -210,4 +213,10 @@ const Types = () => {
    );
 };
 
-export default React.memo(Types);
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(React.memo(Types));

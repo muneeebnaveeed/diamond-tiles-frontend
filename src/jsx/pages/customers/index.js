@@ -15,8 +15,9 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import swal from 'sweetalert';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { useDebounce } from 'ahooks';
+import { connect } from 'react-redux';
 
-const Customers = () => {
+const Customers = (props) => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -198,22 +199,24 @@ const Customers = () => {
                                              >
                                                 View
                                              </Button>
-                                             <Button
-                                                variant="warning"
-                                                size="sm"
-                                                icon={AiFillEdit}
-                                                onClick={() => handleOnClickEdit(e)}
-                                             >
-                                                Edit
-                                             </Button>
-                                             <Button
-                                                variant="danger"
-                                                size="sm"
-                                                icon={AiFillDelete}
-                                                onClick={() => handleOnClickDelete(e._id)}
-                                             >
-                                                Delete
-                                             </Button>
+                                             <When condition={props.user?.type !== 'cashier'}>
+                                                <Button
+                                                   variant="warning"
+                                                   size="sm"
+                                                   icon={AiFillEdit}
+                                                   onClick={() => handleOnClickEdit(e)}
+                                                >
+                                                   Edit
+                                                </Button>
+                                                <Button
+                                                   variant="danger"
+                                                   size="sm"
+                                                   icon={AiFillDelete}
+                                                   onClick={() => handleOnClickDelete(e._id)}
+                                                >
+                                                   Delete
+                                                </Button>
+                                             </When>
                                           </ButtonGroup>
                                        </td>
                                     </tr>
@@ -246,5 +249,9 @@ const Customers = () => {
       </>
    );
 };
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
 
-export default Customers;
+const mapDispatchToProps = {};
+export default connect(mapStateToProps, mapDispatchToProps)(Customers);

@@ -15,8 +15,9 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { useDebounce } from 'ahooks';
 import Pagination from 'jsx/components/Pagination';
 import _ from 'lodash';
+import { connect } from 'react-redux';
 
-const CustomerActions = () => {
+const CustomerActions = (props) => {
    dayjs.extend(relativeTime);
 
    const history = useHistory();
@@ -32,7 +33,7 @@ const CustomerActions = () => {
    const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const alert = useAlert();
-   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
+   const isEditing = useMemo(() => props.user?.type !== 'cashier' && urlState?.type === 'edit', [urlState.type]);
    const isViewCustomer = useMemo(() => urlState?.type === 'view', [urlState.type]);
    const isAddCustomer = useMemo(() => params?.id === 'add', [params.id]);
 
@@ -374,4 +375,10 @@ const CustomerActions = () => {
    );
 };
 
-export default CustomerActions;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CustomerActions);

@@ -11,9 +11,10 @@ import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-i
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
+import { connect } from 'react-redux';
 import swal from 'sweetalert';
 
-const ExpenseTypes = () => {
+const ExpenseTypes = (props) => {
    dayjs.extend(relativeTime);
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
@@ -154,16 +155,18 @@ const ExpenseTypes = () => {
                                        <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                     </OverlayTrigger>
                                  </td>
-                                 <td>
-                                    <ButtonGroup>
-                                       <Button
-                                          variant="danger"
-                                          size="sm"
-                                          icon={AiFillDelete}
-                                          onClick={() => handleOnClickDelete(e._id)}
-                                       />
-                                    </ButtonGroup>
-                                 </td>
+                                 <When condition={props.user?.type !== 'cashier'}>
+                                    <td>
+                                       <ButtonGroup>
+                                          <Button
+                                             variant="danger"
+                                             size="sm"
+                                             icon={AiFillDelete}
+                                             onClick={() => handleOnClickDelete(e._id)}
+                                          />
+                                       </ButtonGroup>
+                                    </td>
+                                 </When>
                               </tr>
                            ))}
                         </tbody>
@@ -209,4 +212,10 @@ const ExpenseTypes = () => {
    );
 };
 
-export default React.memo(ExpenseTypes);
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(React.memo(ExpenseTypes));

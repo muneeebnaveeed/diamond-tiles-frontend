@@ -14,8 +14,9 @@ import { Else, If, Then, When } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
 
 import _ from 'lodash';
+import { connect } from 'react-redux';
 
-const SupplierActions = () => {
+const SupplierActions = (props) => {
    const history = useHistory();
    const params = useParams();
    const [isError, setIsError] = useState(false);
@@ -23,7 +24,7 @@ const SupplierActions = () => {
    const [urlState, setUrlState] = useUrlState({});
 
    const alert = useAlert();
-   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
+   const isEditing = useMemo(() => props.user?.type !== 'cashier' && urlState?.type === 'edit', [urlState.type]);
    const isViewSupplier = useMemo(() => urlState?.type === 'view', [urlState.type]);
    const isAddSupplier = useMemo(() => params?.id === 'add', [params.id]);
 
@@ -350,4 +351,10 @@ const SupplierActions = () => {
    );
 };
 
-export default SupplierActions;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SupplierActions);

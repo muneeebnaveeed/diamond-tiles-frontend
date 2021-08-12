@@ -5,7 +5,10 @@ import React, { Component, useEffect } from 'react';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 /// Link
 import { Link, useLocation } from 'react-router-dom';
+import { When } from 'react-if';
 
+import { connect } from 'react-redux';
+import { setLogin } from 'store/auth/actions';
 /// Active menu
 const manage = ['/employees', '/customers', '/products', '/users', '/types', '/units'];
 
@@ -48,10 +51,18 @@ const SideBar = (props) => {
       <div className="deznav">
          <PerfectScrollbar className="deznav-scroll">
             <MM className="metismenu" id="menu">
-               <li className={path === '/dashboard' ? 'mm-active' : ''}>
-                  <Link className="" to="/dashboard" aria-expanded="false">
-                     <i className="flaticon-381-networking" />
-                     <span className="nav-text">Dashboard</span>
+               <When condition={props.user?.type !== 'cashier'}>
+                  <li className={path === '/dashboard' ? 'mm-active' : ''}>
+                     <Link className="" to="/dashboard" aria-expanded="false">
+                        <i className="flaticon-381-networking" />
+                        <span className="nav-text">Dashboard</span>
+                     </Link>
+                  </li>
+               </When>
+               <li className={path === '/inventory' ? 'mm-active' : ''}>
+                  <Link className="" to="/inventory" aria-expanded="false">
+                     <i className="flaticon-381-notepad" />
+                     <span className="nav-text">Inventory</span>
                   </Link>
                </li>
                <li className={`${manage.includes(path.slice(1)) ? 'mm-active' : ''}`}>
@@ -72,9 +83,11 @@ const SideBar = (props) => {
                      <li>
                         <Link to="/app-calender">Users</Link>
                      </li>
-                     <li>
-                        <Link to="/employees">Employees</Link>
-                     </li>
+                     <When condition={props.user?.type !== 'cashier'}>
+                        <li>
+                           <Link to="/employees">Employees</Link>
+                        </li>
+                     </When>
                   </ul>
                </li>
                <li className={path === '/purchase' ? 'mm-active' : ''}>
@@ -107,4 +120,12 @@ const SideBar = (props) => {
    );
 };
 
-export default SideBar;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+   setLogin: (payload) => dispatch(setLogin(payload)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(SideBar);

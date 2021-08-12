@@ -3,6 +3,9 @@ import React, { Suspense } from 'react';
 /// React router dom
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 
+import { connect } from 'react-redux';
+import { If, Then, Else } from 'react-if';
+
 /// Css
 import './index.css';
 import './chart.css';
@@ -115,6 +118,7 @@ import Dashboard from './pages/dashboard';
 import Khaata from './pages/khaata';
 import AddPurchase from './pages/purchase/AddPurchase';
 import AddSale from './pages/sale/AddSale';
+import Inventory from './pages/inventory';
 
 /// Pages
 // const Registration = React.lazy(() => import('./pages/Registration'));
@@ -202,84 +206,90 @@ import AddSale from './pages/sale/AddSale';
 // const RechartJs = React.lazy(() => import('./components/charts/rechart'));
 // const Layout = React.lazy(() => import('./layouts'));
 
+const protectedRoutes = [
+   { url: 'employees', component: Employees },
+   { url: 'dashboard', component: Dashboard },
+   { url: 'employees/:id', component: EmployeeActions },
+];
+
 const routes = [
    /// Deshborad
    { url: '', component: () => <Redirect to="/page-login" /> },
-   { url: 'dashboard', component: Dashboard },
-   { url: 'workout-statistic', component: WorkoutStatistic },
-   { url: 'workout-plan', component: WorkoutPlan },
-   { url: 'distance-map', component: DistanceMap },
-   { url: 'diet-food-menu', component: DietFoodMenu },
-   { url: 'personal-record', component: PersonalRecord },
-   /// Bootstrap
-   { url: 'ui-alert', component: UiAlert },
-   { url: 'ui-badge', component: UiBadge },
-   { url: 'ui-button', component: UiButton },
-   { url: 'ui-modal', component: UiModal },
-   { url: 'ui-button-group', component: UiButtonGroup },
-   { url: 'ui-accordion', component: UiAccordion },
-   { url: 'ui-list-group', component: UiListGroup },
-   { url: 'ui-media-object', component: UiMediaObject },
-   { url: 'ui-card', component: UiCards },
-   { url: 'ui-carousel', component: UiCarousel },
-   { url: 'ui-dropdown', component: UiDropDown },
-   { url: 'ui-popover', component: UiPopOver },
-   { url: 'ui-progressbar', component: UiProgressBar },
-   { url: 'ui-tab', component: UiTab },
-   { url: 'ui-pagination', component: UiPagination },
-   { url: 'ui-typography', component: UiTypography },
-   { url: 'ui-grid', component: UiGrid },
-   /// Apps
-   { url: 'app-profile', component: AppProfile },
-   { url: 'email-compose', component: Compose },
-   { url: 'email-inbox', component: Inbox },
-   { url: 'email-read', component: Read },
-   { url: 'app-calender', component: Calendar },
-   { url: 'post-details', component: PostDetails },
-   /// Shop
-   { url: 'ecom-product-grid', component: ProductGrid },
-   { url: 'ecom-product-list', component: ProductList },
-   { url: 'ecom-product-detail', component: ProductDetail },
-   { url: 'ecom-product-order', component: ProductOrder },
-   { url: 'ecom-checkout', component: Checkout },
-   { url: 'ecom-invoice', component: Invoice },
-   { url: 'ecom-product-detail', component: ProductDetail },
-   { url: 'ecom-customers', component: Customers_ },
+   // { url: 'dashboard', component: Dashboard },
+   // { url: 'workout-statistic', component: WorkoutStatistic },
+   // { url: 'workout-plan', component: WorkoutPlan },
+   // { url: 'distance-map', component: DistanceMap },
+   // { url: 'diet-food-menu', component: DietFoodMenu },
+   // { url: 'personal-record', component: PersonalRecord },
+   // /// Bootstrap
+   // { url: 'ui-alert', component: UiAlert },
+   // { url: 'ui-badge', component: UiBadge },
+   // { url: 'ui-button', component: UiButton },
+   // { url: 'ui-modal', component: UiModal },
+   // { url: 'ui-button-group', component: UiButtonGroup },
+   // { url: 'ui-accordion', component: UiAccordion },
+   // { url: 'ui-list-group', component: UiListGroup },
+   // { url: 'ui-media-object', component: UiMediaObject },
+   // { url: 'ui-card', component: UiCards },
+   // { url: 'ui-carousel', component: UiCarousel },
+   // { url: 'ui-dropdown', component: UiDropDown },
+   // { url: 'ui-popover', component: UiPopOver },
+   // { url: 'ui-progressbar', component: UiProgressBar },
+   // { url: 'ui-tab', component: UiTab },
+   // { url: 'ui-pagination', component: UiPagination },
+   // { url: 'ui-typography', component: UiTypography },
+   // { url: 'ui-grid', component: UiGrid },
+   // /// Apps
+   // { url: 'app-profile', component: AppProfile },
+   // { url: 'email-compose', component: Compose },
+   // { url: 'email-inbox', component: Inbox },
+   // { url: 'email-read', component: Read },
+   // { url: 'app-calender', component: Calendar },
+   // { url: 'post-details', component: PostDetails },
+   // /// Shop
+   // { url: 'ecom-product-grid', component: ProductGrid },
+   // { url: 'ecom-product-list', component: ProductList },
+   // { url: 'ecom-product-detail', component: ProductDetail },
+   // { url: 'ecom-product-order', component: ProductOrder },
+   // { url: 'ecom-checkout', component: Checkout },
+   // { url: 'ecom-invoice', component: Invoice },
+   // { url: 'ecom-product-detail', component: ProductDetail },
+   // { url: 'ecom-customers', component: Customers_ },
 
-   /// Chart
-   { url: 'chart-sparkline', component: SparklineChart },
-   { url: 'chart-chartjs', component: ChartJs },
-   { url: 'chart-chartist', component: Chartist },
-   { url: 'chart-btc', component: BtcChart },
-   { url: 'chart-apexchart', component: ApexChart },
-   { url: 'chart-rechart', component: RechartJs },
+   // /// Chart
+   // { url: 'chart-sparkline', component: SparklineChart },
+   // { url: 'chart-chartjs', component: ChartJs },
+   // { url: 'chart-chartist', component: Chartist },
+   // { url: 'chart-btc', component: BtcChart },
+   // { url: 'chart-apexchart', component: ApexChart },
+   // { url: 'chart-rechart', component: RechartJs },
 
-   /// table
-   { url: 'table-datatable-basic', component: DataTable },
-   { url: 'table-bootstrap-basic', component: BootstrapTable },
+   // /// table
+   // { url: 'table-datatable-basic', component: DataTable },
+   // { url: 'table-bootstrap-basic', component: BootstrapTable },
 
-   /// Form
-   { url: 'form-element', component: Element },
-   { url: 'form-wizard', component: Wizard },
-   { url: 'form-wizard', component: Wizard },
-   { url: 'form-editor-summernote', component: SummerNote },
-   { url: 'form-pickers', component: Pickers },
-   { url: 'form-validation-jquery', component: jQueryValidation },
+   // /// Form
+   // { url: 'form-element', component: Element },
+   // { url: 'form-wizard', component: Wizard },
+   // { url: 'form-wizard', component: Wizard },
+   // { url: 'form-editor-summernote', component: SummerNote },
+   // { url: 'form-pickers', component: Pickers },
+   // { url: 'form-validation-jquery', component: jQueryValidation },
 
-   /// Plugin
+   // /// Plugin
 
-   { url: 'uc-select2', component: Select2 },
-   { url: 'uc-nestable', component: Nestable },
-   { url: 'uc-noui-slider', component: MainNouiSlider },
-   { url: 'uc-sweetalert', component: MainSweetAlert },
-   { url: 'uc-toastr', component: Toastr },
-   { url: 'map-jqvmap', component: JqvMap },
+   // { url: 'uc-select2', component: Select2 },
+   // { url: 'uc-nestable', component: Nestable },
+   // { url: 'uc-noui-slider', component: MainNouiSlider },
+   // { url: 'uc-sweetalert', component: MainSweetAlert },
+   // { url: 'uc-toastr', component: Toastr },
+   // { url: 'map-jqvmap', component: JqvMap },
 
    /// pages
-   { url: 'widget-basic', component: Widget },
+   // { url: 'widget-basic', component: Widget },
 
    { url: 'page-register', component: Registration, isPublic: true },
-   { url: 'page-lock-screen', component: LockScreen, isPublic: true },
+   // { url: 'page-lock-screen', component: LockScreen, isPublic: true },
    { url: 'page-login', component: Login, isPublic: true },
    { url: 'page-forgot-password', component: ForgotPassword, isPublic: true },
    { url: 'page-error-400', component: Error400, isPublic: true },
@@ -288,8 +298,8 @@ const routes = [
    { url: 'page-error-500', component: Error500, isPublic: true },
    { url: 'page-error-503', component: Error503, isPublic: true },
 
-   { url: 'employees', component: Employees },
-   { url: 'employees/:id', component: EmployeeActions },
+   // { url: 'employees', component: Employees },
+   // { url: 'employees/:id', component: EmployeeActions },
    { url: 'customers', component: Customers },
    { url: 'customers/:id', component: CustomerActions },
    { url: 'suppliers', component: Suppliers },
@@ -306,9 +316,10 @@ const routes = [
    { url: 'expenses', component: Expenses },
    { url: 'expenses/:id', component: ExpensesActions },
    { url: 'khaata', component: Khaata },
+   { url: 'inventory', component: Inventory },
 ];
 
-const Markup = () => (
+const Markup = (props) => (
    <Suspense fallback={<p>Loading</p>}>
       <Router>
          {/* <div id="main-wrapper" className="show">
@@ -317,16 +328,33 @@ const Markup = () => (
          {/* <div className="content-body">
             <div className="container-fluid"> */}
          <Switch>
-            {routes.map((data, i) => {
-               const getComponent = () => {};
-               return (
-                  <Route key={i} exact path={`/${data.url}`}>
-                     <Layout isPublic={data.isPublic}>
-                        <data.component />
-                     </Layout>
-                  </Route>
-               );
-            })}
+            <If condition={props.user?.type === 'cashier'}>
+               <Then>
+                  {routes.map((data, i) => {
+                     const getComponent = () => {};
+                     return (
+                        <Route key={i} exact path={`/${data.url}`}>
+                           <Layout isPublic={data.isPublic}>
+                              <data.component />
+                           </Layout>
+                        </Route>
+                     );
+                  })}
+               </Then>
+               <Else>
+                  {[...routes, ...protectedRoutes].map((data, i) => {
+                     const getComponent = () => {};
+                     return (
+                        <Route key={i} exact path={`/${data.url}`}>
+                           <Layout isPublic={data.isPublic}>
+                              <data.component />
+                           </Layout>
+                        </Route>
+                     );
+                  })}
+               </Else>
+            </If>
+
             <Route component={Error404} />
          </Switch>
          {/* </div>
@@ -338,4 +366,10 @@ const Markup = () => (
    </Suspense>
 );
 
-export default Markup;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Markup);

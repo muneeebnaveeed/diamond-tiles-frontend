@@ -20,10 +20,11 @@ import {
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
+import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 
-const Sale = () => {
+const Sale = (props) => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -264,7 +265,7 @@ const Sale = () => {
                                                       variant="dark"
                                                       size="sm"
                                                       icon={AiFillEye}
-                                                      onClick={() => handleOnClickView(e)}
+                                                      // onClick={() => handleOnClickView(e)}
                                                    >
                                                       View
                                                    </Button>
@@ -272,18 +273,20 @@ const Sale = () => {
                                                       variant="warning"
                                                       size="sm"
                                                       icon={AiOutlineHistory}
-                                                      onClick={() => handleOnClickEdit(e)}
+                                                      // onClick={() => handleOnClickEdit(e)}
                                                    >
                                                       Refund
                                                    </Button>
-                                                   <Button
-                                                      variant="danger"
-                                                      size="sm"
-                                                      icon={AiFillDelete}
-                                                      onClick={() => handleOnClickDelete(e._id)}
-                                                   >
-                                                      Delete
-                                                   </Button>
+                                                   <When condition={props.user?.type !== 'cashier'}>
+                                                      <Button
+                                                         variant="danger"
+                                                         size="sm"
+                                                         icon={AiFillDelete}
+                                                         onClick={() => handleOnClickDelete(e._id)}
+                                                      >
+                                                         Delete
+                                                      </Button>
+                                                   </When>
                                                 </ButtonGroup>
                                              </td>
                                           </tr>
@@ -318,4 +321,10 @@ const Sale = () => {
    );
 };
 
-export default Sale;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Sale);

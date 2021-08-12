@@ -14,9 +14,10 @@ import { useQueryClient } from 'react-query';
 import swal from 'sweetalert';
 import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
+import { connect } from 'react-redux';
 import CreatableSelect from '../../components/CreatableSelect';
 
-const Units = () => {
+const Units = (props) => {
    const history = useHistory();
    dayjs.extend(relativeTime);
    const [page, setPage] = useState(1);
@@ -182,14 +183,16 @@ const Units = () => {
                                        <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                     </OverlayTrigger>
                                  </td>
-                                 <td>
-                                    <Button
-                                       variant="danger"
-                                       size="sm"
-                                       icon={AiFillDelete}
-                                       onClick={() => handleOnClickDelete(e._id)}
-                                    />
-                                 </td>
+                                 <When condition={props.user?.type !== 'cashier'}>
+                                    <td>
+                                       <Button
+                                          variant="danger"
+                                          size="sm"
+                                          icon={AiFillDelete}
+                                          onClick={() => handleOnClickDelete(e._id)}
+                                       />
+                                    </td>
+                                 </When>
                               </tr>
                            ))}
                         </tbody>
@@ -265,5 +268,10 @@ const Units = () => {
       </>
    );
 };
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
 
-export default React.memo(Units);
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(React.memo(Units));

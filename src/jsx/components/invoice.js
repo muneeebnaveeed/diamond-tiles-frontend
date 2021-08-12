@@ -10,10 +10,12 @@ class ComponentToPrint extends React.Component {
             <div className="row">
                <div className="col-lg-12">
                   <div className="card mt-3">
-                     <h2 className="px-2">Diamond Tiles</h2>
-                     <div className="card-header">
-                        Invoice <strong>{dayjs().format('DD-MMM-YYYY')}</strong>{' '}
-                     </div>
+                     <h2 className="px-2 text-center">Invoice</h2>
+                     <h3 className="px-2 ml-5">Diamond Tiles</h3>
+                     <h4 className="px-2 ml-5">Invoice# IU987</h4>
+                     <h4 className="px-2 ml-5">Admin</h4>
+                     <h4 className="px-2 ml-5">Customer: John Doe</h4>
+                     <h4 className="px-2 ml-5">{dayjs().format('DD-MMM-YYYY')}</h4>
                      <div className="card-body">
                         <div className="table-responsive">
                            <table className="table table-striped">
@@ -36,34 +38,33 @@ class ComponentToPrint extends React.Component {
                                     ))}
                               </tbody>
                            </table>
+                           <div className="row">
+                              <div className="col-lg-4 col-sm-5"> </div>
+                              <div className="col-lg-4 col-sm-5 ml-auto">
+                                 <table className="table table-clear">
+                                    <tbody>
+                                       <tr>
+                                          <td className="left">
+                                             <strong>Subtotal</strong>
+                                          </td>
+                                          <td className="right">440</td>
+                                       </tr>
+                                       <tr>
+                                          <td className="left">
+                                             <strong>Total</strong>
+                                          </td>
+                                          <td className="right">
+                                             <strong>480</strong>
+                                             <br />
+                                          </td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                              </div>
+                           </div>
                         </div>
                      </div>
                   </div>
-               </div>
-            </div>
-            <div className="row">
-               <div className="col-lg-4 col-sm-5"> </div>
-               <div className="col-lg-4 col-sm-5 ml-auto">
-                  <table className="table table-clear">
-                     <tbody>
-                        <tr>
-                           <td className="left">
-                              <strong>Subtotal</strong>
-                           </td>
-                           <td className="right">$8.497,00</td>
-                        </tr>
-                        <tr>
-                           <td className="left">
-                              <strong>Total</strong>
-                           </td>
-                           <td className="right">
-                              <strong>$7.477,36</strong>
-                              <br />
-                              <strong>0.15050000 BTC</strong>
-                           </td>
-                        </tr>
-                     </tbody>
-                  </table>
                </div>
             </div>
          </>

@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { When } from 'react-if';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
+import { connect } from 'react-redux';
+import { setLogin } from '../../store/auth/actions';
 
-const Login = () => {
+const Login = (props) => {
    const history = useHistory();
    const [loginData, setLoginData] = useState({});
    const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +33,12 @@ const Login = () => {
          const res = await post('/auth/login', loginData);
          setIsLoading(false);
          localStorage.setItem('auth_token', res.token);
-         history.push('/dashboard');
+         props.setLogin(res);
+         if (res?.type === 'cashier') {
+            history.push('/purchase');
+         } else {
+            history.push('/dashboard');
+         }
       } catch (err) {
          setIsLoading(false);
          alert.setErrorAlert({ message: 'Unable to login', err });
@@ -109,4 +116,10 @@ const Login = () => {
    );
 };
 
-export default Login;
+const mapStateToProps = ({ auth }) => ({});
+
+const mapDispatchToProps = (dispatch) => ({
+   setLogin: (payload) => dispatch(setLogin(payload)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

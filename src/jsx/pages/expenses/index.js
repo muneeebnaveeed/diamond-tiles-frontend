@@ -13,12 +13,13 @@ import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestio
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
+import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 import ExpenseTypes from '../expenseTypes';
 import Salaries from '../salaries';
 
-const Expenses = () => {
+const Expenses = (props) => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -86,10 +87,12 @@ const Expenses = () => {
       <>
          <PageTItle activeMenu="Expenses" motherMenu="Diamond Tiles" />
          <div className="row my-3">
-            <div className="col-xl-5  my-2">
-               <Salaries />
-            </div>
-            <div className="col-xl-7  my-2">
+            <When condition={props.user?.type !== 'cashier'}>
+               <div className="col-xl-5  my-2">
+                  <Salaries />
+               </div>
+            </When>
+            <div className={props?.user?.type == 'cashier' ? 'col-xl-12 my-2' : 'col-xl-7  my-2'}>
                <ExpenseTypes />
             </div>
          </div>
@@ -214,14 +217,16 @@ const Expenses = () => {
                                              >
                                                 View
                                              </Button>
-                                             <Button
-                                                variant="danger"
-                                                size="sm"
-                                                icon={AiFillDelete}
-                                                onClick={() => handleOnClickDelete(e._id)}
-                                             >
-                                                Delete
-                                             </Button>
+                                             <When condition={props.user?.type !== 'cashier'}>
+                                                <Button
+                                                   variant="danger"
+                                                   size="sm"
+                                                   icon={AiFillDelete}
+                                                   onClick={() => handleOnClickDelete(e._id)}
+                                                >
+                                                   Delete
+                                                </Button>
+                                             </When>
                                           </ButtonGroup>
                                        </td>
                                     </tr>
@@ -255,4 +260,10 @@ const Expenses = () => {
    );
 };
 
-export default Expenses;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Expenses);

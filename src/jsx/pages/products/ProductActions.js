@@ -15,10 +15,11 @@ import { AiFillCaretLeft, AiFillEye, AiFillSave, AiOutlineQuestionCircle } from 
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
+import { connect } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 import CreatableSelect from '../../components/CreatableSelect';
 
-const ProductActions = () => {
+const ProductActions = (props) => {
    dayjs.extend(relativeTime);
 
    const history = useHistory();
@@ -37,7 +38,7 @@ const ProductActions = () => {
    const getTypes = useQuery('types', () => get('/types'));
    const queryClient = useQueryClient();
 
-   const isEditing = useMemo(() => urlState?.type === 'edit', [urlState.type]);
+   const isEditing = useMemo(() => props.user?.type !== 'cashier' && urlState?.type === 'edit', [urlState.type]);
    const isViewProduct = useMemo(() => urlState?.type === 'view', [urlState.type]);
    const isAddProduct = useMemo(() => params?.id === 'add', [params.id]);
 
@@ -443,4 +444,10 @@ const ProductActions = () => {
    );
 };
 
-export default ProductActions;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductActions);

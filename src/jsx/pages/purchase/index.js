@@ -12,10 +12,11 @@ import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestio
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
+import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 
-const Purchase = () => {
+const Purchase = (props) => {
    dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
@@ -258,14 +259,16 @@ const Purchase = () => {
                                                 >
                                                    Edit
                                                 </Button> */}
-                                                <Button
-                                                   variant="danger"
-                                                   size="sm"
-                                                   icon={AiFillDelete}
-                                                   onClick={() => handleOnClickDelete(e._id)}
-                                                >
-                                                   Delete
-                                                </Button>
+                                                <When condition={props.user?.type !== 'cashier'}>
+                                                   <Button
+                                                      variant="danger"
+                                                      size="sm"
+                                                      icon={AiFillDelete}
+                                                      onClick={() => handleOnClickDelete(e._id)}
+                                                   >
+                                                      Delete
+                                                   </Button>
+                                                </When>
                                              </ButtonGroup>
                                           </td>
                                        </tr>
@@ -297,4 +300,9 @@ const Purchase = () => {
    );
 };
 
-export default Purchase;
+const mapStateToProps = ({ auth }) => ({
+   user: auth.user,
+});
+
+const mapDispatchToProps = {};
+export default connect(mapStateToProps, mapDispatchToProps)(Purchase);

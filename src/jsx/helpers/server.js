@@ -13,7 +13,7 @@ export const getError = (err) => {
    return response;
 };
 
-export const get = (path, page, limit, field, order, search = '') =>
+export const get = (path, page, limit, field, order, search) =>
    api.get(path, { params: { page, limit, [`sort[${field}]`]: order, search } }).then((res) => res.data);
 
 /**
