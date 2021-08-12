@@ -11,7 +11,9 @@ import { FaMinusCircle, FaPlusCircle } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useHistory } from 'react-router-dom';
 import _ from 'lodash';
+import { mergeStyles } from 'react-select';
 import Select from '../../components/Select';
+import SaleInvoice from './SaleInvoice';
 
 const getDefaultOption = () => ({
    label: 'Walk In',
@@ -22,9 +24,10 @@ const AddSale = () => {
    const printRef = useRef(null);
    const history = useHistory();
    const [showPrintDialog, setShowPrintDialog] = useState(false);
+   const [invoiceNum, setInvoiceNum] = useState('');
 
    const [formdata, setFormdata] = useState([
-      { customer: '', retailPrice: '', price: '', quantity: '', unit: 1, inventory: '', totalQuantity: '' },
+      { customer: '', retailPrice: '', paid: '', quantity: '', unit: 1, inventory: '', totalQuantity: '' },
    ]);
 
    const alert = useAlert();
@@ -40,7 +43,8 @@ const AddSale = () => {
          return Promise.all(promises);
       },
       {
-         onSuccess: () => {
+         onSuccess: (res) => {
+            setInvoiceNum(res[0].msg.substring(res[0].msg.length - 4, res[0].msg.length));
             setShowPrintDialog(true);
          },
          onError: (err) => {
@@ -57,14 +61,47 @@ const AddSale = () => {
       setFormdata(tmp);
    };
 
+   const getPrintData = () => ({
+      data: formdata.map((d, idx) => ({
+         serialNumber: idx + 1,
+         modelNumber: d?.inventory?.value?.product?.modelNumber,
+         price: d?.retailPrice,
+         quantity: d?.quantity,
+         unit: d?.unit?.label,
+         paid: Number(d?.paid) * d?.totalQuantity,
+         subTotal: d?.totalQuantity * Number(d?.retailPrice),
+      })),
+      get total() {
+         // eslint-disable-next-line react/no-this-in-sfc
+         return this.data.length > 1 ? this.data.reduce((a, b) => a.subTotal + b.subTotal) : this.data[0].subTotal;
+      },
+      get paid() {
+         // eslint-disable-next-line react/no-this-in-sfc
+         return this.data.length > 1 ? this.data.reduce((a, b) => a.paid + b.paid) : this.data[0].paid;
+      },
+      get remaining() {
+         // eslint-disable-next-line react/no-this-in-sfc
+         return this.total - this.paid;
+      },
+      postPayload: formdata.map((d) => ({
+         customer: d?.customer ? d?.customer?.value?._id : null,
+         inventory: d?.inventory?.value?._id,
+         paid: Number(d?.paid),
+         quantity: Number(d?.quantity),
+         retailPrice: Number(d?.retailPrice),
+      })),
+   });
+
    const handleSubmitData = (e) => {
       e.preventDefault();
-      const payload = _.map(formdata, (d) => ({
-         ..._.pick(d, ['customer', 'inventory', 'retailPrice']),
-         paid: d.price,
-         quantity: d.totalQuantity,
-      }));
-      mutation.mutate(payload);
+      // console.log(formdata);
+      // console.log(getPrintData());
+      // const payload = _.map(formdata, (d) => ({
+      //    ..._.pick(d, ['customer', 'inventory', 'retailPrice']),
+      //    paid: d.price,
+      //    quantity: d.totalQuantity,
+      // }));
+      mutation.mutate(getPrintData().postPayload);
    };
 
    const getOptions = () => {
@@ -91,19 +128,9 @@ const AddSale = () => {
             title="Print Invoice"
             onSubmit={() => printRef.current.click()}
             submitButtonText="Print"
-            size="lg"
+            size="xl"
          >
-            <Invoice
-               printRef={printRef}
-               data={formdata}
-               columns={{
-                  customerName: 'CUSTOMER',
-                  retailPrice: 'RETAILS PRICE',
-                  price: 'PAID',
-                  quantity: 'QUANTITY',
-                  inventoryID: 'INVENTORY',
-               }}
-            />
+            <SaleInvoice printRef={printRef} data={getPrintData} invoiceNum={invoiceNum} />
          </ModalWrapper>
          <Card>
             <When condition={postMutation.isLoading || customerQuery.isLoading || inventoryQuery.isLoading}>
@@ -140,8 +167,7 @@ const AddSale = () => {
                                                       placeholder=""
                                                       onChange={(x) => {
                                                          // console.log('onChange', x);
-                                                         handleOnChange('customer', x?.value?._id, idx);
-                                                         handleOnChange('customerName', x?.value?.name, idx);
+                                                         handleOnChange('customer', x, idx);
                                                       }}
                                                       defaultValue={getDefaultOption()}
                                                       options={getOptions()}
@@ -152,12 +178,7 @@ const AddSale = () => {
                                                       placeholder=""
                                                       onChange={(x) => {
                                                          // console.log('onChange', x);
-                                                         handleOnChange('inventory', x?.value?._id, idx);
-                                                         handleOnChange(
-                                                            'inventoryID',
-                                                            x?.value?.product?.modelNumber,
-                                                            idx
-                                                         );
+                                                         handleOnChange('inventory', x, idx);
                                                          const retailPrice = x?.value?.product?.retailPrice;
                                                          if (retailPrice)
                                                             handleOnChange('retailPrice', retailPrice, idx);
@@ -177,7 +198,7 @@ const AddSale = () => {
                                                       onChange={(x) => {
                                                          // console.log(x);
                                                          const u = x?.value?.value;
-                                                         handleOnChange('unit', u, idx);
+                                                         handleOnChange('unit', x, idx);
 
                                                          handleOnChange(
                                                             'totalQuantity',

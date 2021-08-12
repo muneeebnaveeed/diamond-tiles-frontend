@@ -1,5 +1,4 @@
 import Button from 'jsx/components/Button';
-import Invoice from 'jsx/components/invoice';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
@@ -11,11 +10,13 @@ import { FaMinusCircle, FaPlusCircle } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useHistory } from 'react-router-dom';
 import Select from '../../components/Select';
+import PurchaseInvoice from './PurchaseInvoice';
 
 const PurchaseActions = () => {
    const printRef = useRef(null);
    const history = useHistory();
    const [showPrintDialog, setShowPrintDialog] = useState(false);
+   const [invoiceNum, setInvoiceNum] = useState('');
 
    const [formdata, setFormdata] = useState([
       { supplier: '', sourcePrice: '', paid: '', quantity: '', units: '', product: '', totalQuantity: '' },
@@ -34,7 +35,8 @@ const PurchaseActions = () => {
          return Promise.all(promises);
       },
       {
-         onSuccess: () => {
+         onSuccess: (res) => {
+            setInvoiceNum(res[0].msg.substring(res[0].msg.length - 4, res[0].msg.length));
             setShowPrintDialog(true);
          },
          onError: (err) => {
@@ -51,10 +53,42 @@ const PurchaseActions = () => {
       setFormdata(tmp);
    };
 
+   const getPrintData = () => ({
+      data: formdata.map((d, idx) => ({
+         serialNumber: idx + 1,
+         modelNumber: d?.product?.modelNumber,
+         price: d?.sourcePrice,
+         quantity: d?.quantity,
+         unit: d?.units?.label,
+         paid: Number(d?.paid) * d?.totalQuantity,
+         subTotal: d?.totalQuantity * Number(d?.sourcePrice),
+      })),
+      get total() {
+         // eslint-disable-next-line react/no-this-in-sfc
+         return this.data.length > 1 ? this.data.reduce((a, b) => a.subTotal + b.subTotal) : this.data[0].subTotal;
+      },
+      get paid() {
+         // eslint-disable-next-line react/no-this-in-sfc
+         return this.data.length > 1 ? this.data.reduce((a, b) => a.paid + b.paid) : this.data[0].paid;
+      },
+      get remaining() {
+         // eslint-disable-next-line react/no-this-in-sfc
+         return this.total - this.paid;
+      },
+      postPayload: formdata.map((d) => ({
+         supplier: d?.supplier?._id,
+         sourcePrice: Number(d?.sourcePrice),
+         paid: Number(d?.paid),
+         quantity: Number(d?.quantity),
+         units: [d?.units?.value?._id],
+         product: d?.product?._id,
+      })),
+   });
+
    const handleSubmitData = (e) => {
       e.preventDefault();
-      console.log(formdata);
-      mutation.mutate(formdata.map((d) => ({ ...d, units: [d.units._id], quantity: d.totalQuantity })));
+      // console.log(formdata);
+      mutation.mutate(getPrintData().postPayload);
    };
 
    return (
@@ -71,21 +105,9 @@ const PurchaseActions = () => {
             title="Print Invoice"
             onSubmit={() => printRef.current.click()}
             submitButtonText="Print"
-            size="lg"
+            size="xl"
          >
-            <Invoice
-               type="purchase"
-               printRef={printRef}
-               data={formdata}
-               columns={{
-                  supplierName: 'SUPPLIER',
-                  sourcePrice: 'SOURCE PRICE',
-                  paid: 'PAID',
-                  quantity: 'QUANTITY',
-                  unitsTitle: 'UNITS',
-                  productModel: 'PRODUCT',
-               }}
-            />
+            <PurchaseInvoice printRef={printRef} data={getPrintData} invoiceNum={invoiceNum} />
          </ModalWrapper>
          <Card>
             <When
@@ -124,8 +146,7 @@ const PurchaseActions = () => {
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
-                                                         handleOnChange('supplier', x?._id, idx);
-                                                         handleOnChange('supplierName', x?.name, idx);
+                                                         handleOnChange('supplier', x, idx);
                                                       }}
                                                       options={
                                                          suppliersQuery.data?.docs?.length > 0 &&
@@ -141,8 +162,7 @@ const PurchaseActions = () => {
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
-                                                         handleOnChange('units', x.value, idx);
-                                                         handleOnChange('unitsTitle', x.title, idx);
+                                                         handleOnChange('units', x, idx);
 
                                                          handleOnChange(
                                                             'totalQuantity',
@@ -163,8 +183,7 @@ const PurchaseActions = () => {
                                                    <Select
                                                       placeholder=""
                                                       onChange={(x) => {
-                                                         handleOnChange('product', x?._id, idx);
-                                                         handleOnChange('productModel', x?.modelNumber, idx);
+                                                         handleOnChange('product', x, idx);
                                                       }}
                                                       options={
                                                          productsQuery.data?.docs?.length > 0 &&

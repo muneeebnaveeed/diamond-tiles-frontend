@@ -22,7 +22,7 @@ export const getError = (err) => {
    return response;
 };
 
-export const get = (path, page, limit, field, order, search) =>
+export const get = (path, page, limit, field, order, search = '') =>
    api.get(path, { params: { page, limit, [`sort[${field}]`]: order, search } }).then((res) => res.data);
 
 /**
@@ -32,9 +32,14 @@ export const get = (path, page, limit, field, order, search) =>
  * @returns
  */
 export const post = (path, payload) =>
-   api
-      .post(path, payload)
-      .then((res) => (res.status === 200 || res.status === 201 ? { ...res.data, status: 'ok' } : res.data));
+   api.post(path, payload).then((res) =>
+      // eslint-disable-next-line no-nested-ternary
+      res.status === 200 || res.status === 201
+         ? typeof res.data === 'string'
+            ? { msg: res.data, status: 'ok' }
+            : { ...res.data, status: 'ok' }
+         : res.data
+   );
 
 /**
  * Send a PATCH request
