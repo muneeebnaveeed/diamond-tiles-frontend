@@ -3,7 +3,7 @@ import { Button, Modal, Container, Spinner, ButtonGroup } from 'react-bootstrap'
 import { When } from 'react-if';
 
 const ModalWrapper = (props) => {
-   const { show, onHide, isLoading, title, onSubmit, submitButtonText, children, ...rest } = props;
+   const { show, onHide, isLoading, title, onSubmit, submitButtonText, children, isDisabled, ...rest } = props;
    return (
       <Modal className="fade" show={show} onHide={onHide} {...rest}>
          <Modal.Header>
@@ -20,7 +20,7 @@ const ModalWrapper = (props) => {
                <Button variant="warning light" onClick={onHide}>
                   Close
                </Button>
-               <Button variant="primary" disabled={isLoading} onClick={onSubmit}>
+               <Button variant="primary" disabled={isLoading || isDisabled} onClick={onSubmit}>
                   <When condition={isLoading}>
                      <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true" />
                   </When>

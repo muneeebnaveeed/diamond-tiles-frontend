@@ -5,6 +5,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { useFormik } from 'formik';
 import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
+import Select from 'jsx/components/Select';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import { userRoles } from 'jsx/helpers/enums';
@@ -76,6 +77,7 @@ const ProductActions = (props) => {
          },
       }
    );
+
    const patchMutation = useMutation((payload) => patch(`/products/id/${params.id}`, payload), {
       onSuccess: () => {
          history.push('/products');
@@ -113,13 +115,20 @@ const ProductActions = (props) => {
          modelNumber: '',
          retailPrice: '',
          type: '',
+         unit: '',
       },
       validateOnChange: false,
       validateOnBlur: false,
       onSubmit: (values) => {
+         console.log(values);
+         values.unit = values.unit.label;
          mutation.mutate(values);
       },
    });
+
+   const units = useQuery(['units', formik.values.type], () =>
+      get(`/units?type=${formik.values.type}`, 1, 1000, null, 1, '')
+   );
 
    const handleCreateType = async (title) => {
       postTypeMutation.mutate({ title });
@@ -131,12 +140,18 @@ const ProductActions = (props) => {
 
    useEffect(() => {
       if (isEditing && query.data?.product) {
-         formik.setFieldValue('title', query.data?.product?.title ?? '');
          formik.setFieldValue('modelNumber', query.data?.product?.modelNumber ?? '');
          formik.setFieldValue('retailPrice', query.data?.product?.retailPrice ?? '');
          formik.setFieldValue('type', query.data?.product?.type?._id ?? '');
+
+         const unit = query.data?.product?.unit;
+
+         formik.setFieldValue('unit', unit ? { label: unit, value: unit } : {});
       }
    }, [isEditing, query.data?.product]);
+
+   // console.log(isEditing, units.data, formik.values.unit);
+
    return (
       <>
          <div className="row p-0 m-0">
@@ -181,19 +196,6 @@ const ProductActions = (props) => {
                         </div>
                         <div className="row">
                            <div className="form-group col-xl-6">
-                              <label className="col-form-label">Retail Price</label>
-                              <input
-                                 className="form-control"
-                                 onChange={formik.handleChange}
-                                 type="text"
-                                 name="retailPrice"
-                                 disabled={isError}
-                                 value={formik.values.retailPrice}
-                              />
-                           </div>
-                        </div>
-                        <div className="row">
-                           <div className="form-group col-xl-6">
                               <label className="col-form-label">Type</label>
                               {(query.data?.product || isAddProduct) && (
                                  <CreatableSelect
@@ -213,6 +215,29 @@ const ProductActions = (props) => {
                                     onCreateOption={handleCreateType}
                                  />
                               )}
+                           </div>
+                        </div>
+                        <div className="row">
+                           <div className="form-group col-xl-3">
+                              <label className="col-form-label">Retail Price</label>
+                              <input
+                                 style={{ height: '38px' }}
+                                 className="form-control"
+                                 onChange={formik.handleChange}
+                                 type="text"
+                                 name="retailPrice"
+                                 disabled={isError}
+                                 value={formik.values.retailPrice}
+                              />
+                           </div>
+                           <div className="form-group col-xl-3">
+                              <label className="col-form-label">Type</label>
+                              <Select
+                                 width="tw-w-full"
+                                 onChange={(e) => formik.setFieldValue('unit', { label: e.label, value: e.label })}
+                                 value={formik.values.unit}
+                                 options={units.data?.map((e) => ({ label: e.title, value: e }))}
+                              />
                            </div>
                         </div>
                      </Card.Body>
@@ -258,6 +283,12 @@ const ProductActions = (props) => {
                         <div className="form-group col-xl-6">
                            <label className="col-form-label">Retail Price</label>
                            <h4>{query.data?.product?.retailPrice ?? 'N/A'}</h4>
+                        </div>
+                     </div>
+                     <div className="row">
+                        <div className="form-group col-xl-6">
+                           <label className="col-form-label">Unit</label>
+                           <h4>{query.data?.product?.unit ?? 'N/A'}</h4>
                         </div>
                      </div>
                      <div className="row">

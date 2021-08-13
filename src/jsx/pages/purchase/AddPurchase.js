@@ -19,7 +19,7 @@ const PurchaseActions = () => {
    const [invoiceNum, setInvoiceNum] = useState('');
 
    const [formdata, setFormdata] = useState([
-      { supplier: '', sourcePrice: '', paid: '', quantity: '', units: '', product: '', totalQuantity: '' },
+      { supplier: '', product: '', units: '', quantity: '', sourcePrice: '', paid: '', totalQuantity: '' },
    ]);
 
    const alert = useAlert();
@@ -75,20 +75,23 @@ const PurchaseActions = () => {
          // eslint-disable-next-line react/no-this-in-sfc
          return this.total - this.paid;
       },
-      postPayload: formdata.map((d) => ({
-         supplier: d?.supplier?._id,
-         sourcePrice: Number(d?.sourcePrice),
-         paid: Number(d?.paid),
-         quantity: Number(d?.quantity),
-         units: [d?.units?.value?._id],
-         product: d?.product?._id,
-      })),
+      postPayload: () => {
+         console.log(formdata);
+         return formdata.map((d) => ({
+            supplier: d.supplier?._id,
+            sourcePrice: Number(d.sourcePrice / d.totalQuantity),
+            paid: Number(d.paid),
+            quantity: Number(d.totalQuantity),
+            units: [d.units?.value?._id],
+            product: d.product?._id,
+         }));
+      },
    });
 
    const handleSubmitData = (e) => {
       e.preventDefault();
       // console.log(formdata);
-      mutation.mutate(getPrintData().postPayload);
+      mutation.mutate(getPrintData().postPayload());
    };
 
    return (
@@ -125,12 +128,12 @@ const PurchaseActions = () => {
                   <Table>
                      <thead>
                         <tr>
-                           <th>SUPPLIER</th>
-                           <th>SOURCE PRICE</th>
-                           <th>PAID</th>
-                           <th>QUANTITY</th>
-                           <th>UNITS</th>
-                           <th>PRODUCT</th>
+                           <th>Supplier</th>
+                           <th>Product</th>
+                           <th>Units</th>
+                           <th>Qty</th>
+                           <th>Source Price</th>
+                           <th>Paid</th>
                         </tr>
                      </thead>
                      <tbody>
@@ -170,13 +173,15 @@ const PurchaseActions = () => {
                                                             idx
                                                          );
                                                       }}
-                                                      options={
-                                                         unitsQuery.data?.length > 0 &&
-                                                         unitsQuery.data.map((x) => ({
+                                                      isDisabled={!formdata[idx].product}
+                                                      options={unitsQuery.data
+                                                         ?.filter(
+                                                            (u) => u.type._id === formdata[idx].product?.type?._id
+                                                         )
+                                                         .map((x) => ({
                                                             label: x.title,
                                                             value: x,
-                                                         }))
-                                                      }
+                                                         }))}
                                                    />
                                                 </When>
                                                 <When condition={key === 'product'}>
@@ -216,7 +221,7 @@ const PurchaseActions = () => {
                                                          if (key === 'quantity' && formdata[idx].units)
                                                             handleOnChange(
                                                                'totalQuantity',
-                                                               q * formdata[idx].units.value,
+                                                               q * formdata[idx].units.value.value,
                                                                idx
                                                             );
                                                       }}

@@ -6,7 +6,7 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import { userRoles } from 'jsx/helpers/enums';
 import PageTItle from 'jsx/layouts/PageTitle';
-import _ from 'lodash';
+import _, { isArray } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
@@ -16,6 +16,7 @@ import { useQueryClient } from 'react-query';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
+import RefundPurchase from './RefundPurchase';
 
 const Purchase = (props) => {
    dayjs.extend(relativeTime);
@@ -23,6 +24,7 @@ const Purchase = (props) => {
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
+   const [refundPurchase, setRefundPurchase] = useState(null);
 
    const alert = useAlert();
    const queryClient = useQueryClient();
@@ -34,22 +36,15 @@ const Purchase = (props) => {
       onSuccess: async () => {
          await queryClient.invalidateQueries('inventories');
          alert.setAlert({
-            message: 'Inventory deleted successfully',
+            message: 'Purchase deleted successfully',
             variant: 'success',
          });
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to delete inventory', err });
+         alert.setErrorAlert({ message: 'Unable to delete purchase', err });
       },
    });
 
-   const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/inventories/${obj._id}`, search: `?type=edit` });
-   };
-
-   const handleOnClickView = (obj) => {
-      history.push({ pathname: `/inventories/${obj._id}`, search: `?type=view` });
-   };
    const handleOnClickAdd = () => {
       history.push('/purchase/add');
    };
@@ -202,11 +197,25 @@ const Purchase = (props) => {
                               </thead>
                               <tbody>
                                  {query.data?.docs.map((e, index) => {
-                                    const getRemainig = () => {
-                                       if (!e?.sourcePrice || !e?.paid) return null;
-                                       if (e.sourcePrice === e.paid) return null;
-                                       return e.sourcePrice - e.paid;
+                                    const getQuantity = () => {
+                                       const q = e.quantity.single;
+                                       if (isArray(q)) return q[0];
+                                       return q;
                                     };
+
+                                    const getSourcePrice = () => {
+                                       const q = getQuantity();
+                                       return e.sourcePrice * q;
+                                    };
+
+                                    const sourcePrice = getSourcePrice();
+
+                                    const getRemainig = () => {
+                                       if (!sourcePrice || !e?.paid) return null;
+                                       if (sourcePrice === e.paid) return null;
+                                       return sourcePrice - e.paid;
+                                    };
+
                                     const getId = () => {
                                        const id = e._id;
                                        return id.slice(id.length - 3);
@@ -222,10 +231,10 @@ const Purchase = (props) => {
                                           </td>
                                           <td>{e?.supplier?.name ?? 'N/A'}</td>
                                           <td>{e?.product?.modelNumber ?? 'N/A'}</td>
-                                          <td>{e?.sourcePrice ?? 'N/a'}</td>
+                                          <td>{sourcePrice}</td>
                                           <td>{e?.paid ?? 'N/A'}</td>
                                           <td>{getRemainig()}</td>
-                                          <td>{e?.quantity?.single?.[0]}</td>
+                                          <td>{getQuantity()}</td>
 
                                           <td>
                                              <OverlayTrigger
@@ -264,6 +273,24 @@ const Purchase = (props) => {
                                                 </Button> */}
                                                 <When condition={props.user?.role !== userRoles.CASHIER}>
                                                    <Button
+                                                      variant="dark"
+                                                      size="sm"
+                                                      icon={AiFillDelete}
+                                                      onClick={() => setRefundPurchase(e._id)}
+                                                   >
+                                                      Refund
+                                                   </Button>
+                                                   <When condition={e.isRemaining}>
+                                                      <Button
+                                                         variant="warning"
+                                                         size="sm"
+                                                         icon={AiFillDelete}
+                                                         onClick={() => handleOnClickDelete(e._id)}
+                                                      >
+                                                         Clear Khaata
+                                                      </Button>
+                                                   </When>
+                                                   <Button
                                                       variant="danger"
                                                       size="sm"
                                                       icon={AiFillDelete}
@@ -299,6 +326,7 @@ const Purchase = (props) => {
                isLimitDisabled={query.isLoading || deleteMutation.isLoading}
             />
          </When>
+         <RefundPurchase refundPurchase={refundPurchase} onClose={() => setRefundPurchase(null)} size="md" />
       </>
    );
 };

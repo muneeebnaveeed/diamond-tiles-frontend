@@ -1,6 +1,6 @@
 import ReactSelect from 'react-select';
 
-const selectStyles = {
+const selectStyles = (height) => ({
    control: (provided, state) => {
       provided.borderColor = state.menuIsOpen ? '#44bdec' : 'hsl(0, 0%, 80%)';
       provided.boxShadow = state.menuIsOpen ? '0 0 0 1px #44bdec' : '';
@@ -8,11 +8,15 @@ const selectStyles = {
       provided.justifyContent = 'center';
       provided.paddingTop = '0.2rem';
       provided.paddingBottom = '0.2rem';
+      provided.height = height;
+
+      console.log(provided);
 
       return provided;
    },
    valueContainer: (provided, state) => {
       provided.justifyContent = 'center';
+
       return provided;
    },
    menu: (provided, state) => {
@@ -25,10 +29,15 @@ const selectStyles = {
       if (state.isFocused) provided.color = 'white';
       return provided;
    },
-};
+});
 
-const Select = ({ width = 'tw-w-[100px]', className = '', ...props }) => (
-   <ReactSelect menuPlacement="auto" className={`${width} ${className}`} styles={selectStyles} {...props} />
+const Select = ({ width = 'tw-w-[100px]', className = '', height = '36px', ...props }) => (
+   <ReactSelect
+      menuPlacement="auto"
+      className={`${width} ${className}`}
+      styles={() => selectStyles(height)}
+      {...props}
+   />
 );
 
 export default Select;

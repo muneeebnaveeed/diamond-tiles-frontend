@@ -39,7 +39,7 @@ const Products = (props) => {
       onSuccess: async () => {
          await queryClient.invalidateQueries('products');
          alert.setAlert({
-            message: 'User deleted successfully',
+            message: 'Product deleted successfully',
             variant: 'success',
          });
       },
@@ -190,7 +190,7 @@ const Products = (props) => {
                                           <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                        </td>
                                        <td>{e.modelNumber}</td>
-                                       <td>{e.retailPrice}</td>
+                                       <td>{`${e.retailPrice}${e.unit ? `/${e.unit}` : ` ??`}`}</td>
                                        <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
                                        <td>
                                           <OverlayTrigger
