@@ -85,8 +85,8 @@ const Salaries = () => {
                                  <td>
                                     <strong>{index + 1}</strong>
                                  </td>
-                                 <td>{e?.employee?.name ?? 'N/A'}</td>
-                                 <td>{e?.employee?.salary ?? 'N/A'}</td>
+                                 <td>{e.title}</td>
+                                 <td>{e.amount}</td>
                               </tr>
                            ))}
                         </tbody>

@@ -16,6 +16,7 @@ import { useQueryClient } from 'react-query';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
+import ClearPurchase from './ClearPurchase';
 import RefundPurchase from './RefundPurchase';
 
 const Purchase = (props) => {
@@ -25,16 +26,17 @@ const Purchase = (props) => {
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
    const [refundPurchase, setRefundPurchase] = useState(null);
+   const [clearPurchase, setClearPurchase] = useState({ id: null, amount: null });
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['inventories', page, limit, sort.field, sort.order], () =>
-      get('/inventories', page, limit, sort.field, sort.order)
+   const query = useQuery(['purchases', page, limit, sort.field, sort.order], () =>
+      get('/purchases', page, limit, sort.field, sort.order)
    );
-   const deleteMutation = useMutation((id) => del(`/inventories/id/${id}`), {
+   const deleteMutation = useMutation((id) => del(`/purchases/id/${id}`), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('inventories');
+         await queryClient.invalidateQueries('purchases');
          alert.setAlert({
             message: 'Purchase deleted successfully',
             variant: 'success',
@@ -198,10 +200,13 @@ const Purchase = (props) => {
                               <tbody>
                                  {query.data?.docs.map((e, index) => {
                                     const getQuantity = () => {
-                                       const q = e.quantity.single;
-                                       if (isArray(q)) return q[0];
+                                       let q = e.quantity.single;
+                                       // eslint-disable-next-line prefer-destructuring
+                                       if (isArray(q)) q = q[0];
                                        return q;
                                     };
+
+                                    const quantity = getQuantity();
 
                                     const getSourcePrice = () => {
                                        const q = getQuantity();
@@ -211,14 +216,14 @@ const Purchase = (props) => {
                                     const sourcePrice = getSourcePrice();
 
                                     const getRemainig = () => {
-                                       if (!sourcePrice || !e?.paid) return null;
                                        if (sourcePrice === e.paid) return null;
+
                                        return sourcePrice - e.paid;
                                     };
 
                                     const getId = () => {
                                        const id = e._id;
-                                       return id.slice(id.length - 3);
+                                       return id.slice(id.length - 4);
                                     };
 
                                     return (
@@ -234,7 +239,7 @@ const Purchase = (props) => {
                                           <td>{sourcePrice}</td>
                                           <td>{e?.paid ?? 'N/A'}</td>
                                           <td>{getRemainig()}</td>
-                                          <td>{getQuantity()}</td>
+                                          <td>{quantity ? `${quantity} singles` : ''}</td>
 
                                           <td>
                                              <OverlayTrigger
@@ -277,6 +282,7 @@ const Purchase = (props) => {
                                                       size="sm"
                                                       icon={AiFillDelete}
                                                       onClick={() => setRefundPurchase(e._id)}
+                                                      disabled={quantity === 0}
                                                    >
                                                       Refund
                                                    </Button>
@@ -285,7 +291,9 @@ const Purchase = (props) => {
                                                          variant="warning"
                                                          size="sm"
                                                          icon={AiFillDelete}
-                                                         onClick={() => handleOnClickDelete(e._id)}
+                                                         onClick={() =>
+                                                            setClearPurchase({ id: e._id, amount: getRemainig() })
+                                                         }
                                                       >
                                                          Clear Khaata
                                                       </Button>
@@ -327,6 +335,12 @@ const Purchase = (props) => {
             />
          </When>
          <RefundPurchase refundPurchase={refundPurchase} onClose={() => setRefundPurchase(null)} size="md" />
+         <ClearPurchase
+            clearPurchase={clearPurchase.id}
+            initialAmount={clearPurchase.amount}
+            onClose={() => setClearPurchase((prev) => ({ ...prev, id: null }))}
+            size="md"
+         />
       </>
    );
 };

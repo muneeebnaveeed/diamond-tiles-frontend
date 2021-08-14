@@ -1,6 +1,7 @@
 import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { getActiveElement } from 'formik';
 import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
@@ -171,6 +172,11 @@ const Khaata = (props) => {
                                           const id = e._id;
                                           return id.slice(id.length - 3);
                                        };
+                                       const getTotal = () => {
+                                          const price = e.type === 'inventory' ? e.sourcePrice : e.retailPrice;
+                                          if (!price) return null;
+                                          return price * e.quantity;
+                                       };
                                        return (
                                           <tr key={`${e._id}`}>
                                              <td>
@@ -181,7 +187,7 @@ const Khaata = (props) => {
                                                 {e[e.type === 'sale' ? 'inventory' : 'product']?.modelNumber ?? 'N/A'}
                                              </td>
                                              <td>{e?.quantity ?? 'N/a'}</td>
-                                             <td>{e[e.type === 'sale' ? 'retailPrice' : 'sourcePrice'] ?? 'N/A'}</td>
+                                             <td>{getTotal()}</td>
                                              <td>{e?.paid ?? 'N/A'}</td>
                                              <td>
                                                 <OverlayTrigger
@@ -200,7 +206,7 @@ const Khaata = (props) => {
                                                    <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                                 </OverlayTrigger>
                                              </td>
-                                             <When condition={props.user?.role !== userRoles.CASHIER}>
+                                             {/* <When condition={props.user?.role !== userRoles.CASHIER}>
                                                 <td>
                                                    <Button
                                                       variant="danger"
@@ -211,7 +217,7 @@ const Khaata = (props) => {
                                                       Clear
                                                    </Button>
                                                 </td>
-                                             </When>
+                                             </When> */}
                                           </tr>
                                        );
                                     })}

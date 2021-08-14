@@ -12,7 +12,7 @@ import { useHistory } from 'react-router-dom';
 const initialValues = {
    quantity: '',
    total: '',
-   unitType: '',
+   unit: '',
 };
 
 const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) => {
@@ -24,13 +24,13 @@ const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) =
 
    const alert = useAlert();
 
-   const inventory = useQuery(['inventory', refundPurchase], () => get(`/inventories/id/${refundPurchase}`));
+   const inventory = useQuery(['purchase', refundPurchase], () => get(`/purchases/id/${refundPurchase}`));
 
-   const refundMutation = useMutation((quantity) => put(`/inventories/${refundPurchase}/refund/${quantity}`), {
+   const refundMutation = useMutation((quantity) => put(`/purchases/${refundPurchase}/refund/${quantity}`), {
       onSuccess: () => {
          onClose();
          setValues(initialValues);
-         queryClient.invalidateQueries('inventories');
+         queryClient.invalidateQueries('purchases');
       },
       onError: (err) => {
          alert.setErrorAlert({ message: 'Unable to refund purchase.', err });
@@ -42,13 +42,14 @@ const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) =
    };
 
    const handleChangeQuantity = (quantity) => {
-      const i = inventory.data.inventory;
-      setValues((prev) => ({ ...prev, quantity, total: quantity * i.sourcePrice }));
+      setValues((prev) => ({ ...prev, quantity }));
+      handleChangeTotal(quantity * inventory.data.sourcePrice * values.unit);
    };
 
    const handleChangeUnit = (unit) => {
+      setValues((prev) => ({ ...prev, unit: unit.value }));
       const unitTitle = unit.title.toLowerCase();
-      const i = inventory.data.inventory;
+      const i = inventory.data;
       let quantity = isArray(i.quantity[unitTitle]) ? i.quantity[unitTitle][0] : i.quantity[unitTitle];
 
       if (!quantity) {
@@ -57,6 +58,9 @@ const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) =
       } else setIsError(false);
 
       handleChangeQuantity(quantity);
+
+      console.log(quantity * i.sourcePrice * unit.value);
+      handleChangeTotal(quantity * i.sourcePrice * unit.value);
    };
 
    const alertMarkup = alert.getAlert();
@@ -72,7 +76,7 @@ const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) =
             isLoading={refundMutation.isLoading}
             title="Refund Purchase"
             onSubmit={() => {
-               refundMutation.mutate(values.quantity);
+               refundMutation.mutate(values.quantity * values.unit);
             }}
             submitButtonText="Refund"
             size="xl"
@@ -93,7 +97,10 @@ const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) =
                   <Select
                      width="tw-w-full"
                      placeholder="Select Unit"
-                     options={inventory.data?.inventory.units.map((u) => ({ label: u.title, value: u })) ?? []}
+                     options={[
+                        { label: 'Single', value: { title: 'Single', value: 1 } },
+                        ...(inventory.data?.units.map((u) => ({ label: u.title, value: u })) ?? []),
+                     ]}
                      onChange={(unit) => handleChangeUnit(unit.value)}
                   />
                </Form.Group>

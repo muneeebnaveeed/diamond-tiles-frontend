@@ -1,12 +1,15 @@
+/* eslint-disable prefer-destructuring */
 import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, useAlert, useQuery } from 'jsx/helpers';
+import getQuantity from 'jsx/helpers/getQuantity';
 import PageTItle from 'jsx/layouts/PageTitle';
-import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
+import _, { isArray } from 'lodash';
+import React, { useEffect, useState, Fragment } from 'react';
+
 import { Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
@@ -26,8 +29,8 @@ const Khaata = () => {
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['inventories/products', page, limit, sort.field, sort.order], () =>
-      get('/inventories/products', page, limit, sort.field, sort.order)
+   const query = useQuery(['inventories', page, limit, sort.field, sort.order], () =>
+      get('/inventories', page, limit, sort.field, sort.order)
    );
    const alertMarkup = alert.getAlert();
 
@@ -83,21 +86,9 @@ const Khaata = () => {
                                           </span>
                                        </strong>
                                     </th>
+
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('retialPrice')}>
-                                          RETAIL PRICE
-                                          <span>
-                                             <When condition={sort.field !== 'retialPrice'}>
-                                                <FaSort className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'retialPrice' && sort.order === -1}>
-                                                <FaSortDown className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'retialPrice' && sort.order === 1}>
-                                                <FaSortUp className="d-inline mx-1" />
-                                             </When>
-                                          </span>
-                                       </strong>
+                                       <strong>Type</strong>
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('quantity')}>
@@ -124,9 +115,9 @@ const Khaata = () => {
                                           <td>
                                              <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                           </td>
-                                          <td>{e?.modelNumber ?? 'N/A'}</td>
-                                          <td>{e?.retailPrice ?? 'N/A'}</td>
-                                          <td>{e?.quantity ?? 'N/a'}</td>
+                                          <td>{e.product.modelNumber ?? 'N/A'}</td>
+                                          <td>{e.product.type?.title ?? 'N/A'}</td>
+                                          <td>{getQuantity(e)}</td>
                                           <td>
                                              <OverlayTrigger
                                                 trigger={['hover', 'hover']}

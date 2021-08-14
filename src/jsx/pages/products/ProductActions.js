@@ -69,9 +69,8 @@ const ProductActions = (props) => {
          onError: (err) => {
             setIsError(true);
             alert.setErrorAlert({
-               message: 'Invalid URL!',
-               err: { message: ['The page will redirect to manage products.'] },
-               callback: () => history.push('/products'),
+               message: 'Unable to view product',
+               err,
                duration: 3000,
             });
          },
@@ -129,6 +128,8 @@ const ProductActions = (props) => {
    const units = useQuery(['units', formik.values.type], () =>
       get(`/units?type=${formik.values.type}`, 1, 1000, null, 1, '')
    );
+
+   console.log(formik.values.type);
 
    const handleCreateType = async (title) => {
       postTypeMutation.mutate({ title });
@@ -231,7 +232,7 @@ const ProductActions = (props) => {
                               />
                            </div>
                            <div className="form-group col-xl-3">
-                              <label className="col-form-label">Type</label>
+                              <label className="col-form-label">Unit</label>
                               <Select
                                  width="tw-w-full"
                                  onChange={(e) => formik.setFieldValue('unit', { label: e.label, value: e.label })}

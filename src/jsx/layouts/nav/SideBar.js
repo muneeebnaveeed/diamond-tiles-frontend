@@ -52,14 +52,14 @@ const SideBar = (props) => {
       <div className="deznav">
          <PerfectScrollbar className="deznav-scroll">
             <MM className="metismenu" id="menu">
-               <When condition={props.user?.role !== userRoles.CASHIER}>
+               {/* <When condition={props.user?.role !== userRoles.CASHIER}>
                   <li className={path === '/dashboard' ? 'mm-active' : ''}>
                      <Link className="" to="/dashboard" aria-expanded="false">
                         <i className="flaticon-381-networking" />
                         <span className="nav-text">Dashboard</span>
                      </Link>
                   </li>
-               </When>
+               </When> */}
                <li className={path === '/inventory' ? 'mm-active' : ''}>
                   <Link className="" to="/inventory" aria-expanded="false">
                      <i className="flaticon-381-notepad" />

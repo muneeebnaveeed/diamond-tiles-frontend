@@ -1,3 +1,4 @@
+/* eslint-disable react/no-this-in-sfc */
 import Button from 'jsx/components/Button';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
@@ -31,7 +32,7 @@ const PurchaseActions = () => {
    const postMutation = useMutation(
       (payload) => {
          const promises = [];
-         payload.forEach((p) => promises.push(post('/inventories', p)));
+         payload.forEach((p) => promises.push(post('/purchases', p)));
          return Promise.all(promises);
       },
       {
@@ -60,32 +61,33 @@ const PurchaseActions = () => {
          price: d?.sourcePrice,
          quantity: d?.quantity,
          unit: d?.units?.label,
-         paid: Number(d?.paid) * d?.totalQuantity,
-         subTotal: d?.totalQuantity * Number(d?.sourcePrice),
+         paid: Number(d?.paid),
       })),
       get total() {
          // eslint-disable-next-line react/no-this-in-sfc
-         return this.data.length > 1 ? this.data.reduce((a, b) => a.subTotal + b.subTotal) : this.data[0].subTotal;
+         return this.data.length > 1
+            ? this.data.reduce((a, b) => Number(a.price) + Number(b.price))
+            : Number(this.data[0].price);
       },
       get paid() {
          // eslint-disable-next-line react/no-this-in-sfc
-         return this.data.length > 1 ? this.data.reduce((a, b) => a.paid + b.paid) : this.data[0].paid;
+         return this.data.length > 1
+            ? this.data.reduce((a, b) => Number(a.paid) + Number(b.paid))
+            : Number(this.data[0].paid);
       },
       get remaining() {
          // eslint-disable-next-line react/no-this-in-sfc
          return this.total - this.paid;
       },
-      postPayload: () => {
-         console.log(formdata);
-         return formdata.map((d) => ({
+      postPayload: () =>
+         formdata.map((d) => ({
             supplier: d.supplier?._id,
             sourcePrice: Number(d.sourcePrice / d.totalQuantity),
             paid: Number(d.paid),
             quantity: Number(d.totalQuantity),
             units: [d.units?.value?._id],
             product: d.product?._id,
-         }));
-      },
+         })),
    });
 
    const handleSubmitData = (e) => {
@@ -93,6 +95,8 @@ const PurchaseActions = () => {
       // console.log(formdata);
       mutation.mutate(getPrintData().postPayload());
    };
+
+   console.log(unitsQuery.data);
 
    return (
       <>
@@ -258,11 +262,12 @@ const PurchaseActions = () => {
                                              ...formdata,
                                              {
                                                 supplier: '',
+                                                product: '',
+                                                units: '',
+                                                quantity: '',
                                                 sourcePrice: '',
                                                 paid: '',
-                                                quantity: '',
-                                                units: '',
-                                                product: '',
+                                                totalQuantity: '',
                                              },
                                           ])
                                        }

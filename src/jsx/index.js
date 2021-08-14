@@ -33,7 +33,7 @@ import TypeActions from './pages/types/TypeActions';
 
 const protectedRoutes = [
    { url: 'employees', component: Employees },
-   { url: 'dashboard', component: Dashboard },
+   // { url: 'dashboard', component: Dashboard },
    { url: 'employees/:id', component: EmployeeActions },
 ];
 

@@ -25,6 +25,8 @@ import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 import cls from 'classnames';
+import RefundPurchase from '../purchase/RefundPurchase';
+import RefundSale from './RefundSale';
 
 const Sale = (props) => {
    dayjs.extend(relativeTime);
@@ -34,6 +36,8 @@ const Sale = (props) => {
    const [sort, setSort] = useState({ field: null, order: -1 });
    const [search, setSearch] = useState('');
    const debouncedSearchValue = useDebounce(search, { wait: 500 });
+   const [refundSale, setRefundSale] = useState(null);
+   // const [state, setstate] = useState(initialState)
 
    const alert = useAlert();
    const queryClient = useQueryClient();
@@ -235,7 +239,7 @@ const Sale = (props) => {
                                        };
                                        const getId = () => {
                                           const id = e._id;
-                                          return id.slice(id.length - 3);
+                                          return id.slice(id.length - 4);
                                        };
                                        return (
                                           <tr
@@ -276,7 +280,7 @@ const Sale = (props) => {
                                                          variant="warning"
                                                          size="sm"
                                                          icon={AiOutlineHistory}
-                                                         // onClick={() => handleOnClickEdit(e)}
+                                                         onClick={() => setRefundSale(e._id)}
                                                       >
                                                          Refund
                                                       </Button>
@@ -320,6 +324,7 @@ const Sale = (props) => {
                isLimitDisabled={query.isLoading || deleteMutation.isLoading}
             />
          </When>
+         <RefundSale refundSale={refundSale} onClose={() => setRefundSale(null)} size="md" />
       </>
    );
 };

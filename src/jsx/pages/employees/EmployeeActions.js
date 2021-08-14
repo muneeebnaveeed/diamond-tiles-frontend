@@ -45,6 +45,9 @@ const EmployeeActions = () => {
       },
    });
    const patchMutation = useMutation((payload) => patch(`/employees/id/${params.id}`, payload), {
+      onSuccess: () => {
+         history.push('/employees');
+      },
       onError: (err) => {
          alert.setErrorAlert({
             message: 'Unable to edit employee.',
@@ -260,7 +263,7 @@ const EmployeeActions = () => {
                </Else>
             </If>
          </Card>
-         <When condition={isViewEmployee}>
+         {/* <When condition={isViewEmployee}>
             <Card>
                <When condition={query.isLoading}>
                   <SpinnerOverlay />
@@ -277,22 +280,6 @@ const EmployeeActions = () => {
                                  <th className="width80">
                                     <strong>#</strong>
                                  </th>
-                                 {/* <th>
-                                 <strong className="tw-cursor-pointer" onClick={() => handleSort('employee')}>
-                                    EMPLOYEE
-                                    <span>
-                                       <When condition={sort.field !== 'employee'}>
-                                          <FaSort className="d-inline mx-1" />
-                                       </When>
-                                       <When condition={sort.field === 'employee' && sort.order === -1}>
-                                          <FaSortDown className="d-inline mx-1" />
-                                       </When>
-                                       <When condition={sort.field === 'employee' && sort.order === 1}>
-                                          <FaSortUp className="d-inline mx-1" />
-                                       </When>
-                                    </span>
-                                 </strong>
-                              </th> */}
                                  <th>
                                     <strong className="tw-cursor-pointer" onClick={() => handleSort('salary')}>
                                        SALARY
@@ -318,7 +305,7 @@ const EmployeeActions = () => {
                                        <strong>{index + 1}</strong>
                                     </td>
                                     {/* <td>{e?.employee?.name ?? 'N/A'}</td> */}
-                                    <td>{e?.employee?.salary ?? 'N/A'}</td>
+         {/* <td>{e?.employee?.salary ?? 'N/A'}</td>
                                  </tr>
                               ))}
                            </tbody>
@@ -332,7 +319,8 @@ const EmployeeActions = () => {
                   </If>
                </Card.Body>
             </Card>
-         </When>
+         </When> */}
+
          <When condition={limit > 5 ? true : query.data?.salaries?.totalPages > 1}>
             <Pagination
                page={page}

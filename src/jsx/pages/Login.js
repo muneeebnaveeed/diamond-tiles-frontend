@@ -30,13 +30,14 @@ const Login = (props) => {
                localStorage.setItem('auth_token', token);
                setIsLoading(false);
                if (decode?.isConfirmed) {
-                  if (decode?.role === userRoles.CASHIER) {
-                     history.push('/purchase');
-                  } else if (decode?.role === userRoles.ADMINISTRATOR) {
-                     history.push('/dashboard');
-                  } else {
-                     alert.setErrorAlert({ message: 'Unable to login', err: 'Account not confirmed!' });
-                  }
+                  // if (decode?.role === userRoles.CASHIER) {
+                  //    history.push('/purchase');
+                  // } else if (decode?.role === userRoles.ADMINISTRATOR) {
+                  //    history.push('/dashboard');
+                  // } else {
+                  //    alert.setErrorAlert({ message: 'Unable to login', err: 'Account not confirmed!' });
+                  // }
+                  history.push('/purchase');
                } else {
                   localStorage.clear();
                   props.setLogin({});
@@ -57,13 +58,14 @@ const Login = (props) => {
          props.setLogin({ ...decode, auth_token: res.data });
          localStorage.setItem('auth_token', res.data);
          if (decode?.isConfirmed) {
-            if (decode?.role === userRoles.CASHIER) {
-               history.push('/purchase');
-            } else if (decode?.role === userRoles.ADMINISTRATOR) {
-               history.push('/dashboard');
-            } else {
-               alert.setErrorAlert({ message: 'Unable to login', err: 'Account not confirmed!' });
-            }
+            // if (decode?.role === userRoles.CASHIER) {
+            //    history.push('/purchase');
+            // } else if (decode?.role === userRoles.ADMINISTRATOR) {
+            //    history.push('/dashboard');
+            // } else {
+            //    alert.setErrorAlert({ message: 'Unable to login', err: 'Account not confirmed!' });
+            // }
+            history.push('/purchase');
          } else {
             localStorage.clear();
             props.setLogin({});

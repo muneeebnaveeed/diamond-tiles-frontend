@@ -6,6 +6,7 @@ import logo from '../../../images/diamond-tiles-logo.png';
 
 class PurchaseInvoice extends React.Component {
    render() {
+      console.log(this.props.invoiceNum);
       return (
          <div className="m-5">
             <div className="row mb-2">
@@ -34,9 +35,8 @@ class PurchaseInvoice extends React.Component {
             <table className="table table-striped my-4">
                <thead>
                   <tr>
-                     <th className="center">Serial Number</th>
+                     <th className="center">#</th>
                      <th className="center">Model Number</th>
-                     <th className="center">Price</th>
                      <th className="center">Quantity</th>
                      <th className="center">Unit</th>
                      <th className="center">Subtotal</th>
@@ -48,10 +48,9 @@ class PurchaseInvoice extends React.Component {
                         <tr key={e?._id}>
                            <td>{e?.serialNumber ?? ''}</td>
                            <td>{e?.modelNumber ?? ''}</td>
-                           <td>{e?.price ?? ''}</td>
                            <td>{e?.quantity ?? ''}</td>
                            <td>{e?.unit ?? ''}</td>
-                           <td>{e?.subTotal ?? ''}</td>
+                           <td>{e?.price ?? ''}</td>
                         </tr>
                      ))}
                </tbody>

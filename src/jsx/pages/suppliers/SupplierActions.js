@@ -13,7 +13,7 @@ import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useHistory, useParams } from 'react-router-dom';
 
-import _ from 'lodash';
+import _, { isArray } from 'lodash';
 import { connect } from 'react-redux';
 import { userRoles } from 'jsx/helpers/enums';
 
@@ -41,8 +41,8 @@ const SupplierActions = (props) => {
       onError: (err) => {
          setIsError(true);
          alert.setErrorAlert({
-            message: 'Invalid URL!',
-            err: { message: ['The page will redirect to manage suppliers.'] },
+            message: 'Unable to view supplier',
+            err,
             callback: () => history.push('/suppliers'),
             duration: 3000,
          });
@@ -292,42 +292,80 @@ const SupplierActions = (props) => {
                                              </span>
                                           </strong>
                                        </th>
+                                       <th>
+                                          <strong>REMAINING</strong>
+                                       </th>
+                                       <th>
+                                          <strong>QUANTITY</strong>
+                                       </th>
                                     </tr>
                                  </thead>
                                  <tbody>
-                                    {query.data?.inventories?.docs.map((e, index) => (
-                                       <tr
-                                          key={`${e._id}`}
-                                          className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}
-                                       >
-                                          <td>
-                                             <strong className={e.isRemaining && 'tw-text-gray-50'}>
-                                                {query.data.inventories?.pagingCounter * (index + 1)}
-                                             </strong>
-                                          </td>
-                                          <td>{e?.supplier?.name ?? 'N/A'}</td>
-                                          <td>{e?.product?.modelNumber ?? 'N/A'}</td>
-                                          <td>{e?.sourcePrice ?? 'N/a'}</td>
-                                          <td>{e?.paid ?? 'N/A'}</td>
-                                          <td>
-                                             {/* <OverlayTrigger
-                                                trigger={['hover', 'hover']}
-                                                placement="top"
-                                                overlay={
-                                                   <Popover className="tw-border-gray-500">
-                                                      <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                         dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                            ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                            : dayjs(e.createdAt).fromNow()
-                                                      }.`}</Popover.Content>
-                                                   </Popover>
-                                                }
-                                             >
-                                                <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                             </OverlayTrigger> */}
-                                          </td>
-                                       </tr>
-                                    ))}
+                                    {query.data?.inventories?.docs?.map((e, index) => {
+                                       const getQuantity = () => {
+                                          let q = e.quantity.single;
+                                          // eslint-disable-next-line prefer-destructuring
+                                          if (isArray(q)) q = q[0];
+                                          return q;
+                                       };
+
+                                       const quantity = getQuantity();
+
+                                       const getSourcePrice = () => {
+                                          const q = getQuantity();
+                                          return e.sourcePrice * q;
+                                       };
+
+                                       const sourcePrice = getSourcePrice();
+
+                                       const getRemainig = () => {
+                                          if (sourcePrice === e.paid) return null;
+
+                                          return sourcePrice - e.paid;
+                                       };
+
+                                       const getId = () => {
+                                          const id = e._id;
+                                          return id.slice(id.length - 3);
+                                       };
+
+                                       return (
+                                          <tr
+                                             key={`${e._id}`}
+                                             className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}
+                                          >
+                                             <td>
+                                                <strong className={e.isRemaining && 'tw-text-gray-50'}>
+                                                   {getId()}
+                                                </strong>
+                                             </td>
+                                             <td>{e?.supplier?.name ?? 'N/A'}</td>
+                                             <td>{e?.product?.modelNumber ?? 'N/A'}</td>
+                                             <td>{sourcePrice}</td>
+                                             <td>{e?.paid ?? 'N/A'}</td>
+                                             <td>{getRemainig()}</td>
+                                             <td>{quantity ? `${quantity} singles` : ''}</td>
+
+                                             <td>
+                                                <OverlayTrigger
+                                                   trigger={['hover', 'hover']}
+                                                   placement="top"
+                                                   overlay={
+                                                      <Popover className="tw-border-gray-500">
+                                                         <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
+                                                            dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
+                                                               ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
+                                                               : dayjs(e.createdAt).fromNow()
+                                                         }.`}</Popover.Content>
+                                                      </Popover>
+                                                   }
+                                                >
+                                                   <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                                </OverlayTrigger>
+                                             </td>
+                                          </tr>
+                                       );
+                                    })}
                                  </tbody>
                               </Table>
                            </Then>
