@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { isArray } from 'lodash';
 
-export const api = axios.create({ baseURL: 'https://diamond-tiles-backend.herokuapp.com' });
+export const api = axios.create({ baseURL: 'https://diamond-tiles-backend-v2.herokuapp.com' });
 
 api.interceptors.request.use(
    async (config) => {
@@ -21,6 +21,8 @@ export const getError = (err) => {
 
    return response;
 };
+
+export const getV2 = (path, params = {}) => api.get(path, { params }).then((res) => res.data);
 
 export const get = (path, page, limit, field, order, search = '') =>
    api.get(path, { params: { page, limit, [`sort[${field}]`]: order, search } }).then((res) => res.data);

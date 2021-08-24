@@ -7,7 +7,7 @@ import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
@@ -15,18 +15,23 @@ import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
-import { connect } from 'react-redux';
+import { connect, useDispatch, useSelector } from 'react-redux';
 import { userRoles } from 'jsx/helpers/enums';
+import ModalWrapper from 'jsx/components/ModalWrapper';
+import { setProductsVisibility } from 'store/actions';
 import Types from '../types';
 import Units from '../units';
 
+dayjs.extend(relativeTime);
+
 const Products = (props) => {
-   dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
    const [search, setSearch] = useState('');
+
+   const dispatch = useDispatch();
    const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
    const alert = useAlert();
@@ -48,15 +53,8 @@ const Products = (props) => {
       },
    });
 
-   const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/products/${obj._id}`, search: `?type=edit` });
-   };
-
-   const handleOnClickView = (obj) => {
-      history.push({ pathname: `/products/${obj._id}`, search: `?type=view` });
-   };
    const handleOnClickAdd = () => {
-      history.push('/products/add');
+      dispatch(setProductsVisibility(true));
    };
 
    const handleOnClickDelete = (id) => {
@@ -78,6 +76,26 @@ const Products = (props) => {
    const handleSort = (key) => {
       setSort((prev) => ({ field: key, order: prev.order * -1 }));
    };
+
+   const getHeadingWithSort = useCallback(
+      (label, field) => (
+         <strong className="tw-cursor-pointer" onClick={() => handleSort(field)}>
+            {label}
+            <span>
+               <When condition={sort.field !== field}>
+                  <FaSort className="d-inline mx-1" />
+               </When>
+               <When condition={sort.field === field && sort.order === -1}>
+                  <FaSortDown className="d-inline mx-1" />
+               </When>
+               <When condition={sort.field === field && sort.order === 1}>
+                  <FaSortUp className="d-inline mx-1" />
+               </When>
+            </span>
+         </strong>
+      ),
+      [sort.field, sort.order]
+   );
 
    useEffect(() => {
       if (page > query.data?.totalPages) {
@@ -114,7 +132,7 @@ const Products = (props) => {
                         <input
                            type="text"
                            className="input-rounded tw-rounded-r-none tw-pl-6 tw-shadow-inner tw-ring-1 "
-                           placeholder="Search products..."
+                           placeholder="Search products by model"
                            disabled={deleteMutation.isLoading}
                            onChange={(e) => setSearch(e.target.value)}
                         />
@@ -133,53 +151,12 @@ const Products = (props) => {
                                        <strong>#</strong>
                                     </th>
 
+                                    <th>{getHeadingWithSort('Model', 'modelNumber')}</th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('modelNumber')}>
-                                          MODEL#
-                                          <span>
-                                             <When condition={sort.field !== 'modelNumber'}>
-                                                <FaSort className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'modelNumber' && sort.order === -1}>
-                                                <FaSortDown className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'modelNumber' && sort.order === 1}>
-                                                <FaSortUp className="d-inline mx-1" />
-                                             </When>
-                                          </span>
-                                       </strong>
+                                       <strong>Type</strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('retailPrice')}>
-                                          RETAIL PRICE
-                                          <span>
-                                             <When condition={sort.field !== 'retailPrice'}>
-                                                <FaSort className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'retailPrice' && sort.order === -1}>
-                                                <FaSortDown className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'retailPrice' && sort.order === 1}>
-                                                <FaSortUp className="d-inline mx-1" />
-                                             </When>
-                                          </span>
-                                       </strong>
-                                    </th>
-                                    <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('type')}>
-                                          TYPE
-                                          <span>
-                                             <When condition={sort.field !== 'type'}>
-                                                <FaSort className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'type' && sort.order === -1}>
-                                                <FaSortDown className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'type' && sort.order === 1}>
-                                                <FaSortUp className="d-inline mx-1" />
-                                             </When>
-                                          </span>
-                                       </strong>
+                                       <strong>Unit</strong>
                                     </th>
                                  </tr>
                               </thead>
@@ -190,54 +167,19 @@ const Products = (props) => {
                                           <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                        </td>
                                        <td>{e.modelNumber}</td>
-                                       <td>{`${e.retailPrice}${e.unit ? `/${e.unit}` : ` ??`}`}</td>
-                                       <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
+                                       <td>{e.type.title}</td>
+                                       <td>{e.unit.title}</td>
                                        <td>
-                                          <OverlayTrigger
-                                             trigger={['hover', 'hover']}
-                                             placement="top"
-                                             overlay={
-                                                <Popover className="tw-border-gray-500">
-                                                   <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                         ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                         : dayjs(e.createdAt).fromNow()
-                                                   }.`}</Popover.Content>
-                                                </Popover>
-                                             }
-                                          >
-                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                          </OverlayTrigger>
-                                       </td>
-                                       <td>
-                                          <ButtonGroup>
+                                          <When condition={props.user?.role !== userRoles.CASHIER}>
                                              <Button
-                                                variant="dark"
+                                                variant="danger"
                                                 size="sm"
-                                                icon={AiFillEye}
-                                                onClick={() => handleOnClickView(e)}
+                                                icon={AiFillDelete}
+                                                onClick={() => handleOnClickDelete(e._id)}
                                              >
-                                                View
+                                                Delete
                                              </Button>
-                                             <When condition={props.user?.role !== userRoles.CASHIER}>
-                                                <Button
-                                                   variant="warning"
-                                                   size="sm"
-                                                   icon={AiFillEdit}
-                                                   onClick={() => handleOnClickEdit(e)}
-                                                >
-                                                   Edit
-                                                </Button>
-                                                <Button
-                                                   variant="danger"
-                                                   size="sm"
-                                                   icon={AiFillDelete}
-                                                   onClick={() => handleOnClickDelete(e._id)}
-                                                >
-                                                   Delete
-                                                </Button>
-                                             </When>
-                                          </ButtonGroup>
+                                          </When>
                                        </td>
                                     </tr>
                                  ))}

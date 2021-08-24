@@ -12,8 +12,9 @@ import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { userRoles } from 'jsx/helpers/enums';
+import { setTypesData, setTypesVisibility } from 'store/actions';
 
 const Types = (props) => {
    const history = useHistory();
@@ -28,6 +29,8 @@ const Types = (props) => {
 
    const alert = useAlert();
    const queryClient = useQueryClient();
+
+   const dispatch = useDispatch();
 
    const query = useQuery('types', () => get('/types', page, limit, '', '', search));
    const postMutation = useMutation((payload) => post('/types', payload), {
@@ -59,9 +62,9 @@ const Types = (props) => {
    const mutation = useMemo(() => postMutation, [postMutation]);
 
    const handleOnClickAdd = () => {
-      setShowModal(true);
-      setTitle('');
       // setUrlState({ action: 'add' });
+      dispatch(setTypesVisibility(true));
+      dispatch(setTypesData({}));
    };
 
    const handleOnClickDelete = (id) => {
@@ -173,43 +176,6 @@ const Types = (props) => {
                </If>
             </Card.Body>
          </Card>
-         {/* <When condition={limit > 5 ? true : query.data?.totalPages > 1}>
-            <Pagination
-               page={page}
-               onPageChange={setPage}
-               onLimitChange={setLimit}
-               {..._.omit(query.data)}
-               isLimitDisabled={query.isLoading || deleteMutation.isLoading}
-            />
-         </When> */}
-         <ModalWrapper
-            show={showModal}
-            onHide={() => {
-               setShowModal(false);
-               setUrlState({});
-            }}
-            title="Add New Type"
-            isLoading={query.isLoading || postMutation.isLoading}
-            size="md"
-            onSubmit={handleSubmit}
-            submitButtonText="Confirm"
-         >
-            <form onSubmit={handleSubmit}>
-               <div className="row">
-                  <div className="form-group col-xl-6">
-                     <label className="col-form-label">Title</label>
-                     <input
-                        className="form-control"
-                        onChange={(e) => setTitle(e.target.value)}
-                        type="text"
-                        name="title"
-                        value={title}
-                     />
-                     <button type="submit" className="tw-invisible" />
-                  </div>
-               </div>
-            </form>
-         </ModalWrapper>
       </>
    );
 };

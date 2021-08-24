@@ -14,8 +14,9 @@ import { useQueryClient } from 'react-query';
 import swal from 'sweetalert';
 import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { userRoles } from 'jsx/helpers/enums';
+import { setUnitsData, setUnitsVisibility } from 'store/actions';
 import CreatableSelect from '../../components/CreatableSelect';
 
 const Units = (props) => {
@@ -32,6 +33,8 @@ const Units = (props) => {
    const alert = useAlert();
 
    const queryClient = useQueryClient();
+
+   const dispatch = useDispatch();
 
    const query = useQuery(['units', page, limit, search], () => get('/units', page, limit, '', '', search));
    const getTypes = useQuery('types', () => get('/types'));
@@ -67,24 +70,9 @@ const Units = (props) => {
    const isAdd = useMemo(() => urlState?.action === 'add', [urlState.action]);
    const mutation = useMemo(() => postMutation, [postMutation]);
 
-   const formik = useFormik({
-      initialValues: {
-         title: '',
-         value: '',
-         type: '',
-      },
-      validateOnChange: false,
-      validateOnBlur: false,
-      onSubmit: (values) => {
-         mutation.mutate(values);
-      },
-   });
-
    const handleOnClickAdd = () => {
-      setShowModal(true);
-      formik.setFieldValue('title', '');
-      formik.setFieldValue('value', '');
-      formik.setFieldValue('type', '');
+      dispatch(setUnitsVisibility(true));
+      dispatch(setUnitsData({}));
       // setUrlState({ action: 'add' });
    };
 
@@ -101,28 +89,11 @@ const Units = (props) => {
          }
       });
    };
-   const handleOnClickView = (id) => {
-      history.push(`/products/units/${id}`);
-   };
-
-   const handleCreateType = (title) => {
-      postTypeMutation.mutate({ title });
-
-      // history.push({ pathname: '/types', search: `?action=add&title=${title}&redirect=/units?action=add` });
-   };
 
    const alertMarkup = alert.getAlert();
 
    return (
       <>
-         {/* <PageTItle activeMenu="units" motherMenu="Manage" /> */}
-         {/* <div className="row tw-mb-8">
-            <div className="col-xl-6">
-               <Button variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
-                  Add New Unit
-               </Button>
-            </div>
-         </div> */}
          {alertMarkup ? (
             <Row>
                <Col lg={12}>{alertMarkup}</Col>
@@ -207,65 +178,6 @@ const Units = (props) => {
                </If>
             </Card.Body>
          </Card>
-
-         {/* ADD Modal */}
-         <ModalWrapper
-            show={showModal}
-            onHide={() => {
-               setShowModal(false);
-               setUrlState({});
-            }}
-            title="Add New Unit"
-            isLoading={query.isLoading || postMutation.isLoading}
-            size="md"
-            onSubmit={formik.handleSubmit}
-            submitButtonText="Confirm"
-         >
-            <When condition={getTypes.isLoading}>
-               <SpinnerOverlay />
-            </When>
-            <form onSubmit={formik.handleSubmit}>
-               <div className="row">
-                  <div className="form-group col-xl-6">
-                     <label className="col-form-label">Title</label>
-                     <input
-                        className="form-control"
-                        onChange={formik.handleChange}
-                        type="text"
-                        name="title"
-                        value={formik.values.title}
-                     />
-                  </div>
-               </div>
-               <div className="row">
-                  <div className="form-group col-xl-6">
-                     <label className="col-form-label">Value</label>
-                     <input
-                        className="form-control"
-                        onChange={formik.handleChange}
-                        type="text"
-                        name="value"
-                        value={formik.values.value}
-                     />
-                  </div>
-                  <button type="submit" className="tw-invisible" />
-               </div>
-            </form>
-            <div className="row">
-               <div className="form-group col-xl-6">
-                  <label className="col-form-label">Type</label>
-                  <CreatableSelect
-                     isClearable
-                     onChange={(e) => formik.setFieldValue('type', e?._id)}
-                     options={
-                        getTypes.data?.length > 0 &&
-                        getTypes.data.map((e) => ({ ...e, label: e.title, value: e.title }))
-                     }
-                     onCreateOption={handleCreateType}
-                  />
-               </div>
-            </div>
-         </ModalWrapper>
       </>
    );
 };

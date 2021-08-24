@@ -4,8 +4,16 @@ import { When } from 'react-if';
 
 const ModalWrapper = (props) => {
    const { show, onHide, isLoading, title, onSubmit, submitButtonText, children, isDisabled, ...rest } = props;
+
    return (
-      <Modal className="fade" show={show} onHide={onHide} {...rest}>
+      <Modal
+         className="fade"
+         show={show}
+         onHide={() => {
+            if (!isLoading) onHide();
+         }}
+         {...rest}
+      >
          <Modal.Header>
             <Modal.Title>{title}</Modal.Title>
             <Button variant="" className="close" onClick={onHide}>
@@ -17,10 +25,10 @@ const ModalWrapper = (props) => {
          </Modal.Body>
          <Modal.Footer>
             <ButtonGroup>
-               <Button variant="warning light" onClick={onHide}>
+               <Button variant="warning light" disabled={isLoading} onClick={onHide}>
                   Close
                </Button>
-               <Button variant="primary" disabled={isLoading || isDisabled} onClick={onSubmit}>
+               <Button variant="primary" onClick={onSubmit} disabled={isLoading || isDisabled}>
                   <When condition={isLoading}>
                      <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true" />
                   </When>

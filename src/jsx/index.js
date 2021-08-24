@@ -20,6 +20,7 @@ import Inventory from './pages/inventory';
 import Khaata from './pages/khaata';
 import Login from './pages/Login';
 import Products from './pages/products';
+import AddNewProduct from './pages/products/AddNewProduct';
 import ProductActions from './pages/products/ProductActions';
 import Purchase from './pages/purchase';
 import AddPurchase from './pages/purchase/AddPurchase';
@@ -28,8 +29,11 @@ import Registration from './pages/Registration';
 import Sales from './pages/sale';
 import AddSale from './pages/sale/AddSale';
 import Suppliers from './pages/suppliers';
+import AddNewSupplier from './pages/suppliers/AddNewSupplier';
 import SupplierActions from './pages/suppliers/SupplierActions';
+import AddNewType from './pages/types/AddNewType';
 import TypeActions from './pages/types/TypeActions';
+import AddNewUnit from './pages/units/AddNewUnit';
 
 const protectedRoutes = [
    { url: 'employees', component: Employees },
@@ -62,6 +66,11 @@ const routes = [
 
 const Markup = (props) => (
    <Suspense fallback={<p>Loading</p>}>
+      <AddNewProduct />
+      <AddNewType />
+      <AddNewUnit />
+      <AddNewSupplier />
+
       <Router>
          <Switch>
             <If condition={props.user?.role === userRoles.CASHIER}>
