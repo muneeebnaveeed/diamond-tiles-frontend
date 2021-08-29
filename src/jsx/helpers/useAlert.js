@@ -57,7 +57,6 @@ export const useAlert = () => {
    const setErrorAlert = useCallback(
       ({ message: msg = 'Unable to dispatch action', err, callback: cb = null, duration: d = 6000 }) => {
          resetTimeout(d);
-         console.log(err.response);
          const m = (
             <>
                <strong>{msg}</strong>

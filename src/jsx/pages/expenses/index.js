@@ -48,10 +48,6 @@ const Expenses = (props) => {
       },
    });
 
-   const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/expenses/${obj._id}`, search: `?type=edit` });
-   };
-
    const handleOnClickView = (obj) => {
       history.push({ pathname: `/expenses/${obj._id}`, search: `?type=view` });
    };
@@ -87,22 +83,16 @@ const Expenses = (props) => {
    return (
       <>
          <PageTItle activeMenu="Expenses" motherMenu="Diamond Tiles" />
-         <div className="row my-3">
-            <When condition={props.user?.role !== userRoles.CASHIER}>
-               <div className="col-xl-5  my-2">
-                  <Salaries />
-               </div>
-            </When>
-            <div className={props?.user?.role == userRoles.CASHIER ? 'col-xl-12 my-2' : 'col-xl-7  my-2'}>
-               <ExpenseTypes />
-            </div>
-         </div>
+
          {alertMarkup ? (
             <Row>
                <Col lg={12}>{alertMarkup}</Col>
             </Row>
          ) : null}
          <div className="row">
+            <div className="col-xl-12 mb-4">
+               <Salaries />
+            </div>
             <Col lg={12}>
                <Card>
                   <When condition={query.isLoading || deleteMutation.isLoading}>

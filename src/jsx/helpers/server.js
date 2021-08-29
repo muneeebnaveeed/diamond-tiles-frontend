@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { isArray } from 'lodash';
 
-export const api = axios.create({ baseURL: 'https://diamond-tiles-backend-v2.herokuapp.com' });
+export const api = axios.create({ baseURL: 'http://localhost:4000' });
 
 api.interceptors.request.use(
    async (config) => {
@@ -52,7 +52,7 @@ export const post = (path, payload) =>
 export const patch = (path, payload) =>
    api.patch(path, payload).then((res) => (res.status === 200 ? { ...res.data, status: 'ok' } : res.data));
 
-export const put = (path, payload = null) => api.put(path, payload).then((res) => res.data);
+export const put = (path, payload = {}) => api.put(path, payload).then((res) => res.data);
 
 /**
  * Send a DELETE request

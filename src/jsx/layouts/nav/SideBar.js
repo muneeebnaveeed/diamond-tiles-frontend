@@ -52,14 +52,14 @@ const SideBar = (props) => {
       <div className="deznav">
          <PerfectScrollbar className="deznav-scroll">
             <MM className="metismenu" id="menu">
-               {/* <When condition={props.user?.role !== userRoles.CASHIER}>
+               <When condition={props.user?.role !== userRoles.CASHIER}>
                   <li className={path === '/dashboard' ? 'mm-active' : ''}>
                      <Link className="" to="/dashboard" aria-expanded="false">
                         <i className="flaticon-381-networking" />
                         <span className="nav-text">Dashboard</span>
                      </Link>
                   </li>
-               </When> */}
+               </When>
                <li className={path === '/inventory' ? 'mm-active' : ''}>
                   <Link className="" to="/inventory" aria-expanded="false">
                      <i className="flaticon-381-notepad" />
@@ -86,6 +86,9 @@ const SideBar = (props) => {
                      </li> */}
                      <When condition={props.user?.role !== userRoles.CASHIER}>
                         <li>
+                           <Link to="/users">Users</Link>
+                        </li>
+                        <li>
                            <Link to="/employees">Employees</Link>
                         </li>
                      </When>
@@ -101,12 +104,6 @@ const SideBar = (props) => {
                   <Link className="" to="/sale" aria-expanded="false">
                      <i className="flaticon-381-calendar" />
                      <span className="nav-text">Sale</span>
-                  </Link>
-               </li>
-               <li className={path === '/khaata' ? 'mm-active' : ''}>
-                  <Link className="" to="/khaata" aria-expanded="false">
-                     <i className="flaticon-381-book" />
-                     <span className="nav-text">Khaata</span>
                   </Link>
                </li>
                <li className={path === '/expenses' ? 'mm-active' : ''}>

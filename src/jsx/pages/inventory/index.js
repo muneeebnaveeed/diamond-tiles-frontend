@@ -2,6 +2,7 @@
 import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, useAlert, useQuery } from 'jsx/helpers';
@@ -10,7 +11,7 @@ import PageTItle from 'jsx/layouts/PageTitle';
 import _, { isArray } from 'lodash';
 import React, { useEffect, useState, Fragment } from 'react';
 
-import { Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
+import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
@@ -60,6 +61,18 @@ const Khaata = () => {
                   </When>
                   <Card.Header>
                      <Card.Title>Inventory</Card.Title>
+                     <ButtonGroup className="tw-float-right">
+                        <input
+                           type="text"
+                           className="input-rounded tw-rounded-r-none tw-pl-6 tw-shadow-inner tw-ring-1 "
+                           placeholder="Search inventory"
+                           // disabled={deleteMutation.isLoading}
+                           onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <Button variant="primary" loading={query.isLoading}>
+                           Search
+                        </Button>
+                     </ButtonGroup>
                   </Card.Header>
                   <Card.Body>
                      <If condition={query.data?.totalDocs > 0}>
@@ -72,7 +85,7 @@ const Khaata = () => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('modelNumber')}>
-                                          MODEL NUMBER
+                                          Product
                                           <span>
                                              <When condition={sort.field !== 'modelNumber'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -87,9 +100,6 @@ const Khaata = () => {
                                        </strong>
                                     </th>
 
-                                    <th>
-                                       <strong>Type</strong>
-                                    </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('quantity')}>
                                           QUANTITY
@@ -109,34 +119,28 @@ const Khaata = () => {
                                  </tr>
                               </thead>
                               <tbody>
-                                 {query.data &&
-                                    query.data?.docs.map((e, index) => (
+                                 {query.data?.docs.map((e, index) => {
+                                    const isVariant = e.variants;
+                                    return (
                                        <tr key={`${e._id}`}>
                                           <td>
                                              <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                           </td>
                                           <td>{e.product.modelNumber ?? 'N/A'}</td>
-                                          <td>{e.product.type?.title ?? 'N/A'}</td>
-                                          <td>{getQuantity(e)}</td>
                                           <td>
-                                             <OverlayTrigger
-                                                trigger={['hover', 'hover']}
-                                                placement="top"
-                                                overlay={
-                                                   <Popover className="tw-border-gray-500">
-                                                      <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                         dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                            ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                            : dayjs(e.createdAt).fromNow()
-                                                      }.`}</Popover.Content>
-                                                   </Popover>
-                                                }
-                                             >
-                                                <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                             </OverlayTrigger>
+                                             {isVariant
+                                                ? Object.entries(e.variants).map(([key, value]) => (
+                                                     <>
+                                                        <span className="tw-mr-4">{`${key.toUpperCase()}: ${getQuantity(
+                                                           value
+                                                        )}`}</span>
+                                                     </>
+                                                  ))
+                                                : getQuantity(e.quantity)}
                                           </td>
                                        </tr>
-                                    ))}
+                                    );
+                                 })}
                               </tbody>
                            </Table>
                         </Then>

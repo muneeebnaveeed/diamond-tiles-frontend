@@ -9,6 +9,7 @@ import { userRoles } from './helpers/enums';
 import './index.css';
 import Layout from './layouts';
 import Customers from './pages/customers';
+import AddNewCustomer from './pages/customers/AddNewCustomer';
 import CustomerActions from './pages/customers/CustomerActions';
 import Dashboard from './pages/dashboard';
 import Employees from './pages/employees';
@@ -34,6 +35,7 @@ import SupplierActions from './pages/suppliers/SupplierActions';
 import AddNewType from './pages/types/AddNewType';
 import TypeActions from './pages/types/TypeActions';
 import AddNewUnit from './pages/units/AddNewUnit';
+import users from './pages/users';
 
 const protectedRoutes = [
    { url: 'employees', component: Employees },
@@ -46,8 +48,8 @@ const routes = [
    { url: '', component: () => <Redirect to="/page-login" /> },
    { url: 'page-register', component: Registration, isPublic: true },
    { url: 'page-login', component: Login, isPublic: true },
-
    { url: 'customers', component: Customers },
+   { url: 'users', component: users },
    { url: 'customers/:id', component: CustomerActions },
    { url: 'suppliers', component: Suppliers },
    { url: 'suppliers/:id', component: SupplierActions },
@@ -60,8 +62,8 @@ const routes = [
    { url: 'sale/add', component: AddSale },
    { url: 'expenses', component: Expenses },
    { url: 'expenses/:id', component: ExpensesActions },
-   { url: 'khaata', component: Khaata },
    { url: 'inventory', component: Inventory },
+   { url: 'dashboard', component: Dashboard },
 ];
 
 const Markup = (props) => (
@@ -70,6 +72,7 @@ const Markup = (props) => (
       <AddNewType />
       <AddNewUnit />
       <AddNewSupplier />
+      <AddNewCustomer />
 
       <Router>
          <Switch>

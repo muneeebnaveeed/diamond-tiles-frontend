@@ -1,307 +1,320 @@
+/* eslint-disable react/no-this-in-sfc */
 import Button from 'jsx/components/Button';
-import Invoice from 'jsx/components/invoice';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
-import { get, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { get, getV2, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { ButtonGroup, Card, Table } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { FaMinusCircle, FaPlusCircle } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useHistory } from 'react-router-dom';
+import {
+   setCustomersData,
+   setCustomersVisibility,
+   setProductsData,
+   setProductsVisibility,
+   setSuppliersData,
+   setSuppliersVisibility,
+} from 'store/actions';
+import { batch, useDispatch } from 'react-redux';
+import cls from 'classnames';
 import _ from 'lodash';
-import { mergeStyles } from 'react-select';
-import Select from '../../components/Select';
-import SaleInvoice from './SaleInvoice';
-
-const getDefaultOption = () => ({
-   label: 'Walk In',
-   value: null,
-});
+import produce from 'immer';
+import CreatableSelect from '../../components/CreatableSelect';
 
 const AddSale = () => {
-   const printRef = useRef(null);
    const history = useHistory();
-   const [showPrintDialog, setShowPrintDialog] = useState(false);
-   const [invoiceNum, setInvoiceNum] = useState('');
-
-   const [formdata, setFormdata] = useState([
-      { inventory: '', unit: 1, quantity: '', retailPrice: '', customer: '', paid: '', totalQuantity: '' },
-   ]);
 
    const alert = useAlert();
+   const dispatch = useDispatch();
 
-   const customerQuery = useQuery(['customers', 1, 10000], () => get('/customers', 1, 10000));
-   const inventoryQuery = useQuery(['inventories', 1, 10000], () => get('/inventories', 1, 100));
-   const unitQuery = useQuery('units', () => get(`/units`));
-
-   const postMutation = useMutation(
-      (sales) => {
-         const promises = [];
-         sales.forEach((s) => promises.push(post('/sales', s)));
-         return Promise.all(promises);
-      },
-      {
-         onSuccess: (res) => {
-            setInvoiceNum(res[0].msg.substring(res[0].msg.length - 4, res[0].msg.length));
-            setShowPrintDialog(true);
-         },
-         onError: (err) => {
-            alert.setErrorAlert({ message: 'Unable to add sale', err });
-         },
-      }
-   );
-
-   const mutation = useMemo(() => postMutation, [postMutation]);
-
-   const handleOnChange = (key, value, index) => {
-      const tmp = [...formdata];
-      tmp[index][key] = value;
-      setFormdata(tmp);
-   };
-
-   const getPrintData = () => ({
-      data: formdata.map((d, idx) =>
-         // console.log(d);
-         ({
-            serialNumber: idx + 1,
-            modelNumber: d?.inventory?.value?.product?.modelNumber,
-            price: d?.retailPrice,
-            quantity: d?.quantity,
-            unit: d?.unit?.label,
-            paid: Number(d?.paid) * d?.totalQuantity,
-            subTotal: Number(d.totalQuantity) * Number(d?.retailPrice),
-         })
-      ),
-      get total() {
-         // eslint-disable-next-line react/no-this-in-sfc
-         return this.data.length > 1 ? this.data.reduce((a, b) => a.subTotal + b.subTotal) : this.data[0].subTotal;
-      },
-      get paid() {
-         // eslint-disable-next-line react/no-this-in-sfc
-         return this.data.length > 1 ? this.data.reduce((a, b) => a.paid + b.paid) : this.data[0].paid;
-      },
-      get remaining() {
-         // eslint-disable-next-line react/no-this-in-sfc
-         return this.total - this.paid;
-      },
-      postPayload: formdata.map((d) => ({
-         customer: d?.customer ? d?.customer?.value?._id : null,
-         inventory: d?.inventory?.value?._id,
-         paid: Number(d?.paid),
-         quantity: Number(d?.quantity),
-         retailPrice: Number(d?.retailPrice),
-      })),
+   const [sale, setSale] = useState({
+      customer: null,
+      paid: '',
+      products: [
+         { product: null, sourcePrice: '', retailPrice: '', variants: { a: '', b: '', c: '', d: '' }, quantity: '' },
+      ],
    });
 
-   const handleSubmitData = (e) => {
-      e.preventDefault();
-      // console.log(formdata);
-      // console.log(getPrintData());
-      // const payload = _.map(formdata, (d) => ({
-      //    ..._.pick(d, ['customer', 'inventory', 'retailPrice']),
-      //    paid: d.price,
-      //    quantity: d.totalQuantity,
-      // }));
-      mutation.mutate(getPrintData().postPayload);
+   const customers = useQuery('all-customers', () =>
+      getV2('/customers', { page: 1, limit: 1000, search: '', sort: { name: 1 } })
+   );
+   const inventories = useQuery('all-inventories', () =>
+      getV2('/inventories', { page: 1, limit: 1000, search: '', sort: { 'product.modelNumber': 1 } })
+   );
+
+   const mutation = useMutation((payload) => post('/sales', payload), {
+      onSuccess: () => {
+         history.replace('/sale');
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to add Sale', err });
+      },
+   });
+
+   const handleChangeProduct = (key, value, index) => {
+      const updatedSale = produce(sale, (draft) => {
+         draft.products[index][key] = value;
+      });
+      setSale(updatedSale);
    };
 
-   const getOptions = () => {
-      const data = customerQuery.data?.docs?.map?.((x) => ({
-         label: x.name,
-         value: x,
-      }));
-      let options = [getDefaultOption()];
-      if (data) options = [...options, ...data];
-      return options;
+   const handleChangeVariantQuantity = (key, value, index) => {
+      const updatedSale = produce(sale, (draft) => {
+         draft.products[index].variants[key] = value;
+      });
+      setSale(updatedSale);
+   };
+
+   const handleAddProduct = () => {
+      const updatedSale = produce(sale, (draft) => {
+         draft.products.push({
+            product: null,
+            sourcePrice: '',
+            retailPrice: '',
+            variants: { a: '', b: '', c: '', d: '' },
+            quantity: '',
+         });
+      });
+      setSale(updatedSale);
+   };
+
+   const handleRemoveProduct = (productIndex) => {
+      const updatedSale = produce(sale, (draft) => {
+         draft.products.splice(productIndex, 1);
+      });
+      setSale(updatedSale);
+   };
+
+   const handleSubmit = (e) => {
+      e.preventDefault();
+
+      const payload = produce(sale, (draft) => {
+         draft.customer = draft.customer?._id;
+
+         const referenceProducts = _.cloneDeep(draft.products);
+
+         const updatedProducts = [];
+
+         referenceProducts.forEach((referenceProduct) => {
+            // product & price is must
+            if (
+               referenceProduct.product &&
+               referenceProduct.sourcePrice !== '' &&
+               referenceProduct.retailPrice !== ''
+            ) {
+               const processedProduct = {};
+               // send only product _id to backend
+               processedProduct.product = referenceProduct.product._id;
+               processedProduct.sourcePrice = Number(referenceProduct.sourcePrice);
+               processedProduct.retailPrice = Number(referenceProduct.retailPrice);
+
+               if (referenceProduct.quantity) {
+                  processedProduct.quantity = referenceProduct.quantity;
+               } else if (referenceProduct.variants) {
+                  const variants = _.cloneDeep(referenceProduct.variants);
+
+                  // delete empty variants
+                  Object.entries(variants).forEach(([key, value]) => {
+                     if (!value) delete variants[key];
+                  });
+
+                  if (Object.keys(variants).length > 0) processedProduct.variants = variants;
+               }
+
+               if (processedProduct.variants || processedProduct.quantity) updatedProducts.push(processedProduct);
+            }
+         });
+
+         draft.products = updatedProducts;
+      });
+
+      const { customer, paid } = payload;
+      const messages = [];
+
+      if (!customer) messages.push('Please enter a customer');
+      if (!paid) messages.push('Please enter the paid amount');
+      if (!payload.products.length) messages.push('Please enter product(s)');
+
+      if (messages.length) {
+         alert.setErrorAlert({
+            messages: 'Unable to add new sale',
+            err: { response: { data: { data: messages } } },
+         });
+         return;
+      }
+
+      mutation.mutate(payload);
    };
 
    return (
       <>
-         <PageTItle activeMenu="Sales" motherMenu="Diamond Tiles" />
+         <When condition={mutation.isLoading || inventories.isLoading || customers.isLoading}>
+            <SpinnerOverlay />
+         </When>
+         <PageTItle activeMenu="Add New Sale" motherMenu="Manage" />
          {alert.getAlert()}
-         <ModalWrapper
-            show={showPrintDialog}
-            onHide={() => {
-               setShowPrintDialog(false);
-               history.push('/sale');
-            }}
-            isLoading={false}
-            title="Print Invoice"
-            onSubmit={() => printRef.current.click()}
-            submitButtonText="Print"
-            size="xl"
-         >
-            <SaleInvoice printRef={printRef} data={getPrintData} invoiceNum={invoiceNum} />
-         </ModalWrapper>
-         <Card>
-            <When condition={postMutation.isLoading || customerQuery.isLoading || inventoryQuery.isLoading}>
-               <SpinnerOverlay />
-            </When>
-            <form onSubmit={handleSubmitData}>
+         <form onSubmit={handleSubmit}>
+            <Card>
                <Card.Header>
                   <Card.Title>Add New Sale</Card.Title>
                </Card.Header>
                <Card.Body>
-                  <Table>
-                     <thead>
-                        <tr>
-                           <th>Product</th>
-                           <th>Unit</th>
-                           <th>Qty</th>
-                           <th>Retail Price</th>
-                           <th>Customer</th>
-                           <th>Paid</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        {formdata.map((e, idx) => (
-                           <tr>
-                              {Object.entries(e).map(([key, value]) => {
-                                 if (key !== 'customerName' && key !== 'inventoryID') {
-                                    return (
-                                       <td>
-                                          <If condition={key === 'customer' || key === 'inventory' || key === 'unit'}>
-                                             <Then>
-                                                <When condition={key === 'customer'}>
-                                                   <Select
-                                                      width="tw-w-[150px]"
-                                                      placeholder=""
-                                                      onChange={(x) => {
-                                                         // console.log('onChange', x);
-                                                         handleOnChange('customer', x, idx);
-                                                      }}
-                                                      defaultValue={getDefaultOption()}
-                                                      options={getOptions()}
-                                                   />
-                                                </When>
-                                                <When condition={key === 'inventory'}>
-                                                   <Select
-                                                      width="tw-w-[150px]"
-                                                      placeholder=""
-                                                      onChange={(x) => {
-                                                         // console.log('onChange', x);
-                                                         handleOnChange('inventory', x, idx);
-                                                         const retailPrice = x?.value?.product?.retailPrice;
-                                                         if (retailPrice)
-                                                            handleOnChange('retailPrice', retailPrice, idx);
-                                                      }}
-                                                      options={
-                                                         (inventoryQuery.data?.docs?.length > 0 &&
-                                                            inventoryQuery.data.docs.map((x) => ({
-                                                               label: x.product.modelNumber,
-                                                               value: x,
-                                                            }))) || [{ label: 'No Inventories', value: null }]
-                                                      }
-                                                   />
-                                                </When>
-                                                <When condition={key === 'unit'}>
-                                                   <Select
-                                                      width="tw-w-[150px]"
-                                                      placeholder=""
-                                                      onChange={(x) => {
-                                                         // console.log(x);
-                                                         const u = x?.value?.value;
-                                                         handleOnChange('unit', x, idx);
-
-                                                         console.log('formata:%s,u:%s', formdata[idx].quantity, u);
-
-                                                         handleOnChange(
-                                                            'totalQuantity',
-                                                            formdata[idx].quantity * u,
-                                                            idx
-                                                         );
-                                                      }}
-                                                      isDisabled={!formdata[idx].inventory}
-                                                      options={
-                                                         // (unitQuery.data?.length > 0 &&
-                                                         //    unitQuery.data.map((x) => ({
-                                                         //       label: x.title,
-                                                         //       value: x,
-                                                         //    }))) || [{ label: 'No Units', value: null }]
-                                                         unitQuery.data
-                                                            ?.filter(
-                                                               (u) =>
-                                                                  u.type._id ===
-                                                                  formdata[idx].inventory?.value?.product?.type?._id
-                                                            )
-                                                            .map((u) => ({ label: u.title, value: u }))
-                                                      }
-                                                   />
-                                                </When>
-                                             </Then>
-                                             <Else>
-                                                <When
-                                                   condition={
-                                                      !['customerName', 'inventoryID', 'totalQuantity'].includes(key)
-                                                   }
-                                                >
-                                                   <input
-                                                      style={{ width: 80 }}
-                                                      className="form-control"
-                                                      onChange={(event) => {
-                                                         const q = event.target.value;
-                                                         handleOnChange(key, q, idx);
-
-                                                         console.log('q:%s,form:%o', q, formdata[idx].unit);
-
-                                                         if (key === 'quantity')
-                                                            handleOnChange(
-                                                               'totalQuantity',
-                                                               q * formdata[idx].unit.value.value,
-                                                               idx
-                                                            );
-                                                      }}
-                                                      type="text"
-                                                      name={key}
-                                                      value={e[key]}
-                                                   />
-                                                </When>
-                                             </Else>
-                                          </If>
-                                       </td>
-                                    );
-                                 }
-                                 return null;
-                              })}
-                              <td>
-                                 <ButtonGroup>
-                                    <Button
-                                       size="sm"
-                                       variant="dark"
-                                       icon={FaMinusCircle}
-                                       disabled={formdata.length === 1}
-                                       onClick={() => {
-                                          const tmp = formdata.filter((_e, i) => i !== idx);
-                                          setFormdata(tmp);
-                                       }}
-                                    />
-                                    <Button
-                                       size="sm"
-                                       variant="dark"
-                                       icon={FaPlusCircle}
-                                       onClick={() =>
-                                          setFormdata([
-                                             ...formdata,
-                                             {
-                                                customer: '',
-                                                retailPrice: '',
-                                                price: '',
-                                                quantity: '',
-                                                unit: 1,
-                                                inventory: '',
-                                             },
-                                          ])
-                                       }
-                                    />
-                                 </ButtonGroup>
-                              </td>
-                           </tr>
-                        ))}
-                     </tbody>
-                  </Table>
+                  <div className="row">
+                     <div className="form-group col-xl-2">
+                        <label className="col-form-label">Customer</label>
+                        <CreatableSelect
+                           value={sale.customer ? { label: sale.customer.name, value: sale.customer } : null}
+                           onChange={(customer) => setSale((prev) => ({ ...prev, customer: customer.value }))}
+                           options={customers.data?.docs.map((customer) => ({ label: customer.name, value: customer }))}
+                           onCreateOption={(name) =>
+                              batch(() => {
+                                 dispatch(setCustomersData({ name }));
+                                 dispatch(setCustomersVisibility(true));
+                              })
+                           }
+                        />
+                     </div>
+                     <div className="form-group col-xl-2">
+                        <label className="col-form-label">Paid</label>
+                        <input
+                           className="form-control"
+                           onChange={(e) => setSale((prev) => ({ ...prev, paid: e.target.value }))}
+                           type="text"
+                           name="paid"
+                           value={sale.paid}
+                        />
+                     </div>
+                     <div className="form-group tw-mt-[38px]">
+                        <Button variant="primary" onClick={handleAddProduct}>
+                           Add New Product
+                        </Button>
+                     </div>
+                  </div>
                </Card.Body>
+            </Card>
+
+            <div className="tw-flex tw-flex-wrap tw-gap-4">
+               {sale.products.map((saleProduct, index) => (
+                  <Card className="tw-max-w-[350px] tw-min-h-[435px]" key={`product-${index}`}>
+                     <Card.Body>
+                        <div className="form-group">
+                           <label className="col-form-label">Product</label>
+                           <CreatableSelect
+                              value={
+                                 saleProduct.product
+                                    ? {
+                                         label: saleProduct.product.modelNumber,
+                                         value: saleProduct.product,
+                                      }
+                                    : null
+                              }
+                              onChange={(p) => handleChangeProduct('product', p.value, index)}
+                              options={inventories.data?.docs.map((i) => ({
+                                 label: i.product.modelNumber,
+                                 value: i.product,
+                              }))}
+                              onCreateOption={(modelNumber) =>
+                                 batch(() => {
+                                    dispatch(setProductsData({ modelNumber }));
+                                    dispatch(setProductsVisibility(true));
+                                 })
+                              }
+                           />
+                        </div>
+                        <When condition={saleProduct.product}>
+                           <If condition={saleProduct.product?.type.title.toLowerCase() !== 'tile'}>
+                              <Then>
+                                 <div className="form-group">
+                                    <label className="col-form-label">Quantity</label>
+                                    <input
+                                       className="form-control"
+                                       onChange={(e) => handleChangeProduct('quantity', e.target.value, index)}
+                                       type="text"
+                                       value={saleProduct.quantity}
+                                    />
+                                 </div>
+                              </Then>
+                              <Else>
+                                 <div className="form-group">
+                                    <label className="col-form-label">Quantity</label>
+                                    <div className="row tw-px-4">
+                                       <div className="col-xl-3 tw-p-0">
+                                          <input
+                                             className="form-control"
+                                             onChange={(e) => handleChangeVariantQuantity('a', e.target.value, index)}
+                                             type="text"
+                                             placeholder="A"
+                                             value={saleProduct.variants.a}
+                                          />
+                                       </div>
+                                       <div className="col-xl-3 tw-p-0">
+                                          <input
+                                             className="form-control"
+                                             onChange={(e) => handleChangeVariantQuantity('b', e.target.value, index)}
+                                             type="text"
+                                             placeholder="B"
+                                             value={saleProduct.variants.b}
+                                          />
+                                       </div>
+                                       <div className="col-xl-3 tw-p-0">
+                                          <input
+                                             className="form-control"
+                                             onChange={(e) => handleChangeVariantQuantity('c', e.target.value, index)}
+                                             type="text"
+                                             placeholder="C"
+                                             value={saleProduct.variants.c}
+                                          />
+                                       </div>
+                                       <div className="col-xl-3 tw-p-0">
+                                          <input
+                                             className="form-control"
+                                             onChange={(e) => handleChangeVariantQuantity('d', e.target.value, index)}
+                                             type="text"
+                                             placeholder="D"
+                                             value={saleProduct.variants.d}
+                                          />
+                                       </div>
+                                    </div>
+                                 </div>
+                              </Else>
+                           </If>
+                        </When>
+                        <div className={cls('form-group', { 'tw-mt-[126px]': !saleProduct.product })}>
+                           <label className="col-form-label">Source Price</label>
+                           <input
+                              className="form-control"
+                              onChange={(e) => handleChangeProduct('sourcePrice', e.target.value, index)}
+                              type="number"
+                              value={saleProduct.sourcePrice}
+                           />
+                        </div>
+                        <div className="form-group">
+                           <label className="col-form-label">Retail Price</label>
+                           <input
+                              className="form-control"
+                              onChange={(e) => handleChangeProduct('retailPrice', e.target.value, index)}
+                              type="number"
+                              value={saleProduct.retailPrice}
+                           />
+                        </div>
+                        <When condition={index > 0}>
+                           <Button
+                              variant="danger"
+                              className="tw-w-full tw-flex tw-justify-center"
+                              onClick={() => handleRemoveProduct(index)}
+                           >
+                              Remove
+                           </Button>
+                        </When>
+                     </Card.Body>
+                  </Card>
+               ))}
+            </div>
+
+            <Card>
                <Card.Footer>
                   <div className="row">
                      <div className="col-xl-12 tw-justify-center">
@@ -321,8 +334,8 @@ const AddSale = () => {
                      </div>
                   </div>
                </Card.Footer>
-            </form>
-         </Card>
+            </Card>
+         </form>
       </>
    );
 };

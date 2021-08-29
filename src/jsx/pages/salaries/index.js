@@ -1,16 +1,17 @@
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
+import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, useQuery } from 'jsx/helpers';
+import getSortingIcon from 'jsx/helpers/getSortingIcon';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { Card, Table } from 'react-bootstrap';
+import { ButtonGroup, Card, Table } from 'react-bootstrap';
+import { AiFillPlusCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 
 const Salaries = () => {
-   dayjs.extend(relativeTime);
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
@@ -35,6 +36,18 @@ const Salaries = () => {
             </When>
             <Card.Header>
                <Card.Title>Salaries</Card.Title>
+               <ButtonGroup className="tw-float-right">
+                  <input
+                     type="text"
+                     className="input-rounded tw-rounded-r-none tw-pl-6 tw-shadow-inner tw-ring-1 "
+                     placeholder="Search Expenses..."
+                     // disabled={deleteMutation.isLoading}
+                     // onChange={(e) => setSearch(e.target.value)}
+                  />
+                  <Button size="sm" variant="primary" icon={AiFillPlusCircle}>
+                     Add New Salary
+                  </Button>
+               </ButtonGroup>
             </Card.Header>
             <Card.Body>
                <If condition={query.data?.totalDocs > 0}>
@@ -45,47 +58,17 @@ const Salaries = () => {
                               <th className="width80">
                                  <strong>#</strong>
                               </th>
-                              <th>
-                                 <strong className="tw-cursor-pointer" onClick={() => handleSort('employee')}>
-                                    EMPLOYEE
-                                    <span>
-                                       <When condition={sort.field !== 'employee'}>
-                                          <FaSort className="d-inline mx-1" />
-                                       </When>
-                                       <When condition={sort.field === 'employee' && sort.order === -1}>
-                                          <FaSortDown className="d-inline mx-1" />
-                                       </When>
-                                       <When condition={sort.field === 'employee' && sort.order === 1}>
-                                          <FaSortUp className="d-inline mx-1" />
-                                       </When>
-                                    </span>
-                                 </strong>
-                              </th>
-                              <th>
-                                 <strong className="tw-cursor-pointer" onClick={() => handleSort('salary')}>
-                                    SALARY
-                                    <span>
-                                       <When condition={sort.field !== 'salary'}>
-                                          <FaSort className="d-inline mx-1" />
-                                       </When>
-                                       <When condition={sort.field === 'salary' && sort.order === -1}>
-                                          <FaSortDown className="d-inline mx-1" />
-                                       </When>
-                                       <When condition={sort.field === 'salary' && sort.order === 1}>
-                                          <FaSortUp className="d-inline mx-1" />
-                                       </When>
-                                    </span>
-                                 </strong>
-                              </th>
+                              <th>{getSortingIcon({ label: 'Employee' })}</th>
+                              <th>{getSortingIcon({ label: 'Salary', key: 'amount', onSort: handleSort, sort })}</th>
                            </tr>
                         </thead>
                         <tbody>
-                           {query.data?.docs?.map((e, index) => (
+                           {query.data?.docs.map((e, index) => (
                               <tr key={`${e._id}`}>
                                  <td>
-                                    <strong>{index + 1}</strong>
+                                    <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                  </td>
-                                 <td>{e.title}</td>
+                                 <td>{e.employee.name}</td>
                                  <td>{e.amount}</td>
                               </tr>
                            ))}

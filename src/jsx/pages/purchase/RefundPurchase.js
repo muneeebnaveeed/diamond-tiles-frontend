@@ -1,128 +1,177 @@
+import produce from 'immer';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import Select from 'jsx/components/Select';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
-import { get, put, useAlert, useQuery } from 'jsx/helpers';
-import { isArray } from 'lodash';
+import { get, getV2, put, useAlert, useQuery } from 'jsx/helpers';
+import _, { isArray } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { Col, Form, Row } from 'react-bootstrap';
 import { When } from 'react-if';
 import { useMutation, useQueryClient } from 'react-query';
 import { useHistory } from 'react-router-dom';
 
-const initialValues = {
-   quantity: '',
-   total: '',
-   unit: '',
-};
-
 const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) => {
-   const [isError, setIsError] = useState(false);
-
-   const [values, setValues] = useState(initialValues);
-
    const queryClient = useQueryClient();
 
    const alert = useAlert();
 
-   const inventory = useQuery(['purchase', refundPurchase], () => get(`/purchases/id/${refundPurchase}`));
+   const [refund, setRefund] = useState([]);
 
-   const refundMutation = useMutation((quantity) => put(`/purchases/${refundPurchase}/refund/${quantity}`), {
-      onSuccess: () => {
+   const purchase = useQuery(
+      ['refund-purchase', refundPurchase],
+      () => getV2(`/purchases/id/${refundPurchase}`, { page: 1, limit: 1000 }),
+      {
+         onSuccess: (data) => {
+            const refunds = data.products.map(({ product }) => {
+               const returned = {};
+               returned.product = product._id;
+
+               if (product.type.title.toLowerCase() === 'tile') returned.variants = { a: '', b: '', c: '', d: '' };
+               else returned.quantity = '';
+
+               return returned;
+            });
+            if (!refund.length) setRefund(refunds);
+         },
+      }
+   );
+
+   const mutation = useMutation((payload) => put(`/purchases/${refundPurchase}/refund`, payload), {
+      onSuccess: async () => {
+         await queryClient.invalidateQueries('purchases');
          onClose();
-         setValues(initialValues);
-         queryClient.invalidateQueries('purchases');
+         setRefund([]);
       },
       onError: (err) => {
-         alert.setErrorAlert({ message: 'Unable to refund purchase.', err });
+         alert.setErrorAlert({ message: 'Unable to refund purchase', err });
       },
    });
 
-   const handleChangeTotal = (total) => {
-      setValues((prev) => ({ ...prev, total }));
-   };
-
-   const handleChangeQuantity = (quantity) => {
-      setValues((prev) => ({ ...prev, quantity }));
-      handleChangeTotal(quantity * inventory.data.sourcePrice * values.unit);
-   };
-
-   const handleChangeUnit = (unit) => {
-      setValues((prev) => ({ ...prev, unit: unit.value }));
-      const unitTitle = unit.title.toLowerCase();
-      const i = inventory.data;
-      let quantity = isArray(i.quantity[unitTitle]) ? i.quantity[unitTitle][0] : i.quantity[unitTitle];
-
-      if (!quantity) {
-         setIsError(true);
-         quantity = 0;
-      } else setIsError(false);
-
-      handleChangeQuantity(quantity);
-
-      console.log(quantity * i.sourcePrice * unit.value);
-      handleChangeTotal(quantity * i.sourcePrice * unit.value);
-   };
-
    const alertMarkup = alert.getAlert();
+
+   const handleChangeQuantity = (index, q) => {
+      const updatedRefund = produce(refund, (draft) => {
+         draft[index].quantity = q;
+      });
+      setRefund(updatedRefund);
+   };
+
+   const handleChangeVariantQuantity = (index, variant, q) => {
+      const updatedRefund = produce(refund, (draft) => {
+         draft[index].variants[variant] = q;
+      });
+      setRefund(updatedRefund);
+   };
+
+   const handleSubmit = (e) => {
+      e.preventDefault();
+
+      const referenceRefund = _.cloneDeep(refund);
+
+      const payload = [];
+
+      referenceRefund.forEach((r) => {
+         if (r.quantity) payload.push(r);
+         if (r.variants) {
+            const variants = _.cloneDeep(r.variants);
+            Object.entries(variants).forEach(([key, value]) => {
+               if (!value) delete variants[key];
+            });
+
+            if (Object.keys(variants).length) {
+               r.variants = variants;
+               payload.push(r);
+            }
+         }
+      });
+
+      mutation.mutate(payload);
+   };
 
    return (
       <>
          <ModalWrapper
             show={refundPurchase}
             onHide={() => {
-               onClose();
-               setValues(initialValues);
+               if (!mutation.isLoading || !purchase.isLoading) {
+                  onClose();
+                  setRefund([]);
+               }
             }}
-            isLoading={refundMutation.isLoading}
+            isLoading={mutation.isLoading || purchase.isLoading}
+            isDisabled={mutation.isLoading || purchase.isLoading}
             title="Refund Purchase"
-            onSubmit={() => {
-               refundMutation.mutate(values.quantity * values.unit);
-            }}
+            onSubmit={handleSubmit}
             submitButtonText="Refund"
             size="xl"
-            isDisabled={isError}
             {...props}
          >
-            <When condition={inventory.isLoading}>
-               <SpinnerOverlay />
-            </When>
             {alertMarkup ? (
                <Row>
                   <Col lg={12}>{alertMarkup}</Col>
                </Row>
             ) : null}
-            <Form>
-               <Form.Group>
-                  <Form.Label>Unit</Form.Label>
-                  <Select
-                     width="tw-w-full"
-                     placeholder="Select Unit"
-                     options={[
-                        { label: 'Single', value: { title: 'Single', value: 1 } },
-                        ...(inventory.data?.units.map((u) => ({ label: u.title, value: u })) ?? []),
-                     ]}
-                     onChange={(unit) => handleChangeUnit(unit.value)}
-                  />
-               </Form.Group>
-               <Form.Group>
-                  <Form.Label>Quantity</Form.Label>
-                  <Form.Control
-                     type="number"
-                     value={values.quantity}
-                     onChange={(e) => handleChangeQuantity(e.target.value)}
-                  />
-               </Form.Group>
-
-               <Form.Group>
-                  <Form.Label>Total</Form.Label>
-                  <Form.Control
-                     type="number"
-                     value={values.total}
-                     onChange={(e) => handleChangeTotal(e.target.value)}
-                  />
-               </Form.Group>
-            </Form>
-            {/* <PurchaseInvoice printRef={printRef} data={getPrintData} invoiceNum={invoiceNum} /> */}
+            <form onSubmit={handleSubmit}>
+               {purchase.data?.products.map((product, index) => {
+                  const isVarianted = product.variants;
+                  return (
+                     <div className="form-group" key={`product-${index}`}>
+                        <label className="col-form-label">Product</label>
+                        <div className="tw-flex">
+                           <input
+                              className="form-control"
+                              type="text"
+                              value={product.product.modelNumber}
+                              style={{ flex: isVarianted ? 1 : 2 }}
+                              disabled
+                           />
+                           {isVarianted ? (
+                              <div className="tw-flex" style={{ flex: 3 }}>
+                                 <input
+                                    className="form-control"
+                                    type="text"
+                                    placeholder="A"
+                                    value={refund[index]?.variants.a}
+                                    onChange={(e) => handleChangeVariantQuantity(index, 'a', e.target.value)}
+                                 />
+                                 <input
+                                    className="form-control"
+                                    type="text"
+                                    placeholder="B"
+                                    value={refund[index]?.variants.b}
+                                    onChange={(e) => handleChangeVariantQuantity(index, 'b', e.target.value)}
+                                 />
+                                 <input
+                                    className="form-control"
+                                    type="text"
+                                    placeholder="C"
+                                    value={refund[index]?.variants.c}
+                                    onChange={(e) => handleChangeVariantQuantity(index, 'c', e.target.value)}
+                                 />
+                                 <input
+                                    className="form-control"
+                                    type="text"
+                                    placeholder="D"
+                                    value={refund[index]?.variants.d}
+                                    onChange={(e) => handleChangeVariantQuantity(index, 'd', e.target.value)}
+                                 />
+                              </div>
+                           ) : (
+                              <input
+                                 className="form-control"
+                                 style={{ flex: 1 }}
+                                 type="text"
+                                 name="modelNumber"
+                                 placeholder="Quantity"
+                                 value={refund[index]?.quantity}
+                                 onChange={(e) => handleChangeQuantity(index, e.target.value)}
+                              />
+                           )}
+                        </div>
+                     </div>
+                  );
+               })}
+            </form>
          </ModalWrapper>
       </>
    );

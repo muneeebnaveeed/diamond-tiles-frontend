@@ -13,8 +13,8 @@ import { useHistory } from 'react-router-dom';
 import { setProductsData, setProductsVisibility, setSuppliersData, setSuppliersVisibility } from 'store/actions';
 import { batch, useDispatch } from 'react-redux';
 import cls from 'classnames';
-import Select from '../../components/Select';
-import PurchaseInvoice from './PurchaseInvoice';
+import _ from 'lodash';
+import produce from 'immer';
 import CreatableSelect from '../../components/CreatableSelect';
 
 const PurchaseActions = () => {
@@ -26,7 +26,7 @@ const PurchaseActions = () => {
    const [purchase, setPurchase] = useState({
       supplier: null,
       paid: '',
-      products: [{ product: null, price: '', variants: { a: '', b: '', c: '', d: '' }, quantity: '' }],
+      products: [{ product: null, sourcePrice: '', variants: { a: '', b: '', c: '', d: '' }, quantity: '' }],
    });
 
    const suppliers = useQuery('all-suppliers', () =>
@@ -38,8 +38,8 @@ const PurchaseActions = () => {
    );
 
    const mutation = useMutation((payload) => post('/purchases', payload), {
-      onSuccess: (res) => {
-         history.push('/purchases');
+      onSuccess: () => {
+         history.replace('/purchase');
       },
       onError: (err) => {
          alert.setErrorAlert({ message: 'Unable to add Purchase', err });
@@ -47,15 +47,92 @@ const PurchaseActions = () => {
    });
 
    const handleChangeProduct = (key, value, index) => {
-      const updatedPurchase = { ...purchase };
-      updatedPurchase.products[index][key] = value;
+      const updatedPurchase = produce(purchase, (draft) => {
+         draft.products[index][key] = value;
+      });
       setPurchase(updatedPurchase);
    };
 
    const handleChangeVariantQuantity = (key, value, index) => {
-      const updatedPurchase = { ...purchase };
-      updatedPurchase.products[index].variants[key] = value;
+      const updatedPurchase = produce(purchase, (draft) => {
+         draft.products[index].variants[key] = value;
+      });
       setPurchase(updatedPurchase);
+   };
+
+   const handleAddProduct = () => {
+      const updatedPurchase = produce(purchase, (draft) => {
+         draft.products.push({
+            product: null,
+            sourcePrice: '',
+            variants: { a: '', b: '', c: '', d: '' },
+            quantity: '',
+         });
+      });
+      setPurchase(updatedPurchase);
+   };
+
+   const handleRemoveProduct = (productIndex) => {
+      const updatedPurchase = produce(purchase, (draft) => {
+         draft.products.splice(productIndex, 1);
+      });
+      setPurchase(updatedPurchase);
+   };
+
+   const handleSubmit = (e) => {
+      e.preventDefault();
+
+      const payload = produce(purchase, (draft) => {
+         draft.supplier = draft.supplier?._id;
+
+         const referenceProducts = _.cloneDeep(draft.products);
+
+         const updatedProducts = [];
+
+         referenceProducts.forEach((referenceProduct, index) => {
+            // product & price is must
+            if (referenceProduct.product && referenceProduct.sourcePrice !== '') {
+               const processedProduct = {};
+               // send only product _id to backend
+               processedProduct.product = referenceProduct.product._id;
+               processedProduct.sourcePrice = Number(referenceProduct.sourcePrice);
+
+               if (referenceProduct.quantity) {
+                  processedProduct.quantity = referenceProduct.quantity;
+               } else if (referenceProduct.variants) {
+                  const variants = _.cloneDeep(referenceProduct.variants);
+
+                  // delete empty variants
+                  Object.entries(variants).forEach(([key, value]) => {
+                     if (!value) delete variants[key];
+                  });
+
+                  if (Object.keys(variants).length > 0) processedProduct.variants = variants;
+               }
+
+               if (processedProduct.variants || processedProduct.quantity) updatedProducts.push(processedProduct);
+            }
+         });
+
+         draft.products = updatedProducts;
+      });
+
+      const { supplier, paid } = payload;
+      const messages = [];
+
+      if (!supplier) messages.push('Please enter a supplier');
+      if (!paid) messages.push('Please enter the paid amount');
+      if (!payload.products.length) messages.push('Please enter product(s)');
+
+      if (messages.length) {
+         alert.setErrorAlert({
+            messages: 'Unable to add new purchase',
+            err: { response: { data: { data: messages } } },
+         });
+         return;
+      }
+
+      mutation.mutate(payload);
    };
 
    return (
@@ -65,7 +142,7 @@ const PurchaseActions = () => {
          </When>
          <PageTItle activeMenu="Add New Purchase" motherMenu="Manage" />
          {alert.getAlert()}
-         <form>
+         <form onSubmit={handleSubmit}>
             <Card>
                <Card.Header>
                   <Card.Title>Add New Purchase</Card.Title>
@@ -99,19 +176,7 @@ const PurchaseActions = () => {
                         />
                      </div>
                      <div className="form-group tw-mt-[38px]">
-                        <Button
-                           variant="primary"
-                           onClick={() => {
-                              const updatedPurchase = { ...purchase };
-                              purchase.products.push({
-                                 product: null,
-                                 price: '',
-                                 variants: { a: '', b: '', c: '', d: '' },
-                                 quantity: '',
-                              });
-                              setPurchase(updatedPurchase);
-                           }}
-                        >
+                        <Button variant="primary" onClick={handleAddProduct}>
                            Add New Product
                         </Button>
                      </div>
@@ -218,21 +283,17 @@ const PurchaseActions = () => {
                            <label className="col-form-label">Price</label>
                            <input
                               className="form-control"
-                              onChange={(e) => handleChangeProduct('price', e.target.value, index)}
+                              onChange={(e) => handleChangeProduct('sourcePrice', e.target.value, index)}
                               type="number"
                               name="modelNumber"
-                              value={purchase.products[index].price}
+                              value={purchase.products[index].sourcePrice}
                            />
                         </div>
                         <When condition={index > 0}>
                            <Button
                               variant="danger"
                               className="tw-w-full tw-flex tw-justify-center"
-                              onClick={() => {
-                                 const updatedPurchase = { ...purchase };
-                                 updatedPurchase.products.splice(index, 1);
-                                 setPurchase(updatedPurchase);
-                              }}
+                              onClick={() => handleRemoveProduct(index)}
                            >
                               Remove
                            </Button>

@@ -1,49 +1,44 @@
-import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import produce from 'immer';
 import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import { userRoles } from 'jsx/helpers/enums';
 import PageTItle from 'jsx/layouts/PageTitle';
-import _ from 'lodash';
-import React, { useState, useEffect } from 'react';
+import _, { isArray } from 'lodash';
+import React, { useEffect, useState } from 'react';
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
-import {
-   AiFillDelete,
-   AiFillEdit,
-   AiFillEye,
-   AiFillPlusCircle,
-   AiOutlineHistory,
-   AiOutlineQuestionCircle,
-} from 'react-icons/ai';
+import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
-import cls from 'classnames';
-import RefundPurchase from '../purchase/RefundPurchase';
+import ClearSale from './ClearSale';
 import RefundSale from './RefundSale';
 
+const getQuantity = (array) => {
+   if (array[0] > 0) return `${array[0]} Units`;
+   return `${array[1]} ${array[1] > 0 ? 'Singles' : ''}`;
+};
+
+dayjs.extend(relativeTime);
 const Sale = (props) => {
-   dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
-   const [search, setSearch] = useState('');
-   const debouncedSearchValue = useDebounce(search, { wait: 500 });
-   const [refundSale, setRefundSale] = useState(null);
-   // const [state, setstate] = useState(initialState)
+   const [refundPurchase, setRefundPurchase] = useState(null);
+   const [clearSale, setClearSale] = useState({ id: null, amount: null });
 
    const alert = useAlert();
    const queryClient = useQueryClient();
 
-   const query = useQuery(['sales', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
-      get('/sales', page, limit, sort.field, sort.order, debouncedSearchValue)
+   const query = useQuery(['sales', page, limit, sort.field, sort.order], () =>
+      get('/sales', page, limit, sort.field, sort.order)
    );
    const deleteMutation = useMutation((id) => del(`/sales/id/${id}`), {
       onSuccess: async () => {
@@ -58,13 +53,6 @@ const Sale = (props) => {
       },
    });
 
-   const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/sales/${obj._id}`, search: `?type=edit` });
-   };
-
-   const handleOnClickView = (obj) => {
-      history.push({ pathname: `/sales/${obj._id}`, search: `?type=view` });
-   };
    const handleOnClickAdd = () => {
       history.push('/sale/add');
    };
@@ -97,7 +85,7 @@ const Sale = (props) => {
 
    return (
       <>
-         <PageTItle activeMenu="sales" motherMenu="Diamond Tiles" />
+         <PageTItle activeMenu="Sale" motherMenu="Diamond Tiles" />
          <div className="row tw-mb-8">
             <div className="col-xl-6">
                <Button variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
@@ -105,8 +93,8 @@ const Sale = (props) => {
                </Button>
             </div>
 
-            <div className="col-xl-6">
-               {/* <ButtonGroup className="tw-float-right">
+            {/* <div className="col-xl-6">
+               <ButtonGroup className="tw-float-right">
                   <input
                      type="text"
                      className="input-rounded tw-rounded-r-none tw-pl-6"
@@ -117,8 +105,8 @@ const Sale = (props) => {
                   <Button variant="secondary" className="btn btn-secondary tw-pl-6" loading={query.isLoading}>
                      Search
                   </Button>
-               </ButtonGroup> */}
-            </div>
+               </ButtonGroup>
+            </div> */}
          </div>
          {alertMarkup ? (
             <Row>
@@ -132,7 +120,7 @@ const Sale = (props) => {
                      <SpinnerOverlay />
                   </When>
                   <Card.Header>
-                     <Card.Title>Manage Sales</Card.Title>
+                     <Card.Title>Manage Purchase</Card.Title>
                   </Card.Header>
                   <Card.Body>
                      <If condition={query.data?.totalDocs > 0}>
@@ -144,64 +132,48 @@ const Sale = (props) => {
                                        <strong>#</strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('customer')}>
-                                          Customer
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('supplier')}>
+                                          SUPPLIER
                                           <span>
-                                             <When condition={sort.field !== 'customer'}>
+                                             <When condition={sort.field !== 'supplier'}>
                                                 <FaSort className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'customer' && sort.order === -1}>
+                                             <When condition={sort.field === 'supplier' && sort.order === -1}>
                                                 <FaSortDown className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'customer' && sort.order === 1}>
+                                             <When condition={sort.field === 'supplier' && sort.order === 1}>
                                                 <FaSortUp className="d-inline mx-1" />
                                              </When>
                                           </span>
                                        </strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('inventory')}>
-                                          Inventory
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('modelNumber')}>
+                                          MODEL NUMBER
                                           <span>
-                                             <When condition={sort.field !== 'inventory'}>
+                                             <When condition={sort.field !== 'modelNumber'}>
                                                 <FaSort className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'inventory' && sort.order === -1}>
+                                             <When condition={sort.field === 'modelNumber' && sort.order === -1}>
                                                 <FaSortDown className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'inventory' && sort.order === 1}>
+                                             <When condition={sort.field === 'modelNumber' && sort.order === 1}>
                                                 <FaSortUp className="d-inline mx-1" />
                                              </When>
                                           </span>
                                        </strong>
                                     </th>
                                     <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('quantity')}>
-                                          Quantity
+                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('sourcePrice')}>
+                                          PRICE
                                           <span>
-                                             <When condition={sort.field !== 'quantity'}>
+                                             <When condition={sort.field !== 'sourcePrice'}>
                                                 <FaSort className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'quantity' && sort.order === -1}>
+                                             <When condition={sort.field === 'sourcePrice' && sort.order === -1}>
                                                 <FaSortDown className="d-inline mx-1" />
                                              </When>
-                                             <When condition={sort.field === 'quantity' && sort.order === 1}>
-                                                <FaSortUp className="d-inline mx-1" />
-                                             </When>
-                                          </span>
-                                       </strong>
-                                    </th>
-                                    <th>
-                                       <strong className="tw-cursor-pointer" onClick={() => handleSort('retailPrice')}>
-                                          Subtotal
-                                          <span>
-                                             <When condition={sort.field !== 'retailPrice'}>
-                                                <FaSort className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'retailPrice' && sort.order === -1}>
-                                                <FaSortDown className="d-inline mx-1" />
-                                             </When>
-                                             <When condition={sort.field === 'retailPrice' && sort.order === 1}>
+                                             <When condition={sort.field === 'sourcePrice' && sort.order === 1}>
                                                 <FaSortUp className="d-inline mx-1" />
                                              </When>
                                           </span>
@@ -209,7 +181,7 @@ const Sale = (props) => {
                                     </th>
                                     <th>
                                        <strong className="tw-cursor-pointer" onClick={() => handleSort('paid')}>
-                                          Paid
+                                          PAID
                                           <span>
                                              <When condition={sort.field !== 'paid'}>
                                                 <FaSort className="d-inline mx-1" />
@@ -223,91 +195,125 @@ const Sale = (props) => {
                                           </span>
                                        </strong>
                                     </th>
-                                    <th>
-                                       <strong>Remaining</strong>
-                                    </th>
-                                    <th />
                                  </tr>
                               </thead>
                               <tbody>
-                                 {query.data &&
-                                    query.data?.docs.map((e) => {
-                                       const getRemainig = () => {
-                                          if (!e?.retailPrice || !e?.paid) return null;
-                                          if (e.retailPrice === e.paid) return null;
-                                          return e.retailPrice - e.paid;
-                                       };
-                                       const getId = () => {
-                                          const id = e._id;
-                                          return id.slice(id.length - 4);
-                                       };
-                                       return (
-                                          <tr
-                                             key={`${e._id}`}
-                                             className={cls({ 'tw-bg-red-400 tw-text-gray-50': e.isRemaining })}
-                                          >
-                                             <td>
-                                                <strong>{getId()}</strong>
-                                             </td>
-                                             <td>{e?.customer?.name ?? 'N/A'}</td>
-                                             <td>{e?.inventory?.modelNumber ?? 'N/A'}</td>
-                                             <td>{e?.quantity ?? 'N/a'}</td>
-                                             <td>{e?.retailPrice ?? 'N/A'}</td>
-                                             <td>{e?.paid ?? 'N/A'}</td>
-                                             <td>{getRemainig()}</td>
+                                 {query.data?.docs.map((e, index) => {
+                                    const getId = () => {
+                                       const id = e._id;
+                                       return id.slice(id.length - 4);
+                                    };
 
-                                             <td>
-                                                <OverlayTrigger
-                                                   trigger={['hover', 'hover']}
-                                                   placement="top"
-                                                   overlay={
-                                                      <Popover className="tw-border-gray-500">
-                                                         <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                            dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                               ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                               : dayjs(e.createdAt).fromNow()
-                                                         }.`}</Popover.Content>
-                                                      </Popover>
-                                                   }
-                                                >
-                                                   <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                                </OverlayTrigger>
-                                             </td>
-                                             <When condition={props.user?.role !== userRoles.CASHIER}>
-                                                <td>
-                                                   <ButtonGroup>
+                                    const getProducts = () => {
+                                       const products = [];
+
+                                       e.products.forEach((d, i) => {
+                                          products.push(
+                                             <>
+                                                <b>{`${d.product.modelNumber}`}</b>
+                                                <br />
+                                                <span className="tw-mr-4">{`BUY: ${d.sourcePrice} PKR`}</span>
+                                                <span>{`SELL: ${d.retailPrice} PKR`}</span>
+
+                                                {d.variants ? (
+                                                   <>
+                                                      <br />
+                                                      {Object.entries(d.variants).map(([key, value]) => (
+                                                         <span className="tw-mr-4">{`${key.toUpperCase()}: ${getQuantity(
+                                                            value
+                                                         )}`}</span>
+                                                      ))}
+                                                   </>
+                                                ) : (
+                                                   <>
+                                                      <br />
+                                                      {getQuantity(d.quantity)}
+                                                   </>
+                                                )}
+                                             </>
+                                          );
+                                          if (i < e.products.length - 1) products.push(<br />);
+                                       });
+
+                                       return products;
+                                    };
+
+                                    // getProducts();
+
+                                    return (
+                                       <tr
+                                          key={`${e._id}`}
+                                          className={e.isRemaining && 'tw-bg-red-400 tw-text-gray-50'}
+                                       >
+                                          <td>
+                                             <strong className={e.isRemaining && 'tw-text-gray-50'}>{getId()}</strong>
+                                          </td>
+                                          <td>{e.customer?.name}</td>
+                                          <td>{getProducts()}</td>
+                                          <td>{`${e.totalRetailPrice} PKR`}</td>
+                                          <td>{`${e.paid} PKR`}</td>
+
+                                          <td>
+                                             <OverlayTrigger
+                                                trigger={['hover', 'hover']}
+                                                placement="top"
+                                                overlay={
+                                                   <Popover className="tw-border-gray-500">
+                                                      <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
+                                                         dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
+                                                            ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
+                                                            : dayjs(e.createdAt).fromNow()
+                                                      }.`}</Popover.Content>
+                                                   </Popover>
+                                                }
+                                             >
+                                                <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                             </OverlayTrigger>
+                                          </td>
+                                          <td>
+                                             <ButtonGroup>
+                                                <When condition={props.user?.role !== userRoles.CASHIER}>
+                                                   {/* <Button
+                                                      variant="dark"
+                                                      size="sm"
+                                                      icon={AiFillDelete}
+                                                      onClick={() => setRefundPurchase(e._id)}
+                                                      // disabled={quantity === 0}
+                                                   >
+                                                      Refund
+                                                   </Button> */}
+                                                   <When condition={e.isRemaining}>
                                                       <Button
                                                          variant="warning"
                                                          size="sm"
-                                                         icon={AiOutlineHistory}
-                                                         onClick={() => setRefundSale(e._id)}
-                                                      >
-                                                         Refund
-                                                      </Button>
-
-                                                      <Button
-                                                         variant="danger"
-                                                         size="sm"
                                                          icon={AiFillDelete}
-                                                         onClick={() => handleOnClickDelete(e._id)}
+                                                         onClick={() =>
+                                                            setClearSale({ id: e._id, amount: e.totalRetailPrice })
+                                                         }
                                                       >
-                                                         Delete
+                                                         Pay
                                                       </Button>
-                                                   </ButtonGroup>
-                                                </td>
-                                             </When>
-                                          </tr>
-                                       );
-                                    })}
+                                                   </When>
+                                                   <Button
+                                                      variant="danger"
+                                                      size="sm"
+                                                      icon={AiFillDelete}
+                                                      onClick={() => handleOnClickDelete(e._id)}
+                                                   >
+                                                      Delete
+                                                   </Button>
+                                                </When>
+                                             </ButtonGroup>
+                                          </td>
+                                       </tr>
+                                    );
+                                 })}
                               </tbody>
                            </Table>
                         </Then>
                         <Else>
-                           <When condition={!query.isLoading && !debouncedSearchValue}>
-                              <p className="tw-m-0">No sales created</p>
-                           </When>
-                           <When condition={!query.isLoading && debouncedSearchValue}>
-                              <p className="tw-m-0">No result found!</p>
+                           <When condition={!query.isLoading}>
+                              <p className="tw-m-0">No purchases created</p>
                            </When>
                         </Else>
                      </If>
@@ -324,7 +330,13 @@ const Sale = (props) => {
                isLimitDisabled={query.isLoading || deleteMutation.isLoading}
             />
          </When>
-         <RefundSale refundSale={refundSale} onClose={() => setRefundSale(null)} size="md" />
+         <RefundSale refundPurchase={refundPurchase} onClose={() => setRefundPurchase(null)} size="md" />
+         <ClearSale
+            clearSale={clearSale.id}
+            initialAmount={clearSale.amount}
+            onClose={() => setClearSale((prev) => ({ ...prev, id: null }))}
+            size="md"
+         />
       </>
    );
 };
@@ -334,5 +346,4 @@ const mapStateToProps = ({ auth }) => ({
 });
 
 const mapDispatchToProps = {};
-
 export default connect(mapStateToProps, mapDispatchToProps)(Sale);
