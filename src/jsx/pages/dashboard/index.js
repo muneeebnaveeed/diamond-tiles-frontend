@@ -11,6 +11,7 @@ import DatePicker from 'react-datepicker';
 import '../../../css/react-datepicker.css';
 import { useHistory } from 'react-router-dom';
 import ManagePurchase from '../purchase/ManagePurchase';
+import ManageSales from '../sale/MangeSales';
 
 const today = new Date();
 
@@ -102,7 +103,7 @@ const Dashboard = () => {
                </Card>
             </div>
             <div className="col-12">
-               <ManagePurchase />
+               <ManageSales startDate={startDate} endDate={endDate} />
             </div>
             <div className="col-12">
                <ManagePurchase />

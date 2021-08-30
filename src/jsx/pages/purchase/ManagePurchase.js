@@ -4,7 +4,7 @@ import produce from 'immer';
 import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
-import { del, get, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { del, get, getV2, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import { userRoles } from 'jsx/helpers/enums';
 import getQuantity from 'jsx/helpers/getQuantity';
 import PageTItle from 'jsx/layouts/PageTitle';
@@ -22,7 +22,7 @@ import getSortingIcon from 'jsx/helpers/getSortingIcon';
 import ClearPurchase from './ClearPurchase';
 import RefundPurchase from './RefundPurchase';
 
-const ManagePurchase = (props) => {
+const ManagePurchase = ({ startDate, endDate, ...props }) => {
    const [refundPurchase, setRefundPurchase] = useState(null);
    const [clearPurchase, setClearPurchase] = useState({ id: null, amount: null });
 
@@ -33,8 +33,8 @@ const ManagePurchase = (props) => {
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: -1 });
 
-   const query = useQuery(['purchases', page, limit, sort.field, sort.order], () =>
-      get('/purchases', page, limit, sort.field, sort.order)
+   const query = useQuery(['purchases', page, limit, sort.field, sort.order, startDate, endDate], () =>
+      getV2('/purchases', { page, limit, sort: { [sort.field]: sort.order }, startDate, endDate })
    );
 
    useEffect(() => {

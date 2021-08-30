@@ -5,22 +5,24 @@ import { connect } from 'react-redux';
 import { Link, useHistory } from 'react-router-dom';
 import { setLogout } from 'store/auth/actions';
 
-const pages = ['products', 'suppliers', 'customers', 'users', 'employees', 'purchase', 'sale', 'khaata', 'expenses'];
+const pages = [
+   { path: '/dashboard', label: 'Dashboard' },
+   { path: '/inventory', label: 'Inventory' },
+
+   { path: '/products', label: 'Products' },
+   { path: '/suppliers', label: 'Suppliers' },
+   { path: '/customers', label: 'Customers' },
+   { path: '/users', label: 'Users' },
+   { path: '/employees', label: 'Employees' },
+   { path: '/purchase', label: 'Purchase' },
+   { path: '/sale', label: 'Sale' },
+   { path: '/expenses', label: 'Expenses' },
+];
 
 const Header = ({ onNote, toggle, onProfile, onNotification, onBox, logout }) => {
    const history = useHistory();
-   const path = window.location.pathname.split('/');
-   const name = path[path.length - 1].split('-');
-   const filterName = name.length >= 3 ? name.filter((n, i) => i > 0) : name;
-
-   let finalName = '';
-
-   for (const page of pages) {
-      if (filterName.includes(page)) {
-         finalName = filterName.find((f) => f === page);
-         break;
-      }
-   }
+   const path = window.location.pathname;
+   const finalName = pages.find((p) => path.includes(p.path)).label;
 
    const handleLogout = () => localStorage.clear();
 

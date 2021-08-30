@@ -19,6 +19,7 @@ import { connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import swal from 'sweetalert';
 import getSortingIcon from 'jsx/helpers/getSortingIcon';
+import ReactDatePicker from 'react-datepicker';
 import ClearPurchase from './ClearPurchase';
 import RefundPurchase from './RefundPurchase';
 import ManagePurchase from './ManagePurchase';
@@ -32,6 +33,9 @@ const Purchase = () => {
       history.push('/purchase/add');
    };
 
+   const [startDate, setStartDate] = useState(new Date());
+   const [endDate, setEndDate] = useState(new Date());
+
    return (
       <>
          <PageTItle activeMenu="purchase" motherMenu="Diamond Tiles" />
@@ -41,8 +45,13 @@ const Purchase = () => {
                   Add New Purchase
                </Button>
             </div>
+            <div className="col-xl-6 tw-flex tw-justify-end tw-items-center">
+               <ReactDatePicker selected={startDate} onChange={(d) => setStartDate(d)} dateFormat="dd MMMM yyyy" />
+               <span className="mx-4">to</span>
+               <ReactDatePicker selected={endDate} onChange={(d) => setEndDate(d)} dateFormat="dd MMMM yyyy" />
+            </div>
          </div>
-         <ManagePurchase />
+         <ManagePurchase startDate={startDate} endDate={endDate} />
       </>
    );
 };

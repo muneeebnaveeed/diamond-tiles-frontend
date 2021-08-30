@@ -13,7 +13,9 @@ import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestio
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
+import { setEmployeesVisibility } from 'store/actions';
 import swal from 'sweetalert';
 
 const Employees = () => {
@@ -27,6 +29,8 @@ const Employees = () => {
 
    const alert = useAlert();
    const queryClient = useQueryClient();
+
+   const dispatch = useDispatch();
 
    const query = useQuery(['employees', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
       get('/employees', page, limit, sort.field, sort.order, debouncedSearchValue)
@@ -52,7 +56,7 @@ const Employees = () => {
       history.push({ pathname: `/employees/${obj._id}`, search: `?type=view` });
    };
    const handleOnClickAdd = () => {
-      history.push('/employees/add');
+      dispatch(setEmployeesVisibility(true));
    };
 
    const handleOnClickDelete = (id) => {
