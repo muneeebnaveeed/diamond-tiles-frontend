@@ -5,9 +5,8 @@ import Nav from './nav';
 import Footer from './Footer';
 import { get } from '../helpers';
 
-const token = localStorage.getItem('auth_token');
-
 const Layout = ({ children: Children, isPublic, setUser, logout }) => {
+   const token = localStorage.getItem('auth_token');
    const getUserProfile = async () => {
       try {
          const res = await get(`/auth/decode/${token}`);

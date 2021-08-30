@@ -17,8 +17,10 @@ import AddNewEmployee from './pages/employees/AddNewEmployee';
 import EmployeeActions from './pages/employees/EmployeeActions';
 import Error404 from './pages/Error404';
 import Expenses from './pages/expenses';
+import AddNewExpense from './pages/expenses/AddNewExpense';
 import ExpensesActions from './pages/expenses/ExpenseActions';
 import Inventory from './pages/inventory';
+import AddNewInventory from './pages/inventory/AddNewInventory';
 import Khaata from './pages/khaata';
 import Login from './pages/Login';
 import Products from './pages/products';
@@ -77,6 +79,8 @@ const Markup = (props) => (
       <AddNewCustomer />
       <AddNewSalary />
       <AddNewEmployee />
+      <AddNewInventory />
+      <AddNewExpense />
 
       <Router>
          <Switch>

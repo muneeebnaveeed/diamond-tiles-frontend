@@ -6,3 +6,5 @@ export * from './suppliers/actions';
 export * from './customers/actions';
 export * from './salaries/actions';
 export * from './employees/actions';
+export * from './inventories/actions';
+export * from './expenses/actions';

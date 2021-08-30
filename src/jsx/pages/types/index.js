@@ -128,41 +128,18 @@ const Types = (props) => {
                                     <strong>{index + 1}</strong>
                                  </td>
                                  <td>{e.title}</td>
-                                 <td>
-                                    <OverlayTrigger
-                                       trigger={['hover', 'hover']}
-                                       placement="top"
-                                       overlay={
-                                          <Popover className="tw-border-gray-500">
-                                             <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                   ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                   : dayjs(e.createdAt).fromNow()
-                                             }.`}</Popover.Content>
-                                          </Popover>
-                                       }
-                                    >
-                                       <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                    </OverlayTrigger>
-                                 </td>
-                                 <td>
-                                    <ButtonGroup>
+                                 <When condition={props.user?.role !== userRoles.CASHIER}>
+                                    <td>
                                        <Button
-                                          variant="dark"
+                                          variant="danger"
                                           size="sm"
-                                          icon={AiFillEye}
-                                          onClick={() => handleOnClickView(e._id)}
-                                       />
-                                       <When condition={props.user?.role !== userRoles.CASHIER}>
-                                          <Button
-                                             variant="danger"
-                                             size="sm"
-                                             icon={AiFillDelete}
-                                             onClick={() => handleOnClickDelete(e._id)}
-                                          />
-                                       </When>
-                                    </ButtonGroup>
-                                 </td>
+                                          icon={AiFillDelete}
+                                          onClick={() => handleOnClickDelete(e._id)}
+                                       >
+                                          Delete
+                                       </Button>
+                                    </td>
+                                 </When>
                               </tr>
                            ))}
                         </tbody>

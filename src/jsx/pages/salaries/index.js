@@ -6,8 +6,8 @@ import { del, get, useAlert, useQuery } from 'jsx/helpers';
 import getSortingIcon from 'jsx/helpers/getSortingIcon';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { ButtonGroup, Card, Table } from 'react-bootstrap';
-import { AiFillDelete, AiFillPlusCircle } from 'react-icons/ai';
+import { ButtonGroup, Card, OverlayTrigger, Table, Popover } from 'react-bootstrap';
+import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useMutation, useQueryClient } from 'react-query';
@@ -79,7 +79,7 @@ const Salaries = () => {
                   <input
                      type="text"
                      className="input-rounded tw-rounded-r-none tw-pl-6 tw-shadow-inner tw-ring-1 "
-                     placeholder="Search Expenses..."
+                     placeholder="Search Salaries by Employee..."
                      // disabled={deleteMutation.isLoading}
                      // onChange={(e) => setSearch(e.target.value)}
                   />
@@ -114,17 +114,32 @@ const Salaries = () => {
                                     <strong>{query.data.pagingCounter * (index + 1)}</strong>
                                  </td>
                                  <td>{e.employee.name}</td>
-                                 <td>{e.amount}</td>
+                                 <td>{e.amount} PKR</td>
                                  <td>{dayjs(e.createdAt).format('dddd[,] DD MMMM YYYY')}</td>
                                  <td>
-                                    <Button
-                                       variant="danger"
-                                       size="sm"
-                                       icon={AiFillDelete}
-                                       onClick={() => handleOnClickDelete(e._id)}
-                                    >
-                                       Delete
-                                    </Button>
+                                    <div className="tw-flex tw-items-center tw-gap-4">
+                                       <OverlayTrigger
+                                          trigger={['hover', 'hover']}
+                                          placement="top"
+                                          overlay={
+                                             <Popover className="tw-border-gray-500">
+                                                <Popover.Content>
+                                                   {dayjs(e.createdAt).format('dddd[,] DD MMMM YYYY')}
+                                                </Popover.Content>
+                                             </Popover>
+                                          }
+                                       >
+                                          <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                       </OverlayTrigger>
+                                       <Button
+                                          variant="danger"
+                                          size="sm"
+                                          icon={AiFillDelete}
+                                          onClick={() => handleOnClickDelete(e._id)}
+                                       >
+                                          Delete
+                                       </Button>
+                                    </div>
                                  </td>
                               </tr>
                            ))}

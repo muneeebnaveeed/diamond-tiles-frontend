@@ -119,13 +119,13 @@ const Units = (props) => {
                                  <strong>#</strong>
                               </th>
                               <th>
-                                 <strong className="tw-cursor-pointer">TITLE</strong>
+                                 <strong className="tw-cursor-pointer">Title</strong>
                               </th>
                               <th>
-                                 <strong className="tw-cursor-pointer">VALUE</strong>
+                                 <strong className="tw-cursor-pointer">Value</strong>
                               </th>
                               <th>
-                                 <strong className="tw-cursor-pointer">TYPE</strong>
+                                 <strong className="tw-cursor-pointer">Type</strong>
                               </th>
                            </tr>
                         </thead>
@@ -137,24 +137,8 @@ const Units = (props) => {
                                  </td>
                                  <td>{e.title}</td>
                                  <td>{e.value}</td>
-                                 <td>{(e.type && e.type?.title) ?? 'N/A'}</td>
-                                 <td>
-                                    <OverlayTrigger
-                                       trigger={['hover', 'hover']}
-                                       placement="top"
-                                       overlay={
-                                          <Popover className="tw-border-gray-500">
-                                             <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                   ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                   : dayjs(e.createdAt).fromNow()
-                                             }.`}</Popover.Content>
-                                          </Popover>
-                                       }
-                                    >
-                                       <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                    </OverlayTrigger>
-                                 </td>
+                                 <td>{e.type.title}</td>
+
                                  <When condition={props.user?.role !== userRoles.CASHIER}>
                                     <td>
                                        <Button
@@ -162,7 +146,9 @@ const Units = (props) => {
                                           size="sm"
                                           icon={AiFillDelete}
                                           onClick={() => handleOnClickDelete(e._id)}
-                                       />
+                                       >
+                                          Delete
+                                       </Button>
                                     </td>
                                  </When>
                               </tr>

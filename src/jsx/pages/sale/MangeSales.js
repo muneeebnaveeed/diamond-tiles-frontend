@@ -40,6 +40,8 @@ const MangeSales = ({ startDate, endDate, ...props }) => {
 
    const queryClient = useQueryClient();
 
+   const alert = useAlert();
+
    const query = useQuery(['sales', page, limit, sort.field, sort.order, startDate, endDate], () =>
       getV2('/sales', { page, limit, sort: { [sort.field]: sort.order }, startDate, endDate })
    );
@@ -176,56 +178,45 @@ const MangeSales = ({ startDate, endDate, ...props }) => {
                                     <td>{`${e.paid} PKR`}</td>
 
                                     <td>
-                                       <OverlayTrigger
-                                          trigger={['hover', 'hover']}
-                                          placement="top"
-                                          overlay={
-                                             <Popover className="tw-border-gray-500">
-                                                <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                   dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                      ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                      : dayjs(e.createdAt).fromNow()
-                                                }.`}</Popover.Content>
-                                             </Popover>
-                                          }
-                                       >
-                                          <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                       </OverlayTrigger>
-                                    </td>
-                                    <td>
-                                       <ButtonGroup>
-                                          <When condition={props.user?.role !== userRoles.CASHIER}>
-                                             {/* <Button
-                                                      variant="dark"
+                                       <div className="tw-flex tw-items-center tw-gap-4">
+                                          <OverlayTrigger
+                                             trigger={['hover', 'hover']}
+                                             placement="top"
+                                             overlay={
+                                                <Popover className="tw-border-gray-500">
+                                                   <Popover.Content>
+                                                      {dayjs(e.createdAt).format('dddd[,] DD MMMM YYYY')}
+                                                   </Popover.Content>
+                                                </Popover>
+                                             }
+                                          >
+                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                          </OverlayTrigger>
+                                          <ButtonGroup>
+                                             <When condition={props.user?.role !== userRoles.CASHIER}>
+                                                <When condition={e.isRemaining}>
+                                                   <Button
+                                                      variant="warning"
                                                       size="sm"
                                                       icon={AiFillDelete}
-                                                      onClick={() => setRefundPurchase(e._id)}
-                                                      // disabled={quantity === 0}
+                                                      onClick={() =>
+                                                         setClearSale({ id: e._id, amount: e.totalRetailPrice })
+                                                      }
                                                    >
-                                                      Refund
-                                                   </Button> */}
-                                             <When condition={e.isRemaining}>
+                                                      Pay
+                                                   </Button>
+                                                </When>
                                                 <Button
-                                                   variant="warning"
+                                                   variant="danger"
                                                    size="sm"
                                                    icon={AiFillDelete}
-                                                   onClick={() =>
-                                                      setClearSale({ id: e._id, amount: e.totalRetailPrice })
-                                                   }
+                                                   onClick={() => handleOnClickDelete(e._id)}
                                                 >
-                                                   Pay
+                                                   Delete
                                                 </Button>
                                              </When>
-                                             <Button
-                                                variant="danger"
-                                                size="sm"
-                                                icon={AiFillDelete}
-                                                onClick={() => handleOnClickDelete(e._id)}
-                                             >
-                                                Delete
-                                             </Button>
-                                          </When>
-                                       </ButtonGroup>
+                                          </ButtonGroup>
+                                       </div>
                                     </td>
                                  </tr>
                               );

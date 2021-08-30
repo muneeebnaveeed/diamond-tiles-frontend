@@ -2,6 +2,7 @@
 import { useDebounce } from 'ahooks';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import produce from 'immer';
 import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
@@ -13,11 +14,13 @@ import React, { useEffect, useState, Fragment } from 'react';
 
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import ReactDatePicker from 'react-datepicker';
-import { AiFillDelete, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useMutation, useQueryClient } from 'react-query';
+import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
+import { setInventoriesVisibility } from 'store/actions';
 import swal from 'sweetalert';
 
 const Khaata = () => {
@@ -28,23 +31,17 @@ const Khaata = () => {
    const [search, setSearch] = useState('');
    const debouncedSearchValue = useDebounce(search, { wait: 500 });
 
-   const [startDate, setStartDate] = useState(new Date());
-   const [endDate, setEndDate] = useState(new Date());
-
    const alert = useAlert();
    const queryClient = useQueryClient();
+   const dispatch = useDispatch();
 
-   const query = useQuery(
-      ['inventories', page, limit, sort.field, sort.order, debouncedSearchValue, startDate, endDate],
-      () =>
-         getV2('/inventories', {
-            page,
-            limit,
-            search: debouncedSearchValue,
-            sort: { [sort.field]: sort.order },
-            startDate,
-            endDate,
-         })
+   const query = useQuery(['inventories', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
+      getV2('/inventories', {
+         page,
+         limit,
+         search: debouncedSearchValue,
+         sort: { [sort.field]: sort.order },
+      })
    );
    const alertMarkup = alert.getAlert();
 
@@ -85,6 +82,10 @@ const Khaata = () => {
       });
    };
 
+   const handleOnClickAdd = () => {
+      dispatch(setInventoriesVisibility(true));
+   };
+
    return (
       <>
          <PageTItle activeMenu="Inventory" motherMenu="Diamond Tiles" />
@@ -93,13 +94,7 @@ const Khaata = () => {
                <Col lg={12}>{alertMarkup}</Col>
             </Row>
          ) : null}
-         <div className="row tw-mb-[30px]">
-            <div className="col-xl-12 tw-flex tw-justify-end tw-items-center">
-               <ReactDatePicker selected={startDate} onChange={(d) => setStartDate(d)} dateFormat="dd MMMM yyyy" />
-               <span className="mx-4">to</span>
-               <ReactDatePicker selected={endDate} onChange={(d) => setEndDate(d)} dateFormat="dd MMMM yyyy" />
-            </div>
-         </div>
+
          <div className="row">
             <Col lg={12}>
                <Card>
@@ -111,11 +106,14 @@ const Khaata = () => {
                      <ButtonGroup className="tw-float-right">
                         <input
                            type="text"
-                           className="input-rounded tw-pl-6 tw-shadow-inner tw-ring-1 tw-px-6 tw-py-4"
+                           className="input-rounded tw-rounded-r-none tw-pl-6 tw-shadow-inner tw-ring-1 "
                            placeholder="Search Inventory by Product"
                            onChange={(e) => setSearch(e.target.value)}
                            value={search}
                         />
+                        <Button size="sm" variant="primary" icon={AiFillPlusCircle} onClick={handleOnClickAdd}>
+                           Add Inventory
+                        </Button>
                      </ButtonGroup>
                   </Card.Header>
                   <Card.Body>

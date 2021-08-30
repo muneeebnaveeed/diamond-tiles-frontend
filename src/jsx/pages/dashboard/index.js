@@ -10,6 +10,7 @@ import DatePicker from 'react-datepicker';
 
 import '../../../css/react-datepicker.css';
 import { useHistory } from 'react-router-dom';
+import { getV2, useQuery } from 'jsx/helpers';
 import ManagePurchase from '../purchase/ManagePurchase';
 import ManageSales from '../sale/MangeSales';
 
@@ -21,13 +22,19 @@ const Dashboard = () => {
    const history = useHistory();
 
    const user = useSelector((s) => s.auth.user);
+
+   const purchase = useQuery('dashboard-purchases', () => getV2('/dashboard/purchases'));
+   const sale = useQuery('dashboard-sales', () => getV2('/dashboard/sales'));
+   const revenue = useQuery('dashboard-revenue', () => getV2('/dashboard/revenue'));
+   const expense = useQuery('dashboard-expenses', () => getV2('/dashboard/expenses'));
+   const profit = useQuery('dashboard-profit', () => getV2('/dashboard/profit'));
    return (
       <>
          <div className="row tw-mb-[30px]">
             <div className="col-xl-12 tw-flex tw-justify-end tw-items-center">
-               <DatePicker selected={startDate} onChange={(d) => setStartDate(d)} />
+               <DatePicker selected={startDate} onChange={(d) => setStartDate(d)} dateFormat="dd MMMM yyyy" />
                <span className="mx-4">to</span>
-               <DatePicker selected={endDate} onChange={(d) => setEndDate(d)} />
+               <DatePicker selected={endDate} onChange={(d) => setEndDate(d)} dateFormat="dd MMMM yyyy" />
             </div>
          </div>
          <div className="row">
@@ -45,7 +52,13 @@ const Dashboard = () => {
                <Card className="">
                   <Card.Body>
                      <h3 className="tw-font-bold">Purchase</h3>
-                     <h4>8 - 6500 PKR</h4>
+                     <h4>
+                        {purchase.data
+                           ? `${purchase.data.count} - ${new Intl.NumberFormat('en-IN', {
+                                maximumSignificantDigits: 3,
+                             }).format(purchase.data.sum)} PKR`
+                           : '...'}
+                     </h4>
                      <h6 className="tw-text-xs">Total purchases made</h6>
                      <Button
                         variant="secondary"
@@ -62,7 +75,13 @@ const Dashboard = () => {
                <Card className="">
                   <Card.Body>
                      <h3 className="tw-font-bold">Sale</h3>
-                     <h4>12 - 12000 PKR</h4>
+                     <h4>
+                        {sale.data
+                           ? `${sale.data.count} - ${new Intl.NumberFormat('en-IN', {
+                                maximumSignificantDigits: 3,
+                             }).format(sale.data.sum)} PKR`
+                           : '...'}
+                     </h4>
                      <h6 className="tw-text-xs">Total sales made</h6>
                      <Button
                         variant="primary"
@@ -79,7 +98,13 @@ const Dashboard = () => {
                <Card className="tw-h-[205px]">
                   <Card.Body>
                      <h3 className="tw-font-bold">Revenue</h3>
-                     <h4>2000 PKR</h4>
+                     <h4>
+                        {revenue.data !== undefined && revenue.data !== null
+                           ? `${new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(
+                                revenue.data
+                             )} PKR`
+                           : '...'}
+                     </h4>
                      <h6 className="tw-text-xs">Profit made from the sales</h6>
                   </Card.Body>
                </Card>
@@ -88,7 +113,14 @@ const Dashboard = () => {
                <Card className="tw-h-[205px]">
                   <Card.Body>
                      <h3 className="tw-font-bold">Expenses</h3>
-                     <h4>1000 PKR</h4>
+                     <h4>
+                        {expense.data !== undefined && expense.data !== null
+                           ? `${new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(
+                                expense.data
+                             )} PKR`
+                           : '...'}
+                     </h4>
+
                      <h6 className="tw-text-xs">Salaries and expenses</h6>
                   </Card.Body>
                </Card>
@@ -97,7 +129,13 @@ const Dashboard = () => {
                <Card className="tw-h-[205px]">
                   <Card.Body>
                      <h3 className="tw-font-bold">Profit</h3>
-                     <h4>2000 PKR</h4>
+                     <h4>
+                        {profit.data !== undefined && profit.data !== null
+                           ? `${new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(
+                                profit.data.profit
+                             )} PKR`
+                           : '...'}
+                     </h4>
                      <h6 className="tw-text-xs">Take home money</h6>
                   </Card.Body>
                </Card>

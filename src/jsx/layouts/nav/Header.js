@@ -1,9 +1,9 @@
 import React from 'react';
 /// Image
 import Avatar from 'react-avatar';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { Link, useHistory } from 'react-router-dom';
-import { setLogout } from 'store/auth/actions';
+import { setLogin, setLogout } from 'store/auth/actions';
 
 const pages = [
    { path: '/dashboard', label: 'Dashboard' },
@@ -19,12 +19,17 @@ const pages = [
    { path: '/expenses', label: 'Expenses' },
 ];
 
-const Header = ({ onNote, toggle, onProfile, onNotification, onBox, logout }) => {
+const Header = ({ onNote, toggle, onProfile, setUser, onNotification, onBox, logout }) => {
    const history = useHistory();
    const path = window.location.pathname;
-   const finalName = pages.find((p) => path.includes(p.path)).label;
+   const finalName = pages.find((p) => path.includes(p.path))?.label;
+   const dispatch = useDispatch();
 
-   const handleLogout = () => localStorage.clear();
+   const handleLogout = () => {
+      localStorage.clear();
+      logout();
+      setUser({});
+   };
 
    React.useEffect(() => {
       const token = localStorage.getItem('auth_token');
@@ -88,9 +93,10 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onBox, logout }) =>
    );
 };
 
-const mapStateToProps = ({ auth }) => ({});
+const mapStateToProps = (state) => ({});
 
 const mapDispatchToProps = (dispatch) => ({
+   setUser: (payload) => dispatch(setLogin(payload)),
    logout: () => dispatch(setLogout()),
 });
 

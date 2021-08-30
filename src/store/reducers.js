@@ -7,6 +7,8 @@ import suppliers from './suppliers/reducer';
 import customers from './customers/reducer';
 import salaries from './salaries/reducer';
 import employees from './employees/reducer';
+import inventories from './inventories/reducer';
+import expenses from './expenses/reducer';
 
 const rootReducer = combineReducers({
    auth,
@@ -17,6 +19,8 @@ const rootReducer = combineReducers({
    customers,
    salaries,
    employees,
+   inventories,
+   expenses,
 });
 
 export default rootReducer;

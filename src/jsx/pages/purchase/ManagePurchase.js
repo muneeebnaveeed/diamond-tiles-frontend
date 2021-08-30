@@ -170,30 +170,48 @@ const ManagePurchase = ({ startDate, endDate, ...props }) => {
                                           <td>{`${e.totalSourcePrice} PKR`}</td>
                                           <td>{`${e.paid} PKR`}</td>
                                           <td>
-                                             <ButtonGroup>
-                                                <When condition={props.user?.role !== userRoles.CASHIER}>
-                                                   <When condition={e.isRemaining}>
+                                             <div className="tw-flex tw-items-center tw-gap-4">
+                                                <OverlayTrigger
+                                                   trigger={['hover', 'hover']}
+                                                   placement="top"
+                                                   overlay={
+                                                      <Popover className="tw-border-gray-500">
+                                                         <Popover.Content>
+                                                            {dayjs(e.createdAt).format('dddd[,] DD MMMM YYYY')}
+                                                         </Popover.Content>
+                                                      </Popover>
+                                                   }
+                                                >
+                                                   <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                                </OverlayTrigger>
+                                                <ButtonGroup>
+                                                   <When condition={props.user?.role !== userRoles.CASHIER}>
+                                                      <When condition={e.isRemaining}>
+                                                         <Button
+                                                            variant="warning"
+                                                            size="sm"
+                                                            icon={AiFillDelete}
+                                                            onClick={() =>
+                                                               setClearPurchase({
+                                                                  id: e._id,
+                                                                  amount: e.totalSourcePrice,
+                                                               })
+                                                            }
+                                                         >
+                                                            Pay
+                                                         </Button>
+                                                      </When>
                                                       <Button
-                                                         variant="warning"
+                                                         variant="danger"
                                                          size="sm"
                                                          icon={AiFillDelete}
-                                                         onClick={() =>
-                                                            setClearPurchase({ id: e._id, amount: e.totalSourcePrice })
-                                                         }
+                                                         onClick={() => handleOnClickDelete(e._id)}
                                                       >
-                                                         Pay
+                                                         Delete
                                                       </Button>
                                                    </When>
-                                                   <Button
-                                                      variant="danger"
-                                                      size="sm"
-                                                      icon={AiFillDelete}
-                                                      onClick={() => handleOnClickDelete(e._id)}
-                                                   >
-                                                      Delete
-                                                   </Button>
-                                                </When>
-                                             </ButtonGroup>
+                                                </ButtonGroup>
+                                             </div>
                                           </td>
                                        </tr>
                                     );

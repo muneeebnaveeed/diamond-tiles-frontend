@@ -80,11 +80,11 @@ const Register = () => {
                                        />
                                     </div>
                                     <div className="form-group">
-                                       <label className="mb-1" htmlFor="registration-password">
-                                          <strong>Password</strong>
+                                       <label className="mb-1" htmlFor="registration-confirm-password">
+                                          <strong>Confirm Password</strong>
                                        </label>
                                        <input
-                                          id="registration-password"
+                                          id="registration-confirm-password"
                                           type="password"
                                           className="form-control"
                                           name="passwordConfirm"

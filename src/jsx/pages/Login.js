@@ -94,11 +94,11 @@ const Login = (props) => {
                                  <h4 className="text-center mb-4">Sign in your account</h4>
                                  <form action="" onSubmit={handleLogin}>
                                     <div className="form-group">
-                                       <label className="mb-1" htmlFor="login-email">
-                                          <strong>Email</strong>
+                                       <label className="mb-1" htmlFor="login-name">
+                                          <strong>Name</strong>
                                        </label>
                                        <input
-                                          id="login-email"
+                                          id="login-name"
                                           type="text"
                                           className="form-control"
                                           name="name"
