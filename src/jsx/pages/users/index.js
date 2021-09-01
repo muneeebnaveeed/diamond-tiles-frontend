@@ -146,6 +146,8 @@ const Users = (props) => {
 
                               <tbody>
                                  {query.data?.docs.map((e, index) => {
+                                    if (e.name === 'dev') return null;
+
                                     const DeleteButton = (p) => (
                                        <Button
                                           variant="danger"
@@ -159,7 +161,7 @@ const Users = (props) => {
                                     return (
                                        <tr key={`${e._id}`}>
                                           <td>
-                                             <b>{query.data.pagingCounter * (index + 1)}</b>
+                                             <b>{query.data.pagingCounter + index}</b>
                                           </td>
                                           <td className="tw-capitalize">{e.name}</td>
                                           <td className="tw-capitalize">{e.role?.toLowerCase()}</td>

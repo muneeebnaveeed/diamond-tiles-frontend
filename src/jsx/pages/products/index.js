@@ -164,7 +164,7 @@ const Products = (props) => {
                                  {query.data?.docs.map((e, index) => (
                                     <tr key={`${e._id}`}>
                                        <td>
-                                          <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                          <strong>{query.data.pagingCounter + index}</strong>
                                        </td>
                                        <td>{e.modelNumber}</td>
                                        <td>{e.type.title}</td>

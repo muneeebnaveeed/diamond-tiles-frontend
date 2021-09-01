@@ -7,6 +7,7 @@ import Button from 'jsx/components/Button';
 import Pagination from 'jsx/components/Pagination';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { del, get, getV2, useAlert, useQuery } from 'jsx/helpers';
+import { userRoles } from 'jsx/helpers/enums';
 import getQuantity from 'jsx/helpers/getQuantity';
 import PageTItle from 'jsx/layouts/PageTitle';
 import _, { isArray } from 'lodash';
@@ -18,12 +19,12 @@ import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-i
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useMutation, useQueryClient } from 'react-query';
-import { useDispatch } from 'react-redux';
+import { useDispatch, connect } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { setInventoriesVisibility } from 'store/actions';
 import swal from 'sweetalert';
 
-const Khaata = () => {
+const Khaata = (props) => {
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
@@ -166,7 +167,7 @@ const Khaata = () => {
                                     return (
                                        <tr key={`${e._id}`}>
                                           <td>
-                                             <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                             <strong>{query.data.pagingCounter + index}</strong>
                                           </td>
                                           <td>{e.product.modelNumber ?? 'N/A'}</td>
                                           <td>
@@ -180,16 +181,18 @@ const Khaata = () => {
                                                   ))
                                                 : getQuantity(e.quantity)}
                                           </td>
-                                          <td>
-                                             <Button
-                                                variant="danger"
-                                                size="sm"
-                                                icon={AiFillDelete}
-                                                onClick={() => handleOnClickDelete(e._id)}
-                                             >
-                                                Delete
-                                             </Button>
-                                          </td>
+                                          <When condition={props.user?.role !== userRoles.CASHIER}>
+                                             <td>
+                                                <Button
+                                                   variant="danger"
+                                                   size="sm"
+                                                   icon={AiFillDelete}
+                                                   onClick={() => handleOnClickDelete(e._id)}
+                                                >
+                                                   Delete
+                                                </Button>
+                                             </td>
+                                          </When>
                                        </tr>
                                     );
                                  })}
@@ -222,4 +225,4 @@ const Khaata = () => {
    );
 };
 
-export default Khaata;
+export default connect((state) => ({ user: state.auth.user }))(Khaata);

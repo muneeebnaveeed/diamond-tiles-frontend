@@ -174,8 +174,12 @@ const MangeSales = ({ startDate, endDate, ...props }) => {
                                     </td>
                                     <td>{e.customer?.name}</td>
                                     <td>{getProducts()}</td>
-                                    <td>{`${e.totalRetailPrice} PKR`}</td>
-                                    <td>{`${e.paid} PKR`}</td>
+                                    <td>{`${new Intl.NumberFormat('en-IN', {
+                                       maximumSignificantDigits: 3,
+                                    }).format(e.totalRetailPrice)} PKR`}</td>
+                                    <td>{`${new Intl.NumberFormat('en-IN', {
+                                       maximumSignificantDigits: 3,
+                                    }).format(e.paid)} PKR`}</td>
 
                                     <td>
                                        <div className="tw-flex tw-items-center tw-gap-4">

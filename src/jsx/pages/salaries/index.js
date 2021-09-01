@@ -111,10 +111,15 @@ const Salaries = () => {
                            {query.data?.docs.map((e, index) => (
                               <tr key={`${e._id}`}>
                                  <td>
-                                    <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                    <strong>{query.data.pagingCounter + index}</strong>
                                  </td>
                                  <td>{e.employee.name}</td>
-                                 <td>{e.amount} PKR</td>
+                                 <td>
+                                    {new Intl.NumberFormat('en-IN', {
+                                       maximumSignificantDigits: 3,
+                                    }).format(e.amount)}{' '}
+                                    PKR
+                                 </td>
                                  <td>{dayjs(e.createdAt).format('dddd[,] DD MMMM YYYY')}</td>
                                  <td>
                                     <div className="tw-flex tw-items-center tw-gap-4">

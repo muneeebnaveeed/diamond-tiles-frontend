@@ -167,68 +167,46 @@ const Customers = (props) => {
                               </thead>
 
                               <tbody>
-                                 {query.data?.docs.map((e) => {
-                                    const getId = () => {
-                                       const id = e._id;
-                                       return id.slice(id.length - 3);
-                                    };
-                                    return (
-                                       <tr key={`${e._id}`}>
-                                          <td>
-                                             <strong>{getId()}</strong>
-                                          </td>
-                                          <td>{e.name}</td>
-                                          <td>{e.phone}</td>
-                                          <td>
-                                             <OverlayTrigger
-                                                trigger="hover"
-                                                placement="top"
-                                                overlay={
-                                                   <Popover className="tw-border-gray-500">
-                                                      <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                         dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                            ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                            : dayjs(e.createdAt).fromNow()
-                                                      }.`}</Popover.Content>
-                                                   </Popover>
-                                                }
-                                             >
-                                                <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                             </OverlayTrigger>
-                                          </td>
+                                 {query.data?.docs.map((e, index) => (
+                                    <tr key={`${e._id}`}>
+                                       <td>
+                                          <strong>{query.data.pagingCounter + index}</strong>
+                                       </td>
+                                       <td>{e.name}</td>
+                                       <td>{e.phone}</td>
+                                       <td>
+                                          <OverlayTrigger
+                                             trigger="hover"
+                                             placement="top"
+                                             overlay={
+                                                <Popover className="tw-border-gray-500">
+                                                   <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
+                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
+                                                         ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
+                                                         : dayjs(e.createdAt).fromNow()
+                                                   }.`}</Popover.Content>
+                                                </Popover>
+                                             }
+                                          >
+                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                          </OverlayTrigger>
+                                       </td>
+                                       <When condition={props.user?.role !== userRoles.CASHIER}>
                                           <td>
                                              <ButtonGroup>
                                                 <Button
-                                                   variant="dark"
+                                                   variant="danger"
                                                    size="sm"
-                                                   icon={AiFillEye}
-                                                   onClick={() => handleOnClickView(e)}
+                                                   icon={AiFillDelete}
+                                                   onClick={() => handleOnClickDelete(e._id)}
                                                 >
-                                                   View
+                                                   Delete
                                                 </Button>
-                                                <When condition={props.user?.role !== userRoles.CASHIER}>
-                                                   <Button
-                                                      variant="warning"
-                                                      size="sm"
-                                                      icon={AiFillEdit}
-                                                      onClick={() => handleOnClickEdit(e)}
-                                                   >
-                                                      Edit
-                                                   </Button>
-                                                   <Button
-                                                      variant="danger"
-                                                      size="sm"
-                                                      icon={AiFillDelete}
-                                                      onClick={() => handleOnClickDelete(e._id)}
-                                                   >
-                                                      Delete
-                                                   </Button>
-                                                </When>
                                              </ButtonGroup>
                                           </td>
-                                       </tr>
-                                    );
-                                 })}
+                                       </When>
+                                    </tr>
+                                 ))}
                               </tbody>
                            </Table>
                         </Then>

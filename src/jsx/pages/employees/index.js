@@ -219,7 +219,7 @@ const Employees = () => {
                                  {query.data?.docs.map((e, index) => (
                                     <tr key={`${e._id}`}>
                                        <td>
-                                          <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                          <strong>{query.data.pagingCounter + index}</strong>
                                        </td>
                                        <td>{e.name}</td>
                                        <td>{e.phone}</td>

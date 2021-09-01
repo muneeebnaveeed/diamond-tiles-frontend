@@ -183,7 +183,7 @@ const Suppliers = (props) => {
                                  {query.data?.docs.map((e, index) => (
                                     <tr key={`${e._id}`}>
                                        <td>
-                                          <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                          <strong>{query.data.pagingCounter + index}</strong>
                                        </td>
                                        <td>{e.name}</td>
                                        <td>{e.phone}</td>
@@ -205,25 +205,9 @@ const Suppliers = (props) => {
                                              <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                           </OverlayTrigger>
                                        </td>
-                                       <td>
-                                          <ButtonGroup>
-                                             <Button
-                                                variant="dark"
-                                                size="sm"
-                                                icon={AiFillEye}
-                                                onClick={() => handleOnClickView(e)}
-                                             >
-                                                View
-                                             </Button>
-                                             <When condition={props.user?.role !== userRoles.CASHIER}>
-                                                <Button
-                                                   variant="warning"
-                                                   size="sm"
-                                                   icon={AiFillEdit}
-                                                   onClick={() => handleOnClickEdit(e)}
-                                                >
-                                                   Edit
-                                                </Button>
+                                       <When condition={props.user?.role !== userRoles.CASHIER}>
+                                          <td>
+                                             <ButtonGroup>
                                                 <Button
                                                    variant="danger"
                                                    size="sm"
@@ -232,9 +216,9 @@ const Suppliers = (props) => {
                                                 >
                                                    Delete
                                                 </Button>
-                                             </When>
-                                          </ButtonGroup>
-                                       </td>
+                                             </ButtonGroup>
+                                          </td>
+                                       </When>
                                     </tr>
                                  ))}
                               </tbody>

@@ -167,8 +167,12 @@ const ManagePurchase = ({ startDate, endDate, ...props }) => {
                                           </td>
                                           <td>{e.supplier?.name}</td>
                                           <td>{getProducts()}</td>
-                                          <td>{`${e.totalSourcePrice} PKR`}</td>
-                                          <td>{`${e.paid} PKR`}</td>
+                                          <td>{`${new Intl.NumberFormat('en-IN', {
+                                             maximumSignificantDigits: 3,
+                                          }).format(e.totalSourcePrice)} PKR`}</td>
+                                          <td>{`${new Intl.NumberFormat('en-IN', {
+                                             maximumSignificantDigits: 3,
+                                          }).format(e.paid)} PKR`}</td>
                                           <td>
                                              <div className="tw-flex tw-items-center tw-gap-4">
                                                 <OverlayTrigger

@@ -141,10 +141,15 @@ const Expenses = (props) => {
                                  {query.data?.docs.map((e, index) => (
                                     <tr key={`${e._id}`}>
                                        <td>
-                                          <strong>{query.data.pagingCounter * (index + 1)}</strong>
+                                          <strong>{query.data.pagingCounter + index}</strong>
                                        </td>
                                        <td>{e.title}</td>
-                                       <td>{e.amount} PKR</td>
+                                       <td>
+                                          {new Intl.NumberFormat('en-IN', {
+                                             maximumSignificantDigits: 3,
+                                          }).format(e.amount)}{' '}
+                                          PKR
+                                       </td>
                                        <td>
                                           <div className="tw-flex tw-items-center tw-gap-4">
                                              <OverlayTrigger
