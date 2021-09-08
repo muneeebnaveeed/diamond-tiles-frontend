@@ -4,17 +4,18 @@ import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
 import { get, getV2, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ButtonGroup, Card, Table } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { FaMinusCircle, FaPlusCircle } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { setProductsData, setProductsVisibility, setSuppliersData, setSuppliersVisibility } from 'store/actions';
 import { batch, useDispatch } from 'react-redux';
 import cls from 'classnames';
 import _ from 'lodash';
 import produce from 'immer';
+import QueryString from 'qs';
 import CreatableSelect from '../../components/CreatableSelect';
 
 const PurchaseActions = () => {
@@ -22,12 +23,64 @@ const PurchaseActions = () => {
 
    const alert = useAlert();
    const dispatch = useDispatch();
+   const location = useLocation();
+   const [purchaseId, setPurchaseId] = useState(null);
 
    const [purchase, setPurchase] = useState({
       supplier: null,
       paid: '',
       products: [{ product: null, sourcePrice: '', variants: { a: '', b: '', c: '', d: '' }, quantity: '' }],
    });
+
+   const existingPurchase = useQuery(['existing-purchase', purchaseId], () => getV2(`/purchases/id/${purchaseId}`), {
+      enabled: false,
+      onSuccess: (data) => {
+         console.log(data);
+
+         const updatedPurchase = produce(purchase, (draft) => {
+            draft.supplier = data.supplier;
+            draft.paid = data.paid;
+
+            const processedProducts = data.products.map((p) => {
+               const updatedProduct = { ...p };
+               const unitValue = updatedProduct.product.unit.value;
+               if (updatedProduct.product.type.title.toLowerCase() === 'tile') {
+                  Object.entries(updatedProduct.variants).forEach(([key, value]) => {
+                     let stringifiedQuantity = value / unitValue;
+                     if (!Number.isInteger(stringifiedQuantity)) stringifiedQuantity = `${value}t`;
+                     else stringifiedQuantity = `${stringifiedQuantity.toString()}b`;
+                     updatedProduct.variants[key] = stringifiedQuantity;
+                  });
+               } else {
+                  let stringifiedQuantity = updatedProduct.quantity / unitValue;
+                  if (!Number.isInteger(stringifiedQuantity)) stringifiedQuantity = `${updatedProduct.quantity}t`;
+                  else stringifiedQuantity = `${stringifiedQuantity.toString()}b`;
+                  updatedProduct.quantity = stringifiedQuantity;
+               }
+
+               console.log(updatedProduct);
+               return updatedProduct;
+            });
+
+            draft.products = processedProducts;
+         });
+
+         setPurchase(updatedPurchase);
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to get existing purchcase', err });
+      },
+   });
+
+   useEffect(() => {
+      const pId = location.state?.purchaseId;
+      if (pId) setPurchaseId(pId);
+   }, []);
+
+   useEffect(() => {
+      console.log('purchaseId:%s', purchaseId);
+      if (purchaseId) existingPurchase.refetch();
+   }, [purchaseId]);
 
    const suppliers = useQuery('all-suppliers', () =>
       getV2('/suppliers', { page: 1, limit: 1000, search: '', sort: { name: 1 } })
@@ -137,7 +190,15 @@ const PurchaseActions = () => {
 
    return (
       <>
-         <When condition={mutation.isLoading || unitsQuery.isLoading || products.isLoading || suppliers.isLoading}>
+         <When
+            condition={
+               mutation.isLoading ||
+               unitsQuery.isLoading ||
+               products.isLoading ||
+               suppliers.isLoading ||
+               (purchaseId ? existingPurchase.isLoading : false)
+            }
+         >
             <SpinnerOverlay />
          </When>
          <PageTItle activeMenu="Add New Purchase" motherMenu="Manage" />
@@ -238,7 +299,7 @@ const PurchaseActions = () => {
                                              name="modelNumber"
                                              placeholder="A"
                                              // disabled={isError}
-                                             value={purchase.products[index].variants.a}
+                                             value={purchase.products[index].variants?.a}
                                           />
                                        </div>
                                        <div className="col-xl-3 tw-p-0">
@@ -249,7 +310,7 @@ const PurchaseActions = () => {
                                              name="modelNumber"
                                              placeholder="B"
                                              // disabled={isError}
-                                             value={purchase.products[index].variants.b}
+                                             value={purchase.products[index].variants?.b}
                                           />
                                        </div>
                                        <div className="col-xl-3 tw-p-0">
@@ -260,7 +321,7 @@ const PurchaseActions = () => {
                                              name="modelNumber"
                                              placeholder="C"
                                              // disabled={isError}
-                                             value={purchase.products[index].variants.c}
+                                             value={purchase.products[index].variants?.c}
                                           />
                                        </div>
                                        <div className="col-xl-3 tw-p-0">
@@ -271,7 +332,7 @@ const PurchaseActions = () => {
                                              name="modelNumber"
                                              placeholder="D"
                                              // disabled={isError}
-                                             value={purchase.products[index].variants.d}
+                                             value={purchase.products[index].variants?.d}
                                           />
                                        </div>
                                     </div>

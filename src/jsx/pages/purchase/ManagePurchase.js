@@ -28,6 +28,7 @@ const ManagePurchase = ({ startDate, endDate, ...props }) => {
 
    const alert = useAlert();
    const queryClient = useQueryClient();
+   const history = useHistory();
 
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
@@ -68,6 +69,10 @@ const ManagePurchase = ({ startDate, endDate, ...props }) => {
             deleteMutation.mutate(id);
          }
       });
+   };
+
+   const handleEdit = (id) => {
+      history.push({ pathname: `/purchase/add`, state: { purchaseId: id } });
    };
 
    const alertMarkup = alert.getAlert();
@@ -189,12 +194,19 @@ const ManagePurchase = ({ startDate, endDate, ...props }) => {
                                                    <AiOutlineQuestionCircle className="tw-cursor-pointer" />
                                                 </OverlayTrigger>
                                                 <ButtonGroup>
+                                                   <Button
+                                                      variant="light"
+                                                      size="sm"
+                                                      icon={AiFillEdit}
+                                                      onClick={() => handleEdit(e._id)}
+                                                   >
+                                                      Edit
+                                                   </Button>
                                                    <When condition={props.user?.role !== userRoles.CASHIER}>
                                                       <When condition={e.isRemaining}>
                                                          <Button
                                                             variant="warning"
                                                             size="sm"
-                                                            icon={AiFillDelete}
                                                             onClick={() =>
                                                                setClearPurchase({
                                                                   id: e._id,
