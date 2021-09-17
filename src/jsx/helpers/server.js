@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { isArray } from 'lodash';
 
-export const api = axios.create({ baseURL: 'https://diamond-tiles-backend-v2.herokuapp.com' });
+const baseURL = process.env.REACT_APP_BASE_URL;
+
+if (!baseURL) console.error('Base URL not found in ENV');
+
+export const api = axios.create({ baseURL });
 
 api.interceptors.request.use(
    async (config) => {

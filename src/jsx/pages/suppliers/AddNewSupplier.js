@@ -1,8 +1,8 @@
 import ModalWrapper from 'jsx/components/ModalWrapper';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CreatableSelect from 'jsx/components/CreatableSelect';
-import { get, getV2, post, useAlert, useQuery } from 'jsx/helpers';
+import { get, getV2, patch, post, useAlert, useQuery } from 'jsx/helpers';
 import Select from 'jsx/components/Select';
 import {
    setTypesData,
@@ -23,15 +23,31 @@ const AddNewSupplier = () => {
    const queryClient = useQueryClient();
    const nameRef = useRef();
 
-   const mutation = useMutation((payload) => post('/suppliers', payload), {
+   const postMutation = useMutation((payload) => post('/suppliers', payload), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('all-suppliers', 'suppliers');
+         await queryClient.invalidateQueries('suppliers');
+         dispatch(setSuppliersData({}));
          dispatch(setSuppliersVisibility(false));
       },
       onError: (err) => {
          alert.setErrorAlert({ message: 'Unable to add supplier', err });
       },
    });
+
+   const patchMutation = useMutation((payload) => patch(`/suppliers/id/${state.data._id}`, payload), {
+      onSuccess: async () => {
+         await queryClient.invalidateQueries('suppliers');
+         dispatch(setSuppliersVisibility(false));
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to edit supplier', err });
+      },
+   });
+
+   const mutation = useMemo(
+      () => (state.data.name ? patchMutation : postMutation),
+      [patchMutation, postMutation, state.data.name]
+   );
 
    const formik = useFormik({
       initialValues: {
@@ -42,7 +58,6 @@ const AddNewSupplier = () => {
       onSubmit: (values, form) => {
          mutation.mutate(values);
          form.resetForm();
-         dispatch(setSuppliersData({}));
       },
    });
 
@@ -60,13 +75,13 @@ const AddNewSupplier = () => {
             onHide={() => {
                dispatch(setSuppliersVisibility(false));
             }}
-            title="Add New Supplier"
-            isLoading={mutation.isLoading}
+            title={`${state.data._id ? 'Edit' : 'Add New'} Supplier`}
+            isLoading={postMutation.isLoading || patchMutation.isLoading}
             size="md"
             onSubmit={formik.handleSubmit}
             submitButtonText="Save"
          >
-            <When condition={mutation.isLoading}>
+            <When condition={postMutation.isLoading || patchMutation.isLoading}>
                <SpinnerOverlay />
             </When>
             {alert.getAlert()}

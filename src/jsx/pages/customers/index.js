@@ -15,17 +15,19 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import swal from 'sweetalert';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { useDebounce } from 'ahooks';
-import { connect } from 'react-redux';
+import { batch, connect, useDispatch } from 'react-redux';
 import { userRoles } from 'jsx/helpers/enums';
+import { setCustomersData, setCustomersVisibility } from 'store/actions';
 
+dayjs.extend(relativeTime);
 const Customers = (props) => {
-   dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
    const [sort, setSort] = useState({ field: null, order: 1 });
    const [search, setSearch] = useState('');
    const debouncedSearchValue = useDebounce(search, { wait: 500 });
+   const dispatch = useDispatch();
 
    const alert = useAlert();
    const queryClient = useQueryClient();
@@ -46,8 +48,11 @@ const Customers = (props) => {
       },
    });
 
-   const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/customers/${obj._id}`, search: `?type=edit` });
+   const handleEdit = (customer) => {
+      batch(() => {
+         dispatch(setCustomersData(customer));
+         dispatch(setCustomersVisibility(true));
+      });
    };
 
    const handleOnClickView = (obj) => {
@@ -194,6 +199,14 @@ const Customers = (props) => {
                                        <When condition={props.user?.role !== userRoles.CASHIER}>
                                           <td>
                                              <ButtonGroup>
+                                                <Button
+                                                   variant="light"
+                                                   size="sm"
+                                                   icon={AiFillEdit}
+                                                   onClick={() => handleEdit(e)}
+                                                >
+                                                   Edit
+                                                </Button>
                                                 <Button
                                                    variant="danger"
                                                    size="sm"

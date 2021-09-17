@@ -15,7 +15,7 @@ import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { setEmployeesVisibility } from 'store/actions';
+import { setEmployeesData, setEmployeesVisibility } from 'store/actions';
 import swal from 'sweetalert';
 
 const Employees = () => {
@@ -49,12 +49,10 @@ const Employees = () => {
    });
 
    const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/employees/${obj._id}`, search: `?type=edit` });
+      dispatch(setEmployeesVisibility(true));
+      dispatch(setEmployeesData(obj));
    };
 
-   const handleOnClickView = (obj) => {
-      history.push({ pathname: `/employees/${obj._id}`, search: `?type=view` });
-   };
    const handleOnClickAdd = () => {
       dispatch(setEmployeesVisibility(true));
    };
@@ -227,49 +225,41 @@ const Employees = () => {
                                        <td>{e.address}</td>
                                        <td>{e.salary}</td>
                                        <td>
-                                          <OverlayTrigger
-                                             trigger={['hover', 'hover']}
-                                             placement="top"
-                                             overlay={
-                                                <Popover className="tw-border-gray-500">
-                                                   <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
-                                                      dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
-                                                         ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
-                                                         : dayjs(e.createdAt).fromNow()
-                                                   }.`}</Popover.Content>
-                                                </Popover>
-                                             }
-                                          >
-                                             <AiOutlineQuestionCircle className="tw-cursor-pointer" />
-                                          </OverlayTrigger>
-                                       </td>
-                                       <td>
-                                          <ButtonGroup>
-                                             <Button
-                                                variant="dark"
-                                                size="sm"
-                                                icon={AiFillEye}
-                                                onClick={() => handleOnClickView(e)}
+                                          <div className="tw-flex tw-items-center tw-gap-2">
+                                             <OverlayTrigger
+                                                trigger={['hover', 'hover']}
+                                                placement="top"
+                                                overlay={
+                                                   <Popover className="tw-border-gray-500">
+                                                      <Popover.Content>{`Created by ${e.createdBy ?? 'N/A'} ${
+                                                         dayjs(e.createdAt).diff(dayjs(), 'day', true) > 7
+                                                            ? `at ${dayjs(e.createdAt).format('DD-MMM-YYYY')}`
+                                                            : dayjs(e.createdAt).fromNow()
+                                                      }.`}</Popover.Content>
+                                                   </Popover>
+                                                }
                                              >
-                                                View
-                                             </Button>
-                                             <Button
-                                                variant="warning"
-                                                size="sm"
-                                                icon={AiFillEdit}
-                                                onClick={() => handleOnClickEdit(e)}
-                                             >
-                                                Edit
-                                             </Button>
-                                             <Button
-                                                variant="danger"
-                                                size="sm"
-                                                icon={AiFillDelete}
-                                                onClick={() => handleOnClickDelete(e._id)}
-                                             >
-                                                Delete
-                                             </Button>
-                                          </ButtonGroup>
+                                                <AiOutlineQuestionCircle className="tw-cursor-pointer" />
+                                             </OverlayTrigger>
+                                             <ButtonGroup>
+                                                <Button
+                                                   variant="light"
+                                                   size="sm"
+                                                   icon={AiFillEdit}
+                                                   onClick={() => handleOnClickEdit(e)}
+                                                >
+                                                   Edit
+                                                </Button>
+                                                <Button
+                                                   variant="danger"
+                                                   size="sm"
+                                                   icon={AiFillDelete}
+                                                   onClick={() => handleOnClickDelete(e._id)}
+                                                >
+                                                   Delete
+                                                </Button>
+                                             </ButtonGroup>
+                                          </div>
                                        </td>
                                     </tr>
                                  ))}

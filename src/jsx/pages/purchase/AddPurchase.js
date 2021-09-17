@@ -2,7 +2,7 @@
 import Button from 'jsx/components/Button';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
-import { get, getV2, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { get, getV2, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ButtonGroup, Card, Table } from 'react-bootstrap';
@@ -28,8 +28,8 @@ const PurchaseActions = () => {
 
    const [purchase, setPurchase] = useState({
       supplier: null,
-      paid: '',
-      products: [{ product: null, sourcePrice: '', variants: { a: '', b: '', c: '', d: '' }, quantity: '' }],
+      paid: '0',
+      products: [{ product: null, sourcePrice: '0', variants: { a: '', b: '', c: '', d: '' }, quantity: '' }],
    });
 
    const existingPurchase = useQuery(['existing-purchase', purchaseId], () => getV2(`/purchases/id/${purchaseId}`), {
@@ -90,7 +90,7 @@ const PurchaseActions = () => {
       getV2('/products', { page: 1, limit: 1000, search: '', sort: { modelNumber: 1 } })
    );
 
-   const mutation = useMutation((payload) => post('/purchases', payload), {
+   const postMutation = useMutation((payload) => post('/purchases', payload), {
       onSuccess: () => {
          history.replace('/purchase');
       },
@@ -98,6 +98,20 @@ const PurchaseActions = () => {
          alert.setErrorAlert({ message: 'Unable to add Purchase', err });
       },
    });
+
+   const patchMutation = useMutation((payload) => patch(`/purchases/id/${purchaseId}`, payload), {
+      onSuccess: () => {
+         history.replace('/purchase');
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to edit Purchase', err });
+      },
+   });
+
+   const mutation = useMemo(
+      () => (purchaseId ? patchMutation : postMutation),
+      [patchMutation, postMutation, purchaseId]
+   );
 
    const handleChangeProduct = (key, value, index) => {
       const updatedPurchase = produce(purchase, (draft) => {
@@ -117,7 +131,7 @@ const PurchaseActions = () => {
       const updatedPurchase = produce(purchase, (draft) => {
          draft.products.push({
             product: null,
-            sourcePrice: '',
+            sourcePrice: '0',
             variants: { a: '', b: '', c: '', d: '' },
             quantity: '',
          });
@@ -135,6 +149,10 @@ const PurchaseActions = () => {
    const handleSubmit = (e) => {
       e.preventDefault();
 
+      let error = '';
+
+      const isValidQuantity = (qty) => qty.includes('t') || qty.includes('T') || qty.includes('b') || qty.includes('B');
+
       const payload = produce(purchase, (draft) => {
          draft.supplier = draft.supplier?._id;
 
@@ -151,13 +169,15 @@ const PurchaseActions = () => {
                processedProduct.sourcePrice = Number(referenceProduct.sourcePrice);
 
                if (referenceProduct.quantity) {
+                  if (!isValidQuantity(referenceProduct.quantity)) error = true;
                   processedProduct.quantity = referenceProduct.quantity;
                } else if (referenceProduct.variants) {
                   const variants = _.cloneDeep(referenceProduct.variants);
 
                   // delete empty variants
                   Object.entries(variants).forEach(([key, value]) => {
-                     if (!value) delete variants[key];
+                     if (!value) return delete variants[key];
+                     if (!isValidQuantity(value)) error = true;
                   });
 
                   if (Object.keys(variants).length > 0) processedProduct.variants = variants;
@@ -174,8 +194,9 @@ const PurchaseActions = () => {
       const messages = [];
 
       if (!supplier) messages.push('Please enter a supplier');
-      if (!paid) messages.push('Please enter the paid amount');
+      if (paid === undefined || paid === null) messages.push('Please enter the paid amount');
       if (!payload.products.length) messages.push('Please enter product(s)');
+      if (error) messages.push('Please enter valid units with quantity(s)');
 
       if (messages.length) {
          alert.setErrorAlert({

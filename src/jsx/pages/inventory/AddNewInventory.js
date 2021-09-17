@@ -1,8 +1,8 @@
 import ModalWrapper from 'jsx/components/ModalWrapper';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CreatableSelect from 'jsx/components/CreatableSelect';
-import { get, getV2, post, useAlert, useQuery } from 'jsx/helpers';
+import { get, getV2, patch, post, useAlert, useQuery } from 'jsx/helpers';
 import Select from 'jsx/components/Select';
 import { setInventoriesData, setInventoriesVisibility, setProductsData, setProductsVisibility } from 'store/actions';
 import { useFormik } from 'formik';
@@ -22,7 +22,7 @@ const AddNewInventory = () => {
       getV2('/products', { page: 1, limit: 1000, sort: { modelNumber: 1 }, search: '' })
    );
 
-   const mutation = useMutation((payload) => post('/inventories', payload), {
+   const postMutation = useMutation((payload) => post('/inventories', payload), {
       onSuccess: async () => {
          await queryClient.invalidateQueries('inventories');
          dispatch(setInventoriesVisibility(false));
@@ -32,6 +32,22 @@ const AddNewInventory = () => {
          alert.setErrorAlert({ message: 'Unable to add inventory', err });
       },
    });
+
+   const patchMutation = useMutation((payload) => patch('/inventories', payload), {
+      onSuccess: async () => {
+         await queryClient.invalidateQueries('inventories');
+         dispatch(setInventoriesVisibility(false));
+         dispatch(setInventoriesData({}));
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to edit inventory', err });
+      },
+   });
+
+   const mutation = useMemo(
+      () => (state.data.product ? patchMutation : postMutation),
+      [patchMutation, postMutation, state.data.product]
+   );
 
    const formik = useFormik({
       initialValues: {
@@ -85,7 +101,7 @@ const AddNewInventory = () => {
                dispatch(setInventoriesVisibility(false));
                dispatch(setInventoriesData({}));
             }}
-            title="Add New Inventory"
+            title={`${state.data.product ? 'Edit' : 'Add New'} Inventory`}
             isLoading={products.isLoading || mutation.isLoading}
             size="md"
             onSubmit={formik.handleSubmit}
@@ -100,6 +116,11 @@ const AddNewInventory = () => {
                   <div className="form-group col-xl-12">
                      <label className="col-form-label">Product</label>
                      <CreatableSelect
+                        defaultValue={
+                           state.data.product
+                              ? { label: state.data.product.modelNumber, value: state.data.product }
+                              : {}
+                        }
                         onChange={(product) => formik.setFieldValue('product', product.value)}
                         options={products.data?.docs.map((product) => ({ label: product.modelNumber, value: product }))}
                         onCreateOption={(modelNumber) => {

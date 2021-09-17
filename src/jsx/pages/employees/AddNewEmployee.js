@@ -1,8 +1,8 @@
 import ModalWrapper from 'jsx/components/ModalWrapper';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CreatableSelect from 'jsx/components/CreatableSelect';
-import { get, getV2, post, useAlert, useQuery } from 'jsx/helpers';
+import { get, getV2, patch, post, useAlert, useQuery } from 'jsx/helpers';
 import Select from 'jsx/components/Select';
 import { setEmployeesData, setEmployeesVisibility } from 'store/actions';
 import { useFormik } from 'formik';
@@ -17,15 +17,30 @@ const AddNewEmployee = () => {
    const queryClient = useQueryClient();
    const nameRef = useRef();
 
-   const mutation = useMutation((payload) => post('/employees', payload), {
+   const postMutation = useMutation((payload) => post('/employees', payload), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('all-employees', 'employees');
+         await queryClient.invalidateQueries('employees');
          dispatch(setEmployeesVisibility(false));
       },
       onError: (err) => {
          alert.setErrorAlert({ message: 'Unable to add employee', err });
       },
    });
+
+   const patchMutation = useMutation((payload) => patch(`/employees/id/${state.data._id}`, payload), {
+      onSuccess: async () => {
+         await queryClient.invalidateQueries('employees');
+         dispatch(setEmployeesVisibility(false));
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to add employee', err });
+      },
+   });
+
+   const mutation = useMemo(
+      () => (state.data.name ? patchMutation : postMutation),
+      [patchMutation, postMutation, state.data.name]
+   );
 
    const formik = useFormik({
       initialValues: {
@@ -57,14 +72,15 @@ const AddNewEmployee = () => {
             show={state.visible}
             onHide={() => {
                dispatch(setEmployeesVisibility(false));
+               dispatch(setEmployeesData({}));
             }}
-            title="Add New Employee"
-            isLoading={mutation.isLoading}
+            title={`${state.data.name ? 'Edit' : 'Add New'} Employee`}
+            isLoading={postMutation.isLoading || patchMutation.isLoading}
             size="md"
             onSubmit={formik.handleSubmit}
             submitButtonText="Save"
          >
-            <When condition={mutation.isLoading}>
+            <When condition={postMutation.isLoading || patchMutation.isLoading}>
                <SpinnerOverlay />
             </When>
             {alert.getAlert()}

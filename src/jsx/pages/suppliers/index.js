@@ -14,12 +14,13 @@ import { AiFillDelete, AiFillEdit, AiFillEye, AiFillPlusCircle, AiOutlineQuestio
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useQueryClient } from 'react-query';
-import { connect } from 'react-redux';
+import { batch, connect, useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
+import { setSuppliersData, setSuppliersVisibility } from 'store/actions';
 import swal from 'sweetalert';
 
+dayjs.extend(relativeTime);
 const Suppliers = (props) => {
-   dayjs.extend(relativeTime);
    const history = useHistory();
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(5);
@@ -29,6 +30,8 @@ const Suppliers = (props) => {
 
    const alert = useAlert();
    const queryClient = useQueryClient();
+
+   const dispatch = useDispatch();
 
    const query = useQuery(['suppliers', page, limit, sort.field, sort.order, debouncedSearchValue], () =>
       get('/suppliers', page, limit, sort.field, sort.order, debouncedSearchValue)
@@ -46,8 +49,11 @@ const Suppliers = (props) => {
       },
    });
 
-   const handleOnClickEdit = (obj) => {
-      history.push({ pathname: `/suppliers/${obj._id}`, search: `?type=edit` });
+   const handleEdit = (supplier) => {
+      batch(() => {
+         dispatch(setSuppliersData(supplier));
+         dispatch(setSuppliersVisibility(true));
+      });
    };
 
    const handleOnClickView = (obj) => {
@@ -208,6 +214,14 @@ const Suppliers = (props) => {
                                        <When condition={props.user?.role !== userRoles.CASHIER}>
                                           <td>
                                              <ButtonGroup>
+                                                <Button
+                                                   variant="light"
+                                                   size="sm"
+                                                   icon={AiFillEdit}
+                                                   onClick={() => handleEdit(e)}
+                                                >
+                                                   Edit
+                                                </Button>
                                                 <Button
                                                    variant="danger"
                                                    size="sm"

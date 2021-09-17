@@ -1,8 +1,8 @@
 import ModalWrapper from 'jsx/components/ModalWrapper';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import CreatableSelect from 'jsx/components/CreatableSelect';
-import { get, getV2, post, useAlert, useQuery } from 'jsx/helpers';
+import { get, getV2, patch, post, useAlert, useQuery } from 'jsx/helpers';
 import Select from 'jsx/components/Select';
 import { setCustomersVisibility, setCustomersData } from 'store/actions';
 import { useFormik } from 'formik';
@@ -17,15 +17,30 @@ const AddNewCustomer = () => {
    const queryClient = useQueryClient();
    const nameRef = useRef();
 
-   const mutation = useMutation((payload) => post('/customers', payload), {
+   const postMutation = useMutation((payload) => post('/customers', payload), {
       onSuccess: async () => {
-         await queryClient.invalidateQueries('all-customers', 'customers');
+         await queryClient.invalidateQueries('customers');
          dispatch(setCustomersVisibility(false));
       },
       onError: (err) => {
          alert.setErrorAlert({ message: 'Unable to add customer', err });
       },
    });
+
+   const patchMutation = useMutation((payload) => patch(`/customers/id/${state.data._id}`, payload), {
+      onSuccess: async () => {
+         await queryClient.invalidateQueries('customers');
+         dispatch(setCustomersVisibility(false));
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to edit customer', err });
+      },
+   });
+
+   const mutation = useMemo(
+      () => (state.data.name ? patchMutation : postMutation),
+      [patchMutation, postMutation, state.data.name]
+   );
 
    const formik = useFormik({
       initialValues: {
@@ -52,13 +67,13 @@ const AddNewCustomer = () => {
             onHide={() => {
                dispatch(setCustomersVisibility(false));
             }}
-            title="Add New Customer"
-            isLoading={mutation.isLoading}
+            title={`${state.data.name ? 'Edit' : 'Add New'} Customer`}
+            isLoading={postMutation.isLoading || patchMutation.isLoading}
             size="md"
             onSubmit={formik.handleSubmit}
             submitButtonText="Save"
          >
-            <When condition={mutation.isLoading}>
+            <When condition={postMutation.isLoading || patchMutation.isLoading}>
                <SpinnerOverlay />
             </When>
             {alert.getAlert()}

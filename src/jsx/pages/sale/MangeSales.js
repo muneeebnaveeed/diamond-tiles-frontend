@@ -40,6 +40,8 @@ const MangeSales = ({ startDate, endDate, ...props }) => {
 
    const queryClient = useQueryClient();
 
+   const history = useHistory();
+
    const alert = useAlert();
 
    const query = useQuery(['sales', page, limit, sort.field, sort.order, startDate, endDate], () =>
@@ -74,6 +76,10 @@ const MangeSales = ({ startDate, endDate, ...props }) => {
             deleteMutation.mutate(id);
          }
       });
+   };
+
+   const handleEdit = (id) => {
+      history.push({ pathname: `/sale/add`, state: { saleId: id } });
    };
 
    useEffect(() => {
@@ -198,18 +204,14 @@ const MangeSales = ({ startDate, endDate, ...props }) => {
                                           </OverlayTrigger>
                                           <ButtonGroup>
                                              <When condition={props.user?.role !== userRoles.CASHIER}>
-                                                <When condition={e.isRemaining}>
-                                                   <Button
-                                                      variant="warning"
-                                                      size="sm"
-                                                      icon={AiFillDelete}
-                                                      onClick={() =>
-                                                         setClearSale({ id: e._id, amount: e.totalRetailPrice })
-                                                      }
-                                                   >
-                                                      Pay
-                                                   </Button>
-                                                </When>
+                                                <Button
+                                                   variant="light"
+                                                   size="sm"
+                                                   icon={AiFillEdit}
+                                                   onClick={() => handleEdit(e._id)}
+                                                >
+                                                   Edit
+                                                </Button>
                                                 <Button
                                                    variant="danger"
                                                    size="sm"

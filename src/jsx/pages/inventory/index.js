@@ -15,13 +15,13 @@ import React, { useEffect, useState, Fragment } from 'react';
 
 import { ButtonGroup, Card, Col, OverlayTrigger, Popover, Row, Table } from 'react-bootstrap';
 import ReactDatePicker from 'react-datepicker';
-import { AiFillDelete, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { AiFillDelete, AiFillEdit, AiFillPlusCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
 import { useMutation, useQueryClient } from 'react-query';
-import { useDispatch, connect } from 'react-redux';
+import { useDispatch, connect, batch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { setInventoriesVisibility } from 'store/actions';
+import { setInventoriesData, setInventoriesVisibility } from 'store/actions';
 import swal from 'sweetalert';
 
 const Khaata = (props) => {
@@ -85,6 +85,26 @@ const Khaata = (props) => {
 
    const handleOnClickAdd = () => {
       dispatch(setInventoriesVisibility(true));
+   };
+
+   const handleEdit = (inventory) => {
+      const updatedInventory = produce(inventory, (draft) => {
+         if (inventory.product.type.title.toLowerCase() === 'tile') {
+            Object.entries(inventory.variants).forEach(([key, value]) => {
+               if (value[0] > 0) draft.variants[key] = `${value[0]}b`;
+               else draft.variants[key] = `${value[1]}t`;
+            });
+         } else {
+            const quantity = inventory.quantity;
+            if (quantity[0] > 0) draft.quantity = `${quantity[0]}b`;
+            else draft.variants = `${quantity[1]}t`;
+         }
+      });
+
+      batch(() => {
+         dispatch(setInventoriesData(updatedInventory));
+         dispatch(setInventoriesVisibility(true));
+      });
    };
 
    return (
@@ -181,18 +201,28 @@ const Khaata = (props) => {
                                                   ))
                                                 : getQuantity(e.quantity)}
                                           </td>
-                                          <When condition={props.user?.role !== userRoles.CASHIER}>
-                                             <td>
-                                                <Button
-                                                   variant="danger"
-                                                   size="sm"
-                                                   icon={AiFillDelete}
-                                                   onClick={() => handleOnClickDelete(e._id)}
-                                                >
-                                                   Delete
-                                                </Button>
-                                             </td>
-                                          </When>
+                                          <td>
+                                             <When condition={props.user?.role !== userRoles.CASHIER}>
+                                                <ButtonGroup>
+                                                   <Button
+                                                      variant="light"
+                                                      size="sm"
+                                                      icon={AiFillEdit}
+                                                      onClick={() => handleEdit(e)}
+                                                   >
+                                                      Edit
+                                                   </Button>
+                                                   <Button
+                                                      variant="danger"
+                                                      size="sm"
+                                                      icon={AiFillDelete}
+                                                      onClick={() => handleOnClickDelete(e._id)}
+                                                   >
+                                                      Delete
+                                                   </Button>
+                                                </ButtonGroup>
+                                             </When>
+                                          </td>
                                        </tr>
                                     );
                                  })}

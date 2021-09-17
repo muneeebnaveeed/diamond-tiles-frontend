@@ -21,6 +21,7 @@ const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) =
       ['refund-purchase', refundPurchase],
       () => getV2(`/purchases/id/${refundPurchase}`, { page: 1, limit: 1000 }),
       {
+         enabled: false,
          onSuccess: (data) => {
             const refunds = data.products.map(({ product }) => {
                const returned = {};
@@ -87,6 +88,13 @@ const RefundPurchase = ({ refundPurchase, toggle, onClose, onOpen, ...props }) =
 
       mutation.mutate(payload);
    };
+
+   useEffect(() => {
+      if (refundPurchase) {
+         console.log('hitting get one purchase');
+         purchase.refetch();
+      }
+   }, [refundPurchase]);
 
    return (
       <>

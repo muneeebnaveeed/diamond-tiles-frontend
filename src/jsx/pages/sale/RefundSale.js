@@ -37,6 +37,7 @@ const RefundSale = ({ refundSale, toggle, onClose, onOpen, ...props }) => {
    };
 
    const inventory = useQuery(['sale', refundSale], () => get(`/sales/id/${refundSale}`), {
+      enabled: false,
       onSuccess: (data) => {
          handleChangeQuantity(1, data);
       },
@@ -52,6 +53,10 @@ const RefundSale = ({ refundSale, toggle, onClose, onOpen, ...props }) => {
          alert.setErrorAlert({ message: 'Unable to refund sale', err });
       },
    });
+
+   useEffect(() => {
+      if (refundSale) inventory.refetch();
+   }, [refundSale]);
 
    const alertMarkup = alert.getAlert();
 

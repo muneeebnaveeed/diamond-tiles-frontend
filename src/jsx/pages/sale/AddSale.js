@@ -2,14 +2,14 @@
 import Button from 'jsx/components/Button';
 import ModalWrapper from 'jsx/components/ModalWrapper';
 import SpinnerOverlay from 'jsx/components/SpinnerOverlay';
-import { get, getV2, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
+import { get, getV2, patch, post, useAlert, useMutation, useQuery } from 'jsx/helpers';
 import PageTItle from 'jsx/layouts/PageTitle';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ButtonGroup, Card, Table } from 'react-bootstrap';
 import { AiFillCaretLeft, AiFillSave } from 'react-icons/ai';
 import { FaMinusCircle, FaPlusCircle } from 'react-icons/fa';
 import { Else, If, Then, When } from 'react-if';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import {
    setCustomersData,
    setCustomersVisibility,
@@ -29,14 +29,65 @@ const AddSale = () => {
 
    const alert = useAlert();
    const dispatch = useDispatch();
+   const [saleId, setSaleId] = useState(null);
+   const location = useLocation();
 
    const [sale, setSale] = useState({
       customer: null,
-      paid: '',
+      paid: '0',
       products: [
-         { product: null, sourcePrice: '', retailPrice: '', variants: { a: '', b: '', c: '', d: '' }, quantity: '' },
+         { product: null, sourcePrice: '0', retailPrice: '0', variants: { a: '', b: '', c: '', d: '' }, quantity: '' },
       ],
    });
+
+   const existingSale = useQuery(['existing-sale', saleId], () => getV2(`/sales/id/${saleId}`), {
+      enabled: false,
+      onSuccess: (data) => {
+         console.log(data);
+
+         const updatedSale = produce(sale, (draft) => {
+            draft.customer = data.customer;
+            draft.paid = data.paid;
+
+            const processedProducts = data.products.map((p) => {
+               const updatedProduct = { ...p };
+               const unitValue = updatedProduct.product.unit.value;
+               if (updatedProduct.product.type.title.toLowerCase() === 'tile') {
+                  Object.entries(updatedProduct.variants).forEach(([key, value]) => {
+                     let stringifiedQuantity = value / unitValue;
+                     if (!Number.isInteger(stringifiedQuantity)) stringifiedQuantity = `${value}t`;
+                     else stringifiedQuantity = `${stringifiedQuantity.toString()}b`;
+                     updatedProduct.variants[key] = stringifiedQuantity;
+                  });
+               } else {
+                  let stringifiedQuantity = updatedProduct.quantity / unitValue;
+                  if (!Number.isInteger(stringifiedQuantity)) stringifiedQuantity = `${updatedProduct.quantity}t`;
+                  else stringifiedQuantity = `${stringifiedQuantity.toString()}b`;
+                  updatedProduct.quantity = stringifiedQuantity;
+               }
+
+               console.log(updatedProduct);
+               return updatedProduct;
+            });
+
+            draft.products = processedProducts;
+         });
+
+         setSale(updatedSale);
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to get existing sale', err });
+      },
+   });
+
+   useEffect(() => {
+      const sId = location.state?.saleId;
+      if (sId) setSaleId(sId);
+   }, []);
+
+   useEffect(() => {
+      if (saleId) existingSale.refetch();
+   }, [saleId]);
 
    const customers = useQuery('all-customers', () =>
       getV2('/customers', { page: 1, limit: 1000, search: '', sort: { name: 1 } })
@@ -45,7 +96,7 @@ const AddSale = () => {
       getV2('/inventories', { page: 1, limit: 1000, search: '', sort: { 'product.modelNumber': 1 } })
    );
 
-   const mutation = useMutation((payload) => post('/sales', payload), {
+   const postMutation = useMutation((payload) => post('/sales', payload), {
       onSuccess: () => {
          history.replace('/sale');
       },
@@ -53,6 +104,17 @@ const AddSale = () => {
          alert.setErrorAlert({ message: 'Unable to add Sale', err });
       },
    });
+
+   const patchMutation = useMutation((payload) => patch(`/sales/id/${saleId}`, payload), {
+      onSuccess: () => {
+         history.replace('/sale');
+      },
+      onError: (err) => {
+         alert.setErrorAlert({ message: 'Unable to edit Sale', err });
+      },
+   });
+
+   const mutation = useMemo(() => (saleId ? patchMutation : postMutation), [patchMutation, postMutation, saleId]);
 
    const handleChangeProduct = (key, value, index) => {
       const updatedSale = produce(sale, (draft) => {
@@ -72,8 +134,8 @@ const AddSale = () => {
       const updatedSale = produce(sale, (draft) => {
          draft.products.push({
             product: null,
-            sourcePrice: '',
-            retailPrice: '',
+            sourcePrice: '0',
+            retailPrice: '0',
             variants: { a: '', b: '', c: '', d: '' },
             quantity: '',
          });
@@ -90,6 +152,9 @@ const AddSale = () => {
 
    const handleSubmit = (e) => {
       e.preventDefault();
+
+      const isValidQuantity = (qty) => qty.includes('t') || qty.includes('T') || qty.includes('b') || qty.includes('B');
+      let error = false;
 
       const payload = produce(sale, (draft) => {
          draft.customer = draft.customer?._id;
@@ -112,13 +177,15 @@ const AddSale = () => {
                processedProduct.retailPrice = Number(referenceProduct.retailPrice);
 
                if (referenceProduct.quantity) {
+                  if (!isValidQuantity(referenceProduct.quantity)) error = true;
                   processedProduct.quantity = referenceProduct.quantity;
                } else if (referenceProduct.variants) {
                   const variants = _.cloneDeep(referenceProduct.variants);
 
                   // delete empty variants
                   Object.entries(variants).forEach(([key, value]) => {
-                     if (!value) delete variants[key];
+                     if (!value) return delete variants[key];
+                     if (!isValidQuantity(value)) error = true;
                   });
 
                   if (Object.keys(variants).length > 0) processedProduct.variants = variants;
@@ -135,8 +202,9 @@ const AddSale = () => {
       const messages = [];
 
       if (!customer) messages.push('Please enter a customer');
-      if (!paid) messages.push('Please enter the paid amount');
+      if (paid === undefined || paid === null) messages.push('Please enter the paid amount');
       if (!payload.products.length) messages.push('Please enter product(s)');
+      if (error) messages.push('Please enter valid units with quantity(s)');
 
       if (messages.length) {
          alert.setErrorAlert({
@@ -151,7 +219,11 @@ const AddSale = () => {
 
    return (
       <>
-         <When condition={mutation.isLoading || inventories.isLoading || customers.isLoading}>
+         <When
+            condition={
+               postMutation.isLoading || patchMutation.isLoading || inventories.isLoading || customers.isLoading
+            }
+         >
             <SpinnerOverlay />
          </When>
          <PageTItle activeMenu="Add New Sale" motherMenu="Manage" />
@@ -323,11 +395,16 @@ const AddSale = () => {
                               icon={AiFillCaretLeft}
                               variant="warning light"
                               onClick={() => history.replace('/sale')}
-                              loading={mutation.isLoading}
+                              loading={postMutation.isLoading || patchMutation.isLoading}
                            >
                               Back
                            </Button>
-                           <Button icon={AiFillSave} variant="primary" type="submit" loading={mutation.isLoading}>
+                           <Button
+                              icon={AiFillSave}
+                              variant="primary"
+                              type="submit"
+                              loading={postMutation.isLoading || patchMutation.isLoading}
+                           >
                               Save
                            </Button>
                         </ButtonGroup>
