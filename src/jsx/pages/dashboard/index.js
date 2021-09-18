@@ -23,11 +23,21 @@ const Dashboard = () => {
 
    const user = useSelector((s) => s.auth.user);
 
-   const purchase = useQuery('dashboard-purchases', () => getV2('/dashboard/purchases'));
-   const sale = useQuery('dashboard-sales', () => getV2('/dashboard/sales'));
-   const revenue = useQuery('dashboard-revenue', () => getV2('/dashboard/revenue'));
-   const expense = useQuery('dashboard-expenses', () => getV2('/dashboard/expenses'));
-   const profit = useQuery('dashboard-profit', () => getV2('/dashboard/profit'));
+   const purchase = useQuery(['dashboard-purchases', startDate, endDate], () =>
+      getV2('/dashboard/purchases', { startDate, endDate })
+   );
+   const sale = useQuery(['dashboard-sales', startDate, endDate], () =>
+      getV2('/dashboard/sales', { startDate, endDate })
+   );
+   const revenue = useQuery(['dashboard-revenue', startDate, endDate], () =>
+      getV2('/dashboard/revenue', { startDate, endDate })
+   );
+   const expense = useQuery(['dashboard-expenses', startDate, endDate], () =>
+      getV2('/dashboard/expenses', { startDate, endDate })
+   );
+   const profit = useQuery(['dashboard-profit', startDate, endDate], () =>
+      getV2('/dashboard/profit', { startDate, endDate })
+   );
    return (
       <>
          <div className="row tw-mb-[30px]">

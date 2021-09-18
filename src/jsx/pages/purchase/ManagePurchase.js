@@ -203,20 +203,6 @@ const ManagePurchase = ({ startDate, endDate, ...props }) => {
                                                       Edit
                                                    </Button>
                                                    <When condition={props.user?.role !== userRoles.CASHIER}>
-                                                      <When condition={e.isRemaining}>
-                                                         <Button
-                                                            variant="warning"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                               setClearPurchase({
-                                                                  id: e._id,
-                                                                  amount: e.totalSourcePrice,
-                                                               })
-                                                            }
-                                                         >
-                                                            Pay
-                                                         </Button>
-                                                      </When>
                                                       <Button
                                                          variant="danger"
                                                          size="sm"
